@@ -18,6 +18,7 @@ import com.kenchami.kenchamios.ui.common.AppScreen
 import com.kenchami.kenchamios.ui.common.EmptyText
 import com.kenchami.kenchamios.ui.common.QuickAddButton
 import com.kenchami.kenchamios.ui.common.SectionTitle
+import com.kenchami.kenchamios.ui.common.SyncButton
 import com.kenchami.kenchamios.ui.common.label
 import com.kenchami.kenchamios.ui.common.timeAgo
 import com.kenchami.kenchamios.ui.media.AddOneButton
@@ -27,11 +28,15 @@ fun TodayScreen(
     onOpenProject: (String) -> Unit,
     onOpenEntry: (String) -> Unit,
     onQuickAdd: () -> Unit,
+    onOpenSync: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focus by viewModel.focus.collectAsStateWithLifecycle()
-    AppScreen("Today", actions = { QuickAddButton(onQuickAdd) }) { padding ->
+    AppScreen("Today", actions = {
+        SyncButton(onOpenSync)
+        QuickAddButton(onQuickAdd)
+    }) { padding ->
         state?.let {
             val timer = TimerActions(viewModel::pauseTimer, viewModel::resumeTimer, viewModel::stopTimer)
             TodayContent(it, focus, timer, viewModel::finishTask, viewModel::addOne, onOpenProject, onOpenEntry, padding)

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,5 +49,12 @@ fun ConfirmDialog(title: String, text: String, confirmLabel: String, onConfirm: 
 fun QuickAddButton(onClick: () -> Unit) {
     IconButton(onClick = onClick) {
         Icon(Icons.Filled.Add, contentDescription = "Quick add")
+    }
+}
+
+@Composable
+fun SyncButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick) {
+        Icon(Icons.Filled.Refresh, contentDescription = "Sync")
     }
 }
