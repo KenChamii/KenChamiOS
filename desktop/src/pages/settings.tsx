@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
-import { getAppInfo } from "@/lib/api";
+import { getAppInfo } from "@/lib/api/app";
 
 export function SettingsPage() {
   const { data, error } = useQuery({ queryKey: ["app-info"], queryFn: getAppInfo });
