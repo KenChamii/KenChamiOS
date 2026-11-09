@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- the only server is the paired desktop; its certificate is pinned in code, so no certificate authority is trusted -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors />
+    </base-config>
+</network-security-config>

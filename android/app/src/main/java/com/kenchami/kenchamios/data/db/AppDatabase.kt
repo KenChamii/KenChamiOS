@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.kenchami.kenchamios.data.db.dao.ActivityDao
+import com.kenchami.kenchamios.data.db.dao.ChangeLogDao
 import com.kenchami.kenchamios.data.db.dao.MediaDao
 import com.kenchami.kenchamios.data.db.dao.ProjectChildDao
 import com.kenchami.kenchamios.data.db.dao.ProjectDao
@@ -13,6 +14,7 @@ import com.kenchami.kenchamios.data.db.dao.SettingDao
 import com.kenchami.kenchamios.data.db.dao.TaskDao
 import com.kenchami.kenchamios.data.db.dao.TimerDao
 import com.kenchami.kenchamios.data.db.entity.ActivityEntity
+import com.kenchami.kenchamios.data.db.entity.ChangeLogEntity
 import com.kenchami.kenchamios.data.db.entity.ChecklistItemEntity
 import com.kenchami.kenchamios.data.db.entity.MediaEntryEntity
 import com.kenchami.kenchamios.data.db.entity.MediaItemEntity
@@ -41,8 +43,9 @@ import com.kenchami.kenchamios.data.db.entity.TimerStateEntity
         MediaItemEntity::class,
         MediaEntryEntity::class,
         MediaProgressLogEntity::class,
+        ChangeLogEntity::class,
     ],
-    version = 1,
+    version = 2,
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -55,6 +58,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun promptDao(): PromptDao
     abstract fun mediaDao(): MediaDao
     abstract fun timerDao(): TimerDao
+    abstract fun changeLogDao(): ChangeLogDao
 
     companion object {
         const val NAME = "kenchamios.db"

@@ -29,3 +29,12 @@ data class ActivityEntity(
     val summary: String,
     val at: Long,
 )
+
+/** One entry per changed row, filled by triggers; the sync reads it to find what to send. */
+@Entity(tableName = "change_log", indices = [Index("table_name", "row_id", unique = true)])
+data class ChangeLogEntity(
+    @PrimaryKey(autoGenerate = true) val seq: Long,
+    @ColumnInfo(name = "table_name") val tableName: String,
+    @ColumnInfo(name = "row_id") val rowId: String,
+    val hlc: Long,
+)

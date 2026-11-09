@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import com.kenchami.kenchamios.sync.SyncTrigger
 import com.kenchami.kenchamios.timer.TimerController
 import com.kenchami.kenchamios.timer.TimerService
 import com.kenchami.kenchamios.ui.nav.AppScaffold
@@ -17,8 +18,11 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject lateinit var timer: TimerController
 
+    @Inject lateinit var syncTrigger: SyncTrigger
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        syncTrigger.start()
         lifecycleScope.launch {
             timer.recover()
             if (timer.state.value != null) TimerService.start(this@MainActivity)
