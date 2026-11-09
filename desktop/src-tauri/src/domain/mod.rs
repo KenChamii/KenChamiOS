@@ -4,6 +4,7 @@ pub mod brief;
 mod checklist;
 mod doc;
 pub mod export;
+pub mod media;
 pub mod order_key;
 pub mod portfolio;
 pub mod project;

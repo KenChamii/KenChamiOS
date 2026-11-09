@@ -4,6 +4,8 @@ pub mod brief;
 pub mod checklist;
 pub mod docs;
 pub mod git;
+pub mod media;
+pub mod metadata;
 pub mod portfolio;
 pub mod projects;
 pub mod prompts;

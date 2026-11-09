@@ -1,0 +1,16 @@
+{
+  "data": {
+    "Media": {
+      "id": 30013,
+      "title": { "romaji": "One Piece", "english": "One Piece" },
+      "coverImage": {
+        "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx30013.jpg"
+      },
+      "episodes": null,
+      "chapters": null,
+      "genres": ["Action", "Adventure"],
+      "description": "Gol D. Roger was known as the Pirate King.",
+      "startDate": { "year": 1997 }
+    }
+  }
+}
