@@ -2,11 +2,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "@/components/layout/layout";
 import { DashboardPage } from "@/pages/dashboard";
+import { HabitsPage } from "@/pages/habits";
+import { InboxPage } from "@/pages/inbox";
 import { MediaPage } from "@/pages/media";
 import { ProjectPage } from "@/pages/project";
 import { ProjectsPage } from "@/pages/projects";
 import { RecapPage } from "@/pages/recap";
 import { SettingsPage } from "@/pages/settings";
+import { TrashPage } from "@/pages/trash";
 import { WorkflowPage } from "@/pages/workflow";
 
 const queryClient = new QueryClient();
@@ -16,6 +19,9 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "/", element: <DashboardPage /> },
+      { path: "/inbox", element: <InboxPage /> },
+      { path: "/habits", element: <HabitsPage /> },
+      { path: "/trash", element: <TrashPage /> },
       { path: "/projects", element: <ProjectsPage /> },
       { path: "/projects/:id/:tab?", element: <ProjectPage /> },
       { path: "/workflow", element: <WorkflowPage /> },

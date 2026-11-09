@@ -6,6 +6,8 @@ import {
   listSavePoints,
   type SavePointInput,
 } from "@/lib/api/save-points";
+import { restoreFromTrash } from "@/lib/api/trash";
+import { useToasts } from "@/stores/toasts";
 
 export function useSavePoints(projectId: string) {
   return useQuery({
@@ -34,7 +36,13 @@ export function useCreateSavePoint(projectId: string) {
 
 export function useDeleteSavePoint(projectId: string) {
   const invalidate = useInvalidateSavePoints(projectId);
-  return useMutation({ mutationFn: deleteSavePoint, onSuccess: invalidate });
+  return useMutation({
+    mutationFn: deleteSavePoint,
+    onSuccess: (_, id) => {
+      useToasts.getState().show("Save point deleted", () => restoreFromTrash("save_point", id));
+      return invalidate();
+    },
+  });
 }
 
 export function useExportSavePoints(projectId: string) {

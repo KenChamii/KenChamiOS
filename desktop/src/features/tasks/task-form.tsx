@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PRIORITIES, type Priority, type Task, type TaskUpdate } from "@/lib/api/tasks";
 import { fromDateInput, toDateInput } from "@/lib/dates";
 import { formatTags, parseTags } from "@/lib/tags";
-import { PRIORITY_LABELS } from "./meta";
+import { PRIORITY_LABELS, repeatOptions } from "./meta";
 
 type TaskFormProps = {
   task: Task;
@@ -24,6 +24,7 @@ export function TaskForm({ task, pending, error, onSave }: TaskFormProps) {
   const [due, setDue] = useState(toDateInput(task.due_at));
   const [tags, setTags] = useState(formatTags(task.tags));
   const [files, setFiles] = useState(task.related_files.join("\n"));
+  const [repeat, setRepeat] = useState(task.recurrence ?? "");
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -35,6 +36,7 @@ export function TaskForm({ task, pending, error, onSave }: TaskFormProps) {
       priority,
       due_at: fromDateInput(due),
       tags: parseTags(tags),
+      recurrence: repeat || null,
     });
   }
 
@@ -61,6 +63,9 @@ export function TaskForm({ task, pending, error, onSave }: TaskFormProps) {
           <Input type="date" value={due} onChange={(e) => setDue(e.target.value)} />
         </Field>
       </div>
+      <Field label="Repeat">
+        <Select value={repeat} options={repeatOptions(task.recurrence)} onChange={setRepeat} />
+      </Field>
       <Field label="Tags (comma separated)">
         <Input value={tags} onChange={(e) => setTags(e.target.value)} />
       </Field>

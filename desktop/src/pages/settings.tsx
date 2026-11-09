@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
+  DatabaseBackup,
   FileText,
   Film,
   Info,
@@ -14,6 +15,7 @@ import { NavLink, useParams } from "react-router-dom";
 import { PageHeader } from "@/components/layout/page-header";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Card } from "@/components/ui/card";
+import { BackupCard } from "@/features/backups/backup-card";
 import { TimerSettingsCard } from "@/features/focus/timer-settings";
 import { GamesKeyCard } from "@/features/media/games-key-card";
 import { SourceCredits } from "@/features/media/source-credits";
@@ -44,6 +46,7 @@ const SECTIONS: Section[] = [
   },
   { id: "sync", label: "Sync", icon: Smartphone, content: () => <SyncCard /> },
   { id: "reminders", label: "Reminders", icon: Bell, content: () => <ReminderSettingsCard /> },
+  { id: "backups", label: "Backups", icon: DatabaseBackup, content: () => <BackupCard /> },
   { id: "templates", label: "Templates", icon: FileText, content: () => <TemplateSettings /> },
   { id: "about", label: "About", icon: Info, content: () => <About /> },
 ];
@@ -56,7 +59,7 @@ export function SettingsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Settings"
-        subtitle="Sync, timers, reminders and API keys"
+        subtitle="Sync, backups, timers, reminders and API keys"
         icon={Settings}
       />
       <div className="grid grid-cols-[12rem_1fr] items-start gap-8">

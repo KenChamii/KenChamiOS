@@ -43,7 +43,8 @@ export function KanbanBoard({ projectId, tasks, onSelect }: KanbanBoardProps) {
     setActiveTask(null);
     if (!event.over) return;
     const drop = dropTarget(columns, String(event.active.id), String(event.over.id));
-    if (drop) move.mutate({ id: String(event.active.id), ...drop });
+    const task = tasks.find((candidate) => candidate.id === event.active.id);
+    if (drop && task) move.mutate({ task, ...drop });
   }
 
   return (

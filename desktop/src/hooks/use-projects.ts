@@ -10,6 +10,8 @@ import {
   type ProjectInput,
   type Stage,
 } from "@/lib/api/projects";
+import { restoreFromTrash } from "@/lib/api/trash";
+import { useToasts } from "@/stores/toasts";
 
 export function useProjects(filter: ProjectFilter) {
   return useQuery({ queryKey: ["projects", "list", filter], queryFn: () => listProjects(filter) });
@@ -39,7 +41,13 @@ export function useUpdateProject(id: string) {
 
 export function useDeleteProject(id: string) {
   const invalidate = useInvalidateProjects();
-  return useMutation({ mutationFn: () => deleteProject(id), onSuccess: invalidate });
+  return useMutation({
+    mutationFn: () => deleteProject(id),
+    onSuccess: () => {
+      useToasts.getState().show("Project deleted", () => restoreFromTrash("project", id));
+      return invalidate();
+    },
+  });
 }
 
 export function useSetStage(id: string) {

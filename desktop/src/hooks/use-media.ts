@@ -18,6 +18,8 @@ import {
   type MediaStatus,
   type MediaType,
 } from "@/lib/api/media";
+import { restoreFromTrash } from "@/lib/api/trash";
+import { useToasts } from "@/stores/toasts";
 
 export function useRecommendations(mediaType: MediaType | null) {
   return useQuery({
@@ -78,7 +80,13 @@ export function useSetMediaProgress() {
 
 export function useDeleteMedia() {
   const invalidate = useInvalidateMedia();
-  return useMutation({ mutationFn: deleteMedia, onSuccess: invalidate });
+  return useMutation({
+    mutationFn: deleteMedia,
+    onSuccess: (_, id) => {
+      useToasts.getState().show("Removed from the library", () => restoreFromTrash("media", id));
+      return invalidate();
+    },
+  });
 }
 
 export function useGamesKeyStatus() {

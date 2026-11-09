@@ -5,6 +5,7 @@ import { cn } from "@/lib/cn";
 import { useOverlays } from "@/stores/overlays";
 import { filterCommands, type Command } from "./filter";
 import { useCommands } from "./use-commands";
+import { useQueryCommands } from "./use-query-commands";
 
 export function CommandPalette() {
   const { palette, closePalette } = useOverlays();
@@ -26,7 +27,8 @@ function PaletteBody({ initialQuery, onDone }: { initialQuery: string; onDone: (
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
   const id = useId();
-  const results = filterCommands(useCommands(), query);
+  // search hits matched on their body, so they skip the label filter
+  const results = [...filterCommands(useCommands(), query), ...useQueryCommands(query)];
   const current = Math.min(active, results.length - 1);
 
   useEffect(() => {
@@ -62,8 +64,8 @@ function PaletteBody({ initialQuery, onDone }: { initialQuery: string; onDone: (
           aria-expanded
           aria-controls={`${id}-list`}
           aria-activedescendant={results.length > 0 ? `${id}-${current}` : undefined}
-          aria-label="Search commands, projects and media"
-          placeholder="Type a command, project or title"
+          aria-label="Search commands, projects, tasks, docs and prompts"
+          placeholder="Search everything, or type a task to add"
           className="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
           value={query}
           onChange={(event) => {

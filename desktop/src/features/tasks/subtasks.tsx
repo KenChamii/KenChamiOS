@@ -26,7 +26,7 @@ export function Subtasks({ parent, subtasks }: SubtasksProps) {
                 aria-label={`Complete ${task.title}`}
                 checked={done}
                 onCheckedChange={(checked) =>
-                  move.mutate({ id: task.id, status: checked ? "done" : "todo", beforeId: null })
+                  move.mutate({ task, status: checked ? "done" : "todo", beforeId: null })
                 }
               />
               <span className={cn("flex-1", done && "text-muted-foreground line-through")}>

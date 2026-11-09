@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useDeleteProject, useSetStage, useUpdateProject } from "@/hooks/use-projects";
-import type { ProjectSummary } from "@/lib/api/projects";
+import { updateProject, type ProjectSummary } from "@/lib/api/projects";
 import { GitCard } from "@/features/savepoints/git-card";
 import { ResumePanel } from "@/features/savepoints/resume-panel";
 import { errorMessage } from "@/lib/errors";
+import { useToasts } from "@/stores/toasts";
 import { EditProjectDialog } from "./project-dialog";
 import { StagePipeline } from "./stage-pipeline";
 
@@ -21,6 +22,23 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
   const remove = useDeleteProject(project.id);
 
   const error = setStage.error ?? update.error ?? remove.error;
+
+  function toggleArchived() {
+    const archived = !project.archived;
+    update.mutate(
+      { ...project, archived },
+      {
+        onSuccess: () => {
+          if (!archived) return;
+          useToasts
+            .getState()
+            .show("Project archived", () =>
+              updateProject(project.id, { ...project, archived: false }),
+            );
+        },
+      },
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,11 +85,7 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
         <Button variant="outline" onClick={() => setEditing(true)}>
           Edit
         </Button>
-        <Button
-          variant="outline"
-          disabled={update.isPending}
-          onClick={() => update.mutate({ ...project, archived: !project.archived })}
-        >
+        <Button variant="outline" disabled={update.isPending} onClick={toggleArchived}>
           {project.archived ? "Unarchive" : "Archive"}
         </Button>
         {confirmingDelete ? (
