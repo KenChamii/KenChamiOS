@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
+import { GamesKeyCard } from "@/features/media/games-key-card";
 import { TimerSettingsCard } from "@/features/focus/timer-settings";
 import { TemplateSettings } from "@/features/workflow/template-settings";
 import { getAppInfo } from "@/lib/api/app";
@@ -26,6 +27,7 @@ export function SettingsPage() {
         )}
       </Card>
       <TimerSettingsCard />
+      <GamesKeyCard />
       <TemplateSettings />
     </div>
   );
