@@ -1,7 +1,7 @@
+use super::handle::now_ms;
 use crate::error::AppResult;
 use crate::sync::hlc::Hlc;
 use sqlx::SqlitePool;
-use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
 const DEVICE_ID_KEY: &str = "device_id";
@@ -9,9 +9,6 @@ const DEVICE_ID_KEY: &str = "device_id";
 /// Returns the device id, creating and storing it on the first call.
 pub async fn ensure_device_id(pool: &SqlitePool, hlc: &Hlc) -> AppResult<String> {
     let candidate = Uuid::now_v7().to_string();
-    let now_ms = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .map_or(0, |d| d.as_millis() as i64);
 
     sqlx::query(
         "INSERT INTO settings (id, created_at, updated_at, device_id, key, value_json)
@@ -19,7 +16,7 @@ pub async fn ensure_device_id(pool: &SqlitePool, hlc: &Hlc) -> AppResult<String>
          ON CONFLICT(key) DO NOTHING",
     )
     .bind(Uuid::now_v7().to_string())
-    .bind(now_ms)
+    .bind(now_ms())
     // an hlc value is around 1e17, well inside i64
     .bind(hlc.now() as i64)
     .bind(&candidate)
