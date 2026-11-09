@@ -26,7 +26,7 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
   return (
     <div className="flex flex-col gap-4">
       <Card className="flex flex-col gap-3">
-        <h2 className="font-medium">Stage</h2>
+        <h2 className="font-semibold tracking-tight">Stage</h2>
         <StagePipeline
           stage={project.stage}
           disabled={setStage.isPending}
@@ -41,7 +41,7 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
       <BriefCard project={project} />
 
       <Card className="flex flex-col gap-3">
-        <h2 className="font-medium">Details</h2>
+        <h2 className="font-semibold tracking-tight">Details</h2>
         <p className="text-sm">
           {project.description || <span className="text-muted-foreground">No description.</span>}
         </p>

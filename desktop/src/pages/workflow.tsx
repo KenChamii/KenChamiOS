@@ -1,9 +1,10 @@
+import { PageHeader } from "@/components/layout/page-header";
 import { PromptLibrary } from "@/features/workflow/prompt-library";
 
 export function WorkflowPage() {
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Workflow</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Workflow" subtitle="Prompts and briefs for working with AI" />
       <PromptLibrary />
     </div>
   );

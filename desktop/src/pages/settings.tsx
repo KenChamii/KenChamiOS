@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { GamesKeyCard } from "@/features/media/games-key-card";
 import { SourceCredits } from "@/features/media/source-credits";
@@ -13,8 +14,8 @@ export function SettingsPage() {
   const { data, error } = useQuery({ queryKey: ["app-info"], queryFn: getAppInfo });
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">Settings</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Settings" subtitle="Sync, timers, reminders and API keys" />
       <Card>
         <h2 className="mb-3 font-medium">About</h2>
         {error ? (

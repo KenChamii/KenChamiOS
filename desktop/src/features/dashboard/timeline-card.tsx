@@ -26,7 +26,7 @@ export function TimelineCard({ now }: { now: number }) {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Timeline</h2>
+      <h2 className="font-semibold tracking-tight">Timeline</h2>
       <Tabs
         tabs={FILTERS}
         value={filter}

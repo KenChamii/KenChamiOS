@@ -12,7 +12,7 @@ export function StatsCard({ now }: { now: number }) {
 
   return (
     <Card className="flex flex-col gap-4">
-      <h2 className="font-medium">Stats</h2>
+      <h2 className="font-semibold tracking-tight">Stats</h2>
       {error && <p className="text-sm text-destructive">{errorMessage(error)}</p>}
       <section className="flex flex-col gap-2">
         <h3 className="text-sm text-muted-foreground">Focus per project this week</h3>

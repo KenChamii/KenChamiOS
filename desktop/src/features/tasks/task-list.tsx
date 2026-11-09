@@ -15,7 +15,7 @@ export function TaskList({ projectId, tasks, onSelect }: TaskListProps) {
   const move = useMoveTask(projectId);
 
   return (
-    <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-card">
+    <ul className="flex flex-col divide-y divide-border rounded-2xl bg-card shadow-soft">
       {tasks.map((task) => {
         const done = task.status === "done";
         return (

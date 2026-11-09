@@ -21,7 +21,7 @@ function ReminderSettingsForm({ saved }: { saved: number }) {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Reminders</h2>
+      <h2 className="font-semibold tracking-tight">Reminders</h2>
       <p className="text-sm text-muted-foreground">
         The dashboard suggests a save point for a project in Plan, Build or Review after this many
         days without work and without a save point. Snoozing hides a project for the same time.

@@ -44,12 +44,12 @@ export function TimeTab({ projectId }: { projectId: string }) {
       </div>
 
       <Card className="flex flex-col gap-3">
-        <h2 className="font-medium">Last 14 days</h2>
+        <h2 className="font-semibold tracking-tight">Last 14 days</h2>
         <DayChart days={summary.days} />
       </Card>
 
       <Card className="flex flex-col gap-3">
-        <h2 className="font-medium">Per task</h2>
+        <h2 className="font-semibold tracking-tight">Per task</h2>
         {summary.perTask.length === 0 ? (
           <p className="text-sm text-muted-foreground">No time logged yet.</p>
         ) : (
@@ -66,7 +66,7 @@ export function TimeTab({ projectId }: { projectId: string }) {
 
       <Card className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Entries</h2>
+          <h2 className="font-semibold tracking-tight">Entries</h2>
           <Button size="sm" variant="outline" onClick={() => setEditing("new")}>
             Add entry
           </Button>

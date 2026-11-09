@@ -1,7 +1,10 @@
 package com.kenchami.kenchamios.ui.today
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Checkbox
@@ -11,16 +14,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.context.ChecklistRun
 import com.kenchami.kenchamios.data.repo.nextLabel
 import com.kenchami.kenchamios.ui.common.AppScreen
 import com.kenchami.kenchamios.ui.common.EmptyText
+import com.kenchami.kenchamios.ui.common.HeroStat
+import com.kenchami.kenchamios.ui.common.LabelValueRow
 import com.kenchami.kenchamios.ui.common.QuickAddButton
 import com.kenchami.kenchamios.ui.common.RulesButton
 import com.kenchami.kenchamios.ui.common.SectionTitle
 import com.kenchami.kenchamios.ui.common.SyncButton
+import com.kenchami.kenchamios.ui.common.TonalCard
 import com.kenchami.kenchamios.ui.common.label
 import com.kenchami.kenchamios.ui.common.timeAgo
 import com.kenchami.kenchamios.ui.media.AddOneButton
@@ -67,6 +74,7 @@ fun TodayContent(
     checklistActions: ChecklistActions = ChecklistActions({ _, _ -> }, {}),
 ) {
     LazyColumn(contentPadding = padding, modifier = Modifier.testTag("today")) {
+        item { TodayHero(state) }
         focus?.let { card ->
             item { FocusCardView(card, System::currentTimeMillis, timer.onPause, timer.onResume, timer.onStop) }
         }
@@ -111,6 +119,21 @@ fun TodayContent(
                 headlineContent = { Text(row.summary) },
                 supportingContent = { Text(timeAgo(row.at, state.now)) },
             )
+        }
+    }
+}
+
+@Composable
+private fun TodayHero(state: TodayState) {
+    val overdue = state.due.count { it.dueAt < state.bounds.start }
+    Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+        HeroStat((state.due.size - overdue).toString(), "due today")
+        TonalCard(Modifier.fillMaxWidth().padding(top = 16.dp)) {
+            Column(Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                LabelValueRow("Overdue", overdue.toString())
+                LabelValueRow("In progress", state.continueItems.size.toString())
+                LabelValueRow("Active projects", state.projects.size.toString())
+            }
         }
     }
 }

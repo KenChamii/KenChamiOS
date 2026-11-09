@@ -43,5 +43,5 @@ export function MarkdownEditor({ initialValue, onChange }: MarkdownEditorProps) 
     return () => view.destroy();
   }, [startValue]);
 
-  return <div ref={container} className="overflow-hidden rounded-md border border-border" />;
+  return <div ref={container} className="overflow-hidden rounded-xl" />;
 }

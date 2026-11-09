@@ -21,9 +21,9 @@ export function StagePipeline({ stage, disabled, onChange }: StagePipelineProps)
             aria-current={value === stage ? "step" : undefined}
             onClick={() => onChange(value)}
             className={cn(
-              "flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm hover:bg-muted disabled:opacity-50",
+              "flex items-center gap-1.5 rounded-full bg-muted px-3.5 py-1 text-sm transition-colors duration-(--duration-fast) hover:bg-border disabled:opacity-50",
               index < current && "text-muted-foreground",
-              value === stage && "border-primary bg-primary font-medium text-primary-foreground",
+              value === stage && "bg-primary font-medium text-primary-foreground",
             )}
           >
             {index < current && <Check size={14} />}

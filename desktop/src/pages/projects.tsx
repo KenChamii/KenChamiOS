@@ -1,6 +1,7 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -27,14 +28,13 @@ export function ProjectsPage() {
   const isFiltering = search !== "" || tag !== "";
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Projects</h1>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Projects" subtitle="Everything you are building">
         <Button onClick={() => setDialogOpen(true)}>
           <Plus size={16} />
           New project
         </Button>
-      </div>
+      </PageHeader>
 
       <div className="flex flex-wrap items-center gap-3">
         <Input
@@ -75,7 +75,7 @@ export function ProjectsPage() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-6">
           {projects.data?.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}

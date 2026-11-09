@@ -23,7 +23,7 @@ export function SyncCard() {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Phone sync</h2>
+      <h2 className="font-semibold tracking-tight">Phone sync</h2>
       <p className="text-sm text-muted-foreground">
         Keeps this PC and your phone in sync over your home Wi-Fi. Nothing leaves your network. The
         phone starts every sync: every 15 minutes and after each change.

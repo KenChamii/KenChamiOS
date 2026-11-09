@@ -72,7 +72,7 @@ function Column({ status, tasks, onSelect }: ColumnProps) {
     <section
       ref={setNodeRef}
       className={cn(
-        "flex min-h-40 flex-col gap-2 rounded-lg bg-muted p-2",
+        "flex min-h-40 flex-col gap-2 rounded-2xl bg-muted p-2",
         isOver && "ring-2 ring-primary",
       )}
     >

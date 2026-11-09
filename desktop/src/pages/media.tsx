@@ -1,5 +1,6 @@
 import { ArrowDownUp, Dices, Plus } from "lucide-react";
 import { useState } from "react";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { EntrySheet } from "@/features/media/entry-sheet";
 import {
@@ -33,24 +34,21 @@ export function MediaPage() {
   const isFiltering = isFiltered(filter);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Media</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setTransferOpen(true)}>
-            <ArrowDownUp size={16} />
-            Import / export
-          </Button>
-          <Button variant="outline" onClick={() => setPickerOpen(true)}>
-            <Dices size={16} />
-            What next?
-          </Button>
-          <Button onClick={() => setSearchOpen(true)}>
-            <Plus size={16} />
-            Add
-          </Button>
-        </div>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Media" subtitle="Your library and what to watch, read or play next">
+        <Button variant="outline" onClick={() => setTransferOpen(true)}>
+          <ArrowDownUp size={16} />
+          Import / export
+        </Button>
+        <Button variant="outline" onClick={() => setPickerOpen(true)}>
+          <Dices size={16} />
+          What next?
+        </Button>
+        <Button onClick={() => setSearchOpen(true)}>
+          <Plus size={16} />
+          Add
+        </Button>
+      </PageHeader>
 
       <LibraryToolbar
         filter={filter}

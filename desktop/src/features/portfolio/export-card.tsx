@@ -14,7 +14,7 @@ export function ExportCard({ project }: { project: ProjectSummary }) {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Portfolio page</h2>
+      <h2 className="font-semibold tracking-tight">Portfolio page</h2>
       <p className="text-sm text-muted-foreground">
         {project.stage === "done"
           ? "The project is done. Export the write-up with its screenshots."

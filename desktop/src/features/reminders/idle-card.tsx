@@ -16,7 +16,7 @@ export function IdleCard() {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Worth a save point</h2>
+      <h2 className="font-semibold tracking-tight">Worth a save point</h2>
       <p className="text-sm text-muted-foreground">
         These projects went quiet after your last save point. Write down where you stopped.
       </p>

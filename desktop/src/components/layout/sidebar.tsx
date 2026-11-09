@@ -13,9 +13,9 @@ const links = [
 
 export function Sidebar() {
   return (
-    <aside className="flex w-56 flex-col justify-between border-r border-border bg-card p-3">
+    <aside className="flex w-52 flex-col justify-between p-4">
       <nav className="flex flex-col gap-1">
-        <span className="px-3 py-2 text-sm font-semibold">KenChamiOs</span>
+        <span className="px-3 pb-5 pt-2 text-lg font-bold tracking-tight">KenChamiOs</span>
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -23,13 +23,23 @@ export function Sidebar() {
             end={to === "/"}
             className={({ isActive }) =>
               cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm hover:bg-muted",
-                isActive && "bg-muted font-medium text-primary",
+                "relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-[background-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out) hover:text-foreground",
+                isActive && "bg-card font-medium text-foreground shadow-soft",
               )
             }
           >
-            <Icon size={18} />
-            {label}
+            {({ isActive }) => (
+              <>
+                <span
+                  className={cn(
+                    "absolute -left-1 h-4 w-1 origin-center scale-y-0 rounded-full bg-accent transition-transform duration-(--duration-base) ease-(--ease-out)",
+                    isActive && "scale-y-100",
+                  )}
+                />
+                <Icon size={18} />
+                {label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

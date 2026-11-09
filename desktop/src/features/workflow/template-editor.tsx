@@ -48,7 +48,7 @@ export function TemplateEditor({ template }: { template: ExportTemplate }) {
       {preview.data !== undefined && (
         <div className="flex flex-col gap-1">
           <span className="text-sm font-medium">Preview with a sample project</span>
-          <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted p-3 text-xs">
+          <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-xl bg-muted p-3 text-xs">
             {preview.data}
           </pre>
         </div>

@@ -36,7 +36,7 @@ export function ProjectPage() {
   if (!project.data) return null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Link
           to="/projects"
@@ -46,7 +46,7 @@ export function ProjectPage() {
           Projects
         </Link>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{project.data.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{project.data.name}</h1>
           <Badge>{STAGE_LABELS[project.data.stage]}</Badge>
           {project.data.archived && <Badge>Archived</Badge>}
         </div>

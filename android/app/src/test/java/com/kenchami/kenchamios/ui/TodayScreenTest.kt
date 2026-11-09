@@ -2,10 +2,13 @@ package com.kenchami.kenchamios.ui
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import com.kenchami.kenchamios.core.DayBounds
 import com.kenchami.kenchamios.data.db.DueTask
@@ -34,6 +37,9 @@ class TodayScreenTest {
     private val bounds = DayBounds(start = 10_000, end = 20_000)
     private val noTimer = TimerActions({}, {}, {})
 
+    // the hero pushes the lists below the first screenful
+    private fun scrollTo(text: String) = compose.onNodeWithTag("today").performScrollToNode(hasText(text))
+
     private fun state(due: List<DueTask> = emptyList(), entries: List<LibraryEntry> = emptyList()) =
         TodayState(bounds, now = 15_000, due = due, continueItems = entries, projects = listOf(projectSummary()), activity = emptyList())
 
@@ -44,6 +50,7 @@ class TodayScreenTest {
 
         compose.onNodeWithText("Write docs").assertIsDisplayed()
         compose.onNodeWithText("Demo - overdue").assertIsDisplayed()
+        scrollTo("Build - 1/3 tasks")
         compose.onNodeWithText("Build - 1/3 tasks").assertIsDisplayed()
     }
 
@@ -68,6 +75,7 @@ class TodayScreenTest {
         }
 
         compose.onNodeWithText("Anime - Episode 4").assertIsDisplayed()
+        scrollTo("+1")
         compose.onNodeWithText("+1").performClick()
 
         assertEquals("e1", added)
@@ -77,6 +85,7 @@ class TodayScreenTest {
     fun emptyDayShowsTheEmptyMessages() {
         compose.setContent { TodayContent(state(), null, noTimer, {}, {}, {}, {}, PaddingValues(0.dp)) }
 
+        scrollTo("Nothing in progress.")
         compose.onNodeWithText("Nothing due or overdue.").assertIsDisplayed()
         compose.onNodeWithText("Nothing in progress.").assertIsDisplayed()
     }

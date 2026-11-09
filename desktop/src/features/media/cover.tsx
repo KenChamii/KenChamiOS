@@ -15,7 +15,7 @@ export function Cover({ title, path, url, className }: CoverProps) {
   return (
     <div
       className={cn(
-        "flex aspect-[2/3] items-center justify-center overflow-hidden rounded-md bg-muted",
+        "flex aspect-[2/3] items-center justify-center overflow-hidden rounded-xl bg-muted",
         className,
       )}
     >

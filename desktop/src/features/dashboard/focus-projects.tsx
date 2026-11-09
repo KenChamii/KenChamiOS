@@ -17,7 +17,7 @@ export function FocusProjects({ projects }: { projects: ProjectFocus[] }) {
           </div>
           <div className="h-1.5 overflow-hidden rounded-full bg-muted">
             <div
-              className="h-full bg-primary"
+              className="h-full rounded-full bg-accent"
               style={{
                 width: `${(project.seconds / peak) * 100}%`,
                 backgroundColor: project.color ?? undefined,

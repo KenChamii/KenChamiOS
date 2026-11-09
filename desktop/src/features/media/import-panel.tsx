@@ -70,7 +70,7 @@ export function ImportPanel() {
             {data.new_count} new, {data.duplicate_count} already in the library,{" "}
             {data.rejected.length} rejected.
           </p>
-          <ul className="max-h-48 divide-y divide-border overflow-auto rounded-md border border-border">
+          <ul className="max-h-48 divide-y divide-border overflow-auto rounded-xl bg-muted">
             {data.rows.map((row) => (
               <li key={row.line} className="flex items-center gap-2 px-3 py-1.5 text-sm">
                 <span className="min-w-0 flex-1 truncate">{row.title}</span>

@@ -26,7 +26,7 @@ export function BriefCard({ project }: { project: ProjectSummary }) {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Project brief</h2>
+      <h2 className="font-semibold tracking-tight">Project brief</h2>
       <p className="text-sm text-muted-foreground">
         A summary of the project for a coding assistant: plan, open tasks and the last save point.
       </p>

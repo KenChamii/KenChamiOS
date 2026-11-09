@@ -5,7 +5,7 @@ const MARKERS = { equal: " ", insert: "+", delete: "-" } as const;
 
 export function DiffView({ lines }: { lines: DiffLine[] }) {
   return (
-    <pre className="max-h-96 overflow-auto rounded-md border border-border bg-muted p-2 font-mono text-xs">
+    <pre className="max-h-96 overflow-auto rounded-xl bg-muted p-2 font-mono text-xs">
       {lines.map((line, index) => (
         <div
           key={index}

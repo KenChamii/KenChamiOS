@@ -10,11 +10,11 @@ export function ProjectCard({ project }: { project: ProjectSummary }) {
   return (
     <Link to={`/projects/${project.id}`} className="block">
       <Card
-        className="flex h-full flex-col gap-3 border-t-4 hover:bg-muted"
+        className="flex h-full flex-col gap-3 border-t-4 transition-[transform,box-shadow] duration-(--duration-base) ease-(--ease-out) hover:-translate-y-0.5"
         style={{ borderTopColor: project.color ?? undefined }}
       >
         <div className="flex items-start justify-between gap-2">
-          <h2 className="font-medium">{project.name}</h2>
+          <h2 className="font-semibold tracking-tight">{project.name}</h2>
           <Badge>{STAGE_LABELS[project.stage]}</Badge>
         </div>
         {project.description && (
