@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.kenchami.kenchamios.data.model.TimerPhase
 import com.kenchami.kenchamios.data.model.TimerStatus
 import com.kenchami.kenchamios.timer.TimerState
+import com.kenchami.kenchamios.ui.common.TonalCard
 import com.kenchami.kenchamios.ui.common.formatClock
 import kotlinx.coroutines.delay
 
@@ -35,24 +36,30 @@ fun FocusCardView(card: FocusCard, now: () -> Long, onPause: () -> Unit, onResum
         }
     }
     val timer = card.timer
-    Card(Modifier.fillMaxWidth().padding(16.dp).testTag("focus-card")) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    TonalCard(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp).testTag("focus-card")) {
+        Column(Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                when (timer.phase) {
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                text = when (timer.phase) {
                     TimerPhase.Focus -> "Focus"
                     TimerPhase.Break -> "Break"
                     TimerPhase.LongBreak -> "Long break"
                 },
             )
-            Text(formatClock(timer.remainingS(current)), modifier = Modifier.testTag("focus-clock"))
-            Text(card.taskTitle)
+            Text(
+                formatClock(timer.remainingS(current)),
+                style = MaterialTheme.typography.displayLarge,
+                modifier = Modifier.testTag("focus-clock"),
+            )
+            Text(card.taskTitle, style = MaterialTheme.typography.titleMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (timer.status == TimerStatus.Running) {
                     Button(onClick = onPause) { Text("Pause") }
                 } else {
                     Button(onClick = onResume) { Text("Resume") }
                 }
-                OutlinedButton(onClick = onStop) { Text("Stop") }
+                FilledTonalButton(onClick = onStop) { Text("Stop") }
             }
         }
     }
