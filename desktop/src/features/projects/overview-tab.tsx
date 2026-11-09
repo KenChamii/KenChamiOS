@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { useDeleteProject, useSetStage, useUpdateProject } from "@/hooks/use-projects";
 import type { ProjectSummary } from "@/lib/api/projects";
 import { GitCard } from "@/features/savepoints/git-card";
+import { BriefCard } from "@/features/workflow/brief-card";
 import { ResumePanel } from "@/features/savepoints/resume-panel";
 import { errorMessage } from "@/lib/errors";
 import { EditProjectDialog } from "./project-dialog";
@@ -36,6 +37,8 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
       <ResumePanel project={project} />
 
       <GitCard projectId={project.id} />
+
+      <BriefCard project={project} />
 
       <Card className="flex flex-col gap-3">
         <h2 className="font-medium">Details</h2>

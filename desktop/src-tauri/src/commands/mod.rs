@@ -1,7 +1,11 @@
 pub mod app_info;
+pub mod brief;
 pub mod checklist;
 pub mod docs;
 pub mod git;
 pub mod projects;
+pub mod prompts;
 pub mod save_points;
+pub mod session_notes;
 pub mod tasks;
+pub mod templates;

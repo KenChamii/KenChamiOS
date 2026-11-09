@@ -7,10 +7,12 @@ import { timeAgo } from "@/lib/dates";
 import { commitLabel } from "./meta";
 import { SavePointBody } from "./save-point-body";
 import { SavePointDialog } from "./save-point-dialog";
+import { SessionNoteDialog } from "./session-note-dialog";
 
 export function ResumePanel({ project }: { project: ProjectSummary }) {
   const savePoints = useSavePoints(project.id);
   const [creating, setCreating] = useState(false);
+  const [pastingNote, setPastingNote] = useState(false);
   const last = savePoints.data?.[0];
   const git = last && commitLabel(last.git_branch, last.git_commit);
 
@@ -18,9 +20,14 @@ export function ResumePanel({ project }: { project: ProjectSummary }) {
     <Card className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-medium">Resume</h2>
-        <Button variant="outline" size="sm" onClick={() => setCreating(true)}>
-          Create save point
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => setPastingNote(true)}>
+            Paste session note
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => setCreating(true)}>
+            Create save point
+          </Button>
+        </div>
       </div>
       {last ? (
         <>
@@ -41,6 +48,7 @@ export function ResumePanel({ project }: { project: ProjectSummary }) {
         </p>
       )}
       <SavePointDialog project={project} open={creating} onOpenChange={setCreating} />
+      <SessionNoteDialog project={project} open={pastingNote} onOpenChange={setPastingNote} />
     </Card>
   );
 }

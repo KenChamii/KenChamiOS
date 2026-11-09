@@ -12,6 +12,8 @@ pub enum AppError {
     Git(#[from] git2::Error),
     #[error("invalid stored value: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("template error: {0}")]
+    Template(#[from] minijinja::Error),
     #[error("{0} not found")]
     NotFound(&'static str),
     #[error("{0}")]
@@ -28,6 +30,7 @@ impl AppError {
             Self::Io(_) => "io",
             Self::Json(_) => "json",
             Self::Git(_) => "git",
+            Self::Template(_) => "template",
             Self::Tauri(_) => "tauri",
             Self::NotFound(_) => "not_found",
             Self::Invalid(_) => "invalid",

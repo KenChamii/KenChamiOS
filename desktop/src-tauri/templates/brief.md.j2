@@ -1,0 +1,39 @@
+# {{ project.name }}
+{% if project.description %}
+{{ project.description }}
+{% endif %}
+Stage: {{ project.stage }}{% if git.branch %}, branch `{{ git.branch }}`{% endif %}
+{% if docs.idea %}
+## Idea
+
+{{ docs.idea }}
+{% endif %}{% if docs.plan %}
+## Plan
+
+{{ docs.plan }}
+{% endif %}
+## Open tasks
+{% for task in tasks %}
+- {{ task.title }} ({{ task.status }}, {{ task.priority }})
+{%- if task.acceptance %}
+
+  Acceptance criteria:
+
+{{ task.acceptance | indent(2, true) }}
+{%- endif %}
+{%- else %}
+No open tasks.
+{%- endfor %}
+{% if save_point %}
+## Last save point
+
+{{ save_point.note }}
+{% if save_point.done %}
+Done:
+
+{{ save_point.done }}
+{% endif %}{% if save_point.next %}
+Next:
+
+{{ save_point.next }}
+{% endif %}{% endif %}

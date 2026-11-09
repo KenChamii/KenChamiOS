@@ -25,11 +25,22 @@ pub async fn get(db: &Db, id: &str) -> AppResult<Task> {
 
 /// New tasks start in To do, at the end of their siblings.
 pub async fn create(db: &Db, input: TaskCreate) -> AppResult<Task> {
+    let mut tx = db.pool.begin().await?;
+    let id = insert(&mut tx, db, &input).await?;
+    tx.commit().await?;
+    get(db, &id).await
+}
+
+// takes a connection so callers can add a task inside their own transaction
+pub(super) async fn insert(
+    conn: &mut SqliteConnection,
+    db: &Db,
+    input: &TaskCreate,
+) -> AppResult<String> {
     let title = clean_title(&input.title)?;
     let id = new_id();
-    let mut tx = db.pool.begin().await?;
     let last = last_key(
-        &mut tx,
+        conn,
         &input.project_id,
         input.parent_id.as_deref(),
         TaskStatus::Todo,
@@ -51,15 +62,15 @@ pub async fn create(db: &Db, input: TaskCreate) -> AppResult<Task> {
     .bind(&title)
     .bind(&input.body_md)
     .bind(&input.acceptance_md)
-    .bind(Json(tags::clean(input.related_files)))
+    .bind(Json(tags::clean(input.related_files.clone())))
     .bind(input.priority)
     .bind(input.due_at)
     .bind(order_key::between(last.as_deref().unwrap_or(""), None))
-    .bind(Json(tags::clean(input.tags)))
-    .execute(&mut *tx)
+    .bind(Json(tags::clean(input.tags.clone())))
+    .execute(&mut *conn)
     .await?;
     activity::record(
-        &mut tx,
+        conn,
         db,
         "task.created",
         "task",
@@ -67,8 +78,7 @@ pub async fn create(db: &Db, input: TaskCreate) -> AppResult<Task> {
         &format!("Added task {title}"),
     )
     .await?;
-    tx.commit().await?;
-    get(db, &id).await
+    Ok(id)
 }
 
 pub async fn update(db: &Db, id: &str, input: TaskUpdate) -> AppResult<Task> {
@@ -144,10 +154,23 @@ pub async fn move_to(
     before_id: Option<&str>,
 ) -> AppResult<Task> {
     let mut tx = db.pool.begin().await?;
+    move_in(&mut tx, db, id, status, before_id).await?;
+    tx.commit().await?;
+    get(db, id).await
+}
+
+// takes a connection so callers can move a task inside their own transaction
+pub(super) async fn move_in(
+    conn: &mut SqliteConnection,
+    db: &Db,
+    id: &str,
+    status: TaskStatus,
+    before_id: Option<&str>,
+) -> AppResult<()> {
     let (project_id, parent_id): (String, Option<String>) =
         sqlx::query_as("SELECT project_id, parent_id FROM tasks WHERE id = ? AND deleted = 0")
             .bind(id)
-            .fetch_optional(&mut *tx)
+            .fetch_optional(&mut *conn)
             .await?
             .ok_or(AppError::NotFound("task"))?;
 
@@ -155,14 +178,14 @@ pub async fn move_to(
         Some(before_id) => Some(
             sqlx::query_scalar("SELECT order_key FROM tasks WHERE id = ? AND deleted = 0")
                 .bind(before_id)
-                .fetch_optional(&mut *tx)
+                .fetch_optional(&mut *conn)
                 .await?
                 .ok_or(AppError::NotFound("task"))?,
         ),
         None => None,
     };
     let previous_key = last_key(
-        &mut tx,
+        conn,
         &project_id,
         parent_id.as_deref(),
         status,
@@ -180,10 +203,10 @@ pub async fn move_to(
     .bind(db.stamp())
     .bind(&db.device_id)
     .bind(id)
-    .execute(&mut *tx)
+    .execute(&mut *conn)
     .await?;
     activity::record(
-        &mut tx,
+        conn,
         db,
         "task.moved",
         "task",
@@ -191,8 +214,7 @@ pub async fn move_to(
         &format!("Moved task to {}", status.as_str()),
     )
     .await?;
-    tx.commit().await?;
-    get(db, id).await
+    Ok(())
 }
 
 fn clean_title(title: &str) -> AppResult<String> {

@@ -3,9 +3,12 @@ pub mod checklist;
 pub mod docs;
 mod handle;
 pub mod projects;
+pub mod prompts;
 pub mod save_points;
+pub mod session_notes;
 pub mod settings;
 pub mod tasks;
+pub mod templates;
 
 pub use handle::Db;
 
