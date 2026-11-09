@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ContinueRow } from "@/features/dashboard/continue-row";
+import { RecommendationsCard } from "@/features/dashboard/recommendations-card";
+import { IdleCard } from "@/features/reminders/idle-card";
 import { StatsCard } from "@/features/dashboard/stats-card";
 import { TimelineCard } from "@/features/dashboard/timeline-card";
 import { TodayCard } from "@/features/dashboard/today-card";
@@ -17,6 +19,7 @@ export function DashboardPage() {
           Yearly recap
         </Link>
       </div>
+      <IdleCard />
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <TodayCard now={now} />
         <ContinueRow />
@@ -25,6 +28,7 @@ export function DashboardPage() {
         <WeeklyRecapCard now={now} />
         <StatsCard now={now} />
       </div>
+      <RecommendationsCard />
       <TimelineCard now={now} />
     </div>
   );

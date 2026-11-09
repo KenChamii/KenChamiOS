@@ -7,6 +7,7 @@ import {
   deleteMedia,
   gamesKeyStatus,
   listMedia,
+  listRecommendations,
   searchMedia,
   setGamesKey,
   setTmdbToken,
@@ -17,6 +18,13 @@ import {
   type MediaStatus,
   type MediaType,
 } from "@/lib/api/media";
+
+export function useRecommendations(mediaType: MediaType | null) {
+  return useQuery({
+    queryKey: ["media", "recommendations", mediaType],
+    queryFn: () => listRecommendations(mediaType),
+  });
+}
 
 export function useMedia() {
   return useQuery({ queryKey: ["media"], queryFn: listMedia });
