@@ -1,9 +1,13 @@
 use crate::db::media;
-use crate::domain::media::{EntryInput, LibraryEntry};
+use crate::db::now_ms;
+use crate::domain::media::{EntryInput, LibraryEntry, MediaType};
+use crate::domain::recommend::{Recommendation, recommend};
 use crate::error::AppResult;
 use crate::media::covers;
 use crate::state::AppState;
 use tauri::State;
+
+const RECOMMENDATIONS: usize = 10;
 
 /// Adds the absolute path of the cached cover, which the ui turns into a file address.
 pub fn with_cover(state: &AppState, mut entry: LibraryEntry) -> LibraryEntry {
@@ -47,4 +51,14 @@ pub async fn media_set_progress(
 #[tauri::command]
 pub async fn media_delete(state: State<'_, AppState>, id: String) -> AppResult<()> {
     media::delete(&state.db, &id).await
+}
+
+/// Planned entries that match the user's own ratings, optionally of one type.
+#[tauri::command]
+pub async fn media_recommendations(
+    state: State<'_, AppState>,
+    media_type: Option<MediaType>,
+) -> AppResult<Vec<Recommendation>> {
+    let entries = media::list(&state.db).await?;
+    Ok(recommend(&entries, now_ms(), media_type, RECOMMENDATIONS))
 }
