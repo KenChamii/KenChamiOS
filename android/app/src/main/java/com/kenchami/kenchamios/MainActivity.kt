@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
+import com.kenchami.kenchamios.context.ContextCoordinator
 import com.kenchami.kenchamios.sync.SyncTrigger
 import com.kenchami.kenchamios.timer.TimerController
 import com.kenchami.kenchamios.timer.TimerService
@@ -20,9 +21,12 @@ class MainActivity : ComponentActivity() {
 
     @Inject lateinit var syncTrigger: SyncTrigger
 
+    @Inject lateinit var contextRules: ContextCoordinator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         syncTrigger.start()
+        lifecycleScope.launch { contextRules.refresh() }
         lifecycleScope.launch {
             timer.recover()
             if (timer.state.value != null) TimerService.start(this@MainActivity)

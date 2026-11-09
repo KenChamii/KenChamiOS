@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.androidx.work.runtime)
     implementation(libs.gms.code.scanner)
+    implementation(libs.gms.location)
     implementation(libs.hilt.android)
     ksp(libs.androidx.room.compiler)
     ksp(libs.hilt.compiler)

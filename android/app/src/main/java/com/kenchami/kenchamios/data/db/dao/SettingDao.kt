@@ -28,6 +28,9 @@ interface SettingDao {
     @Query("SELECT key, value_json AS valueJson FROM settings WHERE key LIKE :prefix || '%' AND deleted = 0")
     fun observeWithPrefix(prefix: String): Flow<List<SettingValue>>
 
+    @Query("DELETE FROM settings WHERE key = :key")
+    suspend fun delete(key: String)
+
     @Query("DELETE FROM settings WHERE key LIKE :prefix || '%'")
     suspend fun deleteWithPrefix(prefix: String)
 }
