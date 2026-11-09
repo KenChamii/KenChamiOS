@@ -11,5 +11,6 @@ export const TEMPLATE_HELP: Record<TemplateKind, string> = {
     "Variables: project, docs.idea, docs.plan, tasks (open), save_point, git. Written into the target file of each project.",
   task_prompt:
     "Variables: task (title, body, acceptance, related_files), project, git. Used by Copy as prompt.",
-  portfolio: "",
+  portfolio:
+    "Variables: project, docs.idea, docs.plan, portfolio (features, timeline, time, screenshots, links). Used by Export portfolio page.",
 };

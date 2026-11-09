@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs } from "@/components/ui/tabs";
 import { DocTab } from "@/features/docs/doc-tab";
 import { STAGE_LABELS } from "@/features/projects/meta";
+import { PortfolioTab } from "@/features/portfolio/portfolio-tab";
 import { OverviewTab } from "@/features/projects/overview-tab";
 import { SavePointsTab } from "@/features/savepoints/save-points-tab";
+import { TimeTab } from "@/features/focus/time-tab";
 import { TasksTab } from "@/features/tasks/tasks-tab";
 import { useProject } from "@/hooks/use-projects";
 import { errorMessage } from "@/lib/errors";
@@ -18,6 +20,7 @@ const TABS = [
   { id: "tasks", label: "Tasks" },
   { id: "save-points", label: "Save points" },
   { id: "time", label: "Time" },
+  { id: "portfolio", label: "Portfolio" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -56,9 +59,8 @@ export function ProjectPage() {
       {tab === "plan" && <DocTab projectId={id} kind="plan" />}
       {tab === "tasks" && <TasksTab projectId={id} />}
       {tab === "save-points" && <SavePointsTab project={project.data} />}
-      {tab === "time" && (
-        <p className="text-muted-foreground">Time tracking is not available yet.</p>
-      )}
+      {tab === "time" && <TimeTab projectId={id} />}
+      {tab === "portfolio" && <PortfolioTab project={project.data} />}
     </div>
   );
 }
