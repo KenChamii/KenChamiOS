@@ -18,7 +18,8 @@
         "priority": "high",
         "due_at": null,
         "order_key": "a0",
-        "tags": "[]"
+        "tags": "[]",
+        "recurrence": null
       }
     },
     {
@@ -39,7 +40,8 @@
         "priority": "high",
         "due_at": null,
         "order_key": "a0",
-        "tags": "[]"
+        "tags": "[]",
+        "recurrence": null
       }
     }
   ],

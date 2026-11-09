@@ -1,6 +1,9 @@
 use super::activity;
 use super::handle::{Db, new_id, now_ms, require_changed};
-use crate::domain::{Task, TaskCreate, TaskStatus, TaskUpdate, order_key, tags};
+use super::projects::ensure_inbox;
+use crate::domain::project::INBOX_ID;
+use crate::domain::task::TaskMoved;
+use crate::domain::{Task, TaskCreate, TaskStatus, TaskUpdate, order_key, recurrence, tags};
 use crate::error::{AppError, AppResult};
 use sqlx::SqliteConnection;
 use sqlx::types::Json;
@@ -38,6 +41,10 @@ pub(super) async fn insert(
     input: &TaskCreate,
 ) -> AppResult<String> {
     let title = clean_title(&input.title)?;
+    let rule = recurrence::clean(input.recurrence.clone())?;
+    if input.project_id == INBOX_ID {
+        ensure_inbox(conn, db).await?;
+    }
     let id = new_id();
     let last = last_key(
         conn,
@@ -50,8 +57,8 @@ pub(super) async fn insert(
     sqlx::query(
         "INSERT INTO tasks
             (id, created_at, updated_at, device_id, project_id, parent_id, title, body_md,
-             acceptance_md, related_files, priority, due_at, order_key, tags)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+             acceptance_md, related_files, priority, due_at, order_key, tags, recurrence)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
     .bind(&id)
     .bind(now_ms())
@@ -67,6 +74,7 @@ pub(super) async fn insert(
     .bind(input.due_at)
     .bind(order_key::between(last.as_deref().unwrap_or(""), None))
     .bind(Json(tags::clean(input.tags.clone())))
+    .bind(rule)
     .execute(&mut *conn)
     .await?;
     activity::record(
@@ -83,11 +91,12 @@ pub(super) async fn insert(
 
 pub async fn update(db: &Db, id: &str, input: TaskUpdate) -> AppResult<Task> {
     let title = clean_title(&input.title)?;
+    let rule = recurrence::clean(input.recurrence)?;
     let mut tx = db.pool.begin().await?;
     let result = sqlx::query(
         "UPDATE tasks
             SET title = ?, body_md = ?, acceptance_md = ?, related_files = ?, priority = ?,
-                due_at = ?, tags = ?, updated_at = ?, device_id = ?
+                due_at = ?, tags = ?, recurrence = ?, updated_at = ?, device_id = ?
           WHERE id = ? AND deleted = 0",
     )
     .bind(&title)
@@ -97,6 +106,7 @@ pub async fn update(db: &Db, id: &str, input: TaskUpdate) -> AppResult<Task> {
     .bind(input.priority)
     .bind(input.due_at)
     .bind(Json(tags::clean(input.tags)))
+    .bind(rule)
     .bind(db.stamp())
     .bind(&db.device_id)
     .bind(id)
@@ -147,32 +157,44 @@ pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
 }
 
 /// Puts the task in `status`, right before `before_id`, or last when it is `None`.
+/// Completing a repeating task adds its next occurrence, due at `next_due_at`;
+/// the ui computes that date because it knows the local calendar.
 pub async fn move_to(
     db: &Db,
     id: &str,
     status: TaskStatus,
     before_id: Option<&str>,
-) -> AppResult<Task> {
+    next_due_at: Option<i64>,
+) -> AppResult<TaskMoved> {
     let mut tx = db.pool.begin().await?;
-    move_in(&mut tx, db, id, status, before_id).await?;
+    let next_id = move_in(&mut tx, db, id, status, before_id, next_due_at).await?;
     tx.commit().await?;
-    get(db, id).await
+    let next = match next_id {
+        Some(next_id) => Some(get(db, &next_id).await?),
+        None => None,
+    };
+    Ok(TaskMoved {
+        task: get(db, id).await?,
+        next,
+    })
 }
 
-// takes a connection so callers can move a task inside their own transaction
+// takes a connection so callers can move a task inside their own transaction;
+// returns the id of the next occurrence when one was added
 pub(super) async fn move_in(
     conn: &mut SqliteConnection,
     db: &Db,
     id: &str,
     status: TaskStatus,
     before_id: Option<&str>,
-) -> AppResult<()> {
-    let (project_id, parent_id): (String, Option<String>) =
-        sqlx::query_as("SELECT project_id, parent_id FROM tasks WHERE id = ? AND deleted = 0")
-            .bind(id)
-            .fetch_optional(&mut *conn)
-            .await?
-            .ok_or(AppError::NotFound("task"))?;
+    next_due_at: Option<i64>,
+) -> AppResult<Option<String>> {
+    let current: Task = sqlx::query_as("SELECT * FROM tasks WHERE id = ? AND deleted = 0")
+        .bind(id)
+        .fetch_optional(&mut *conn)
+        .await?
+        .ok_or(AppError::NotFound("task"))?;
+    let (project_id, parent_id) = (current.project_id.clone(), current.parent_id.clone());
 
     let next_key: Option<String> = match before_id {
         Some(before_id) => Some(
@@ -214,7 +236,80 @@ pub(super) async fn move_in(
         &format!("Moved task to {}", status.as_str()),
     )
     .await?;
-    Ok(())
+
+    let completed = status == TaskStatus::Done && current.status != TaskStatus::Done;
+    if !completed || current.recurrence.is_none() {
+        return Ok(None);
+    }
+    let next = TaskCreate {
+        project_id: current.project_id,
+        parent_id: current.parent_id,
+        title: current.title,
+        body_md: current.body_md,
+        acceptance_md: current.acceptance_md,
+        related_files: current.related_files.0,
+        priority: current.priority,
+        due_at: next_due_at,
+        tags: current.tags.0,
+        recurrence: current.recurrence,
+    };
+    insert(conn, db, &next).await.map(Some)
+}
+
+/// Moves a task with its subtasks to another project, last in its column.
+pub async fn move_to_project(db: &Db, id: &str, project_id: &str) -> AppResult<Task> {
+    let mut tx = db.pool.begin().await?;
+    let (title, parent_id, status): (String, Option<String>, TaskStatus) =
+        sqlx::query_as("SELECT title, parent_id, status FROM tasks WHERE id = ? AND deleted = 0")
+            .bind(id)
+            .fetch_optional(&mut *tx)
+            .await?
+            .ok_or(AppError::NotFound("task"))?;
+    if parent_id.is_some() {
+        return Err(AppError::Invalid("a subtask moves with its parent"));
+    }
+    if project_id == INBOX_ID {
+        ensure_inbox(&mut tx, db).await?;
+    }
+    let target: Option<String> =
+        sqlx::query_scalar("SELECT name FROM projects WHERE id = ? AND deleted = 0")
+            .bind(project_id)
+            .fetch_optional(&mut *tx)
+            .await?;
+    let target = target.ok_or(AppError::NotFound("project"))?;
+    let last = last_key(&mut tx, project_id, None, status, None).await?;
+    sqlx::query(
+        "UPDATE tasks SET project_id = ?, order_key = ?, updated_at = ?, device_id = ?
+          WHERE id = ?",
+    )
+    .bind(project_id)
+    .bind(order_key::between(last.as_deref().unwrap_or(""), None))
+    .bind(db.stamp())
+    .bind(&db.device_id)
+    .bind(id)
+    .execute(&mut *tx)
+    .await?;
+    sqlx::query(
+        "UPDATE tasks SET project_id = ?, updated_at = ?, device_id = ?
+          WHERE parent_id = ? AND deleted = 0",
+    )
+    .bind(project_id)
+    .bind(db.stamp())
+    .bind(&db.device_id)
+    .bind(id)
+    .execute(&mut *tx)
+    .await?;
+    activity::record(
+        &mut tx,
+        db,
+        "task.moved",
+        "task",
+        id,
+        &format!("Moved {title} to {target}"),
+    )
+    .await?;
+    tx.commit().await?;
+    get(db, id).await
 }
 
 fn clean_title(title: &str) -> AppResult<String> {
@@ -264,6 +359,7 @@ pub fn create_input(project_id: &str, title: &str) -> TaskCreate {
         priority: Priority::Medium,
         due_at: None,
         tags: vec![],
+        recurrence: None,
     }
 }
 
@@ -327,6 +423,7 @@ mod tests {
                 priority: Priority::High,
                 due_at: Some(1_700_000_000_000),
                 tags: vec!["ui".into()],
+                recurrence: Some("weekly:1".into()),
             },
         )
         .await
@@ -353,13 +450,13 @@ mod tests {
             .await
             .expect("c");
 
-        move_to(&db, &a.id, TaskStatus::Doing, None)
+        move_to(&db, &a.id, TaskStatus::Doing, None, None)
             .await
             .expect("a");
-        move_to(&db, &b.id, TaskStatus::Doing, None)
+        move_to(&db, &b.id, TaskStatus::Doing, None, None)
             .await
             .expect("b");
-        move_to(&db, &c.id, TaskStatus::Doing, Some(&b.id))
+        move_to(&db, &c.id, TaskStatus::Doing, Some(&b.id), None)
             .await
             .expect("c");
 
@@ -385,7 +482,7 @@ mod tests {
             .await
             .expect("c");
 
-        move_to(&db, &c.id, TaskStatus::Todo, Some(&a.id))
+        move_to(&db, &c.id, TaskStatus::Todo, Some(&a.id), None)
             .await
             .expect("to front");
         assert_eq!(
@@ -393,7 +490,7 @@ mod tests {
             ["C", "A", "B"]
         );
 
-        move_to(&db, &c.id, TaskStatus::Todo, None)
+        move_to(&db, &c.id, TaskStatus::Todo, None, None)
             .await
             .expect("to end");
         assert_eq!(
@@ -459,11 +556,107 @@ mod tests {
         create(&db, create_input(&project.id, "B"))
             .await
             .expect("b");
-        move_to(&db, &a.id, TaskStatus::Done, None)
+        move_to(&db, &a.id, TaskStatus::Done, None, None)
             .await
             .expect("done");
 
         let summary = projects::get(&db, &project.id).await.expect("get");
         assert_eq!((summary.tasks_done, summary.tasks_total), (1, 2));
+    }
+
+    #[tokio::test]
+    async fn completing_a_repeating_task_adds_the_next_one_once() {
+        let db = Db::in_memory().await;
+        let project = create_for_test(&db, "P").await;
+        let mut input = create_input(&project.id, "Water plants");
+        input.recurrence = Some("daily:2".into());
+        input.due_at = Some(1_000);
+        let task = create(&db, input).await.expect("create");
+
+        let moved = move_to(&db, &task.id, TaskStatus::Done, None, Some(2_000))
+            .await
+            .expect("done");
+        let next = moved.next.expect("next occurrence");
+        assert_eq!(moved.task.status, TaskStatus::Done);
+        assert_eq!(next.title, "Water plants");
+        assert_eq!(next.status, TaskStatus::Todo);
+        assert_eq!(next.due_at, Some(2_000));
+        assert_eq!(next.recurrence.as_deref(), Some("daily:2"));
+
+        // moving within done again is not a new completion
+        let again = move_to(&db, &task.id, TaskStatus::Done, None, Some(3_000))
+            .await
+            .expect("again");
+        assert!(again.next.is_none());
+        assert_eq!(list(&db, &project.id).await.expect("list").len(), 2);
+    }
+
+    #[tokio::test]
+    async fn one_off_tasks_and_bad_rules() {
+        let db = Db::in_memory().await;
+        let project = create_for_test(&db, "P").await;
+        let task = create(&db, create_input(&project.id, "Once"))
+            .await
+            .expect("create");
+        let moved = move_to(&db, &task.id, TaskStatus::Done, None, Some(1))
+            .await
+            .expect("done");
+        assert!(moved.next.is_none());
+
+        let mut bad = create_input(&project.id, "Bad");
+        bad.recurrence = Some("yearly:1".into());
+        assert!(matches!(create(&db, bad).await, Err(AppError::Invalid(_))));
+    }
+
+    #[tokio::test]
+    async fn inbox_is_created_on_first_capture_and_stays_out_of_the_project_list() {
+        let db = Db::in_memory().await;
+        let task = create(&db, create_input(INBOX_ID, "Capture"))
+            .await
+            .expect("capture");
+        create(&db, create_input(INBOX_ID, "Another"))
+            .await
+            .expect("second capture");
+
+        assert_eq!(task.project_id, INBOX_ID);
+        let inbox = projects::get(&db, INBOX_ID).await.expect("inbox");
+        assert_eq!(inbox.project.name, "Inbox");
+        assert_eq!(kinds_for(&db, INBOX_ID).await, ["project.created"]);
+        let listed = projects::list(&db, &crate::domain::ProjectFilter::default())
+            .await
+            .expect("list");
+        assert!(listed.is_empty());
+        assert!(matches!(
+            projects::delete(&db, INBOX_ID).await,
+            Err(AppError::Invalid(_))
+        ));
+    }
+
+    #[tokio::test]
+    async fn move_to_project_takes_subtasks_along() {
+        let db = Db::in_memory().await;
+        let target = create_for_test(&db, "Target").await;
+        let parent = create(&db, create_input(INBOX_ID, "Parent"))
+            .await
+            .expect("parent");
+        let mut sub = create_input(INBOX_ID, "Sub");
+        sub.parent_id = Some(parent.id.clone());
+        let sub = create(&db, sub).await.expect("sub");
+
+        let moved = move_to_project(&db, &parent.id, &target.id)
+            .await
+            .expect("move");
+
+        assert_eq!(moved.project_id, target.id);
+        assert_eq!(get(&db, &sub.id).await.expect("sub").project_id, target.id);
+        assert!(list(&db, INBOX_ID).await.expect("inbox").is_empty());
+        assert!(matches!(
+            move_to_project(&db, &sub.id, INBOX_ID).await,
+            Err(AppError::Invalid(_))
+        ));
+        assert!(matches!(
+            move_to_project(&db, &parent.id, "missing").await,
+            Err(AppError::NotFound(_))
+        ));
     }
 }

@@ -57,6 +57,7 @@ pub struct Task {
     pub due_at: Option<i64>,
     pub order_key: String,
     pub tags: Json<Vec<String>>,
+    pub recurrence: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -74,6 +75,8 @@ pub struct TaskCreate {
     pub due_at: Option<i64>,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub recurrence: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -85,4 +88,13 @@ pub struct TaskUpdate {
     pub priority: Priority,
     pub due_at: Option<i64>,
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub recurrence: Option<String>,
+}
+
+/// A moved task, and the next occurrence when completing it repeated it.
+#[derive(Debug, Clone, Serialize)]
+pub struct TaskMoved {
+    pub task: Task,
+    pub next: Option<Task>,
 }

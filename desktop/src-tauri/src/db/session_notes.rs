@@ -42,7 +42,7 @@ pub async fn confirm(
     )
     .await?;
     for task_id in &done_ids {
-        tasks::move_in(&mut tx, db, task_id, TaskStatus::Done, None).await?;
+        tasks::move_in(&mut tx, db, task_id, TaskStatus::Done, None, None).await?;
     }
     for title in &input.new_task_titles {
         let task = TaskCreate {
@@ -55,6 +55,7 @@ pub async fn confirm(
             priority: Priority::Medium,
             due_at: None,
             tags: vec![],
+            recurrence: None,
         };
         tasks::insert(&mut tx, db, &task).await?;
     }

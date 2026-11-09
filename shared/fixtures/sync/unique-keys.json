@@ -85,5 +85,30 @@
     "live": [
       "doc-b"
     ]
+  },
+  {
+    "name": "the same habit checked on the same day on both devices keeps one check",
+    "table": "habit_checks",
+    "stored": {
+      "id": "check-a",
+      "created_at": 1700000000000,
+      "updated_at": 111411200655360000,
+      "device_id": "dev-a",
+      "deleted": 0,
+      "habit_id": "h1",
+      "day": "2023-11-14"
+    },
+    "incoming": {
+      "id": "check-b",
+      "created_at": 1700000000000,
+      "updated_at": 111411201310720000,
+      "device_id": "dev-b",
+      "deleted": 0,
+      "habit_id": "h1",
+      "day": "2023-11-14"
+    },
+    "live": [
+      "check-b"
+    ]
   }
 ]

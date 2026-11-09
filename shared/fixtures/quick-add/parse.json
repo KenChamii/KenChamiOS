@@ -1,0 +1,111 @@
+{
+  "description": "Natural-language quick add. Words are read left to right; the first match of each kind wins and everything else stays in the title. A weekday name means its next date after today. A recurring task without a date is due today (the next weekday for weekdays). project is the text after #, as typed; the app matches it to a project by slug or name, ignoring case.",
+  "today": "2026-11-10",
+  "cases": [
+    {
+      "input": "Buy milk",
+      "expected": { "title": "Buy milk", "due": null, "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Buy milk tomorrow",
+      "expected": { "title": "Buy milk", "due": "2026-11-11", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Call Bob tmr",
+      "expected": { "title": "Call Bob", "due": "2026-11-11", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Call mom today !high",
+      "expected": { "title": "Call mom", "due": "2026-11-10", "priority": "high", "project": null, "recurrence": null }
+    },
+    {
+      "input": "Read !h",
+      "expected": { "title": "Read", "due": null, "priority": "high", "project": null, "recurrence": null }
+    },
+    {
+      "input": "Write report friday #work",
+      "expected": { "title": "Write report", "due": "2026-11-13", "priority": null, "project": "work", "recurrence": null }
+    },
+    {
+      "input": "Meeting on tuesday",
+      "expected": { "title": "Meeting", "due": "2026-11-17", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Demo next thursday",
+      "expected": { "title": "Demo", "due": "2026-11-12", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Ship it next week",
+      "expected": { "title": "Ship it", "due": "2026-11-16", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Plan trip in 5 days",
+      "expected": { "title": "Plan trip", "due": "2026-11-15", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Plan trip in 2 weeks",
+      "expected": { "title": "Plan trip", "due": "2026-11-24", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Dentist 2026-12-01",
+      "expected": { "title": "Dentist", "due": "2026-12-01", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Not a date 2026-02-30",
+      "expected": { "title": "Not a date 2026-02-30", "due": null, "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Pay rent every month",
+      "expected": { "title": "Pay rent", "due": "2026-11-10", "priority": null, "project": null, "recurrence": "monthly:1" }
+    },
+    {
+      "input": "Water plants every 3 days",
+      "expected": { "title": "Water plants", "due": "2026-11-10", "priority": null, "project": null, "recurrence": "daily:3" }
+    },
+    {
+      "input": "Review PRs every 2 weeks !med",
+      "expected": { "title": "Review PRs", "due": "2026-11-10", "priority": "medium", "project": null, "recurrence": "weekly:2" }
+    },
+    {
+      "input": "Gym every monday",
+      "expected": { "title": "Gym", "due": "2026-11-16", "priority": null, "project": null, "recurrence": "weekly:1" }
+    },
+    {
+      "input": "Journal daily",
+      "expected": { "title": "Journal", "due": "2026-11-10", "priority": null, "project": null, "recurrence": "daily:1" }
+    },
+    {
+      "input": "Backup weekly #ops",
+      "expected": { "title": "Backup", "due": "2026-11-10", "priority": null, "project": "ops", "recurrence": "weekly:1" }
+    },
+    {
+      "input": "Standup every weekday #team-sync !low",
+      "expected": { "title": "Standup", "due": "2026-11-10", "priority": "low", "project": "team-sync", "recurrence": "weekdays:1" }
+    },
+    {
+      "input": "Standup every weekday",
+      "today": "2026-11-14",
+      "expected": { "title": "Standup", "due": "2026-11-16", "priority": null, "project": null, "recurrence": "weekdays:1" }
+    },
+    {
+      "input": "Invoice every month on friday",
+      "expected": { "title": "Invoice", "due": "2026-11-13", "priority": null, "project": null, "recurrence": "monthly:1" }
+    },
+    {
+      "input": "Fix bug !high !low",
+      "expected": { "title": "Fix bug !low", "due": null, "priority": "high", "project": null, "recurrence": null }
+    },
+    {
+      "input": "  extra   spaces   TOMORROW  ",
+      "expected": { "title": "extra spaces", "due": "2026-11-11", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Tomorrow",
+      "expected": { "title": "", "due": "2026-11-11", "priority": null, "project": null, "recurrence": null }
+    },
+    {
+      "input": "Email #",
+      "expected": { "title": "Email #", "due": null, "priority": null, "project": null, "recurrence": null }
+    }
+  ]
+}

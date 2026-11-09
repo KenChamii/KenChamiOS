@@ -362,11 +362,14 @@ async fn shared_unique_key_cases_keep_one_live_row() {
             .await
             .expect("incoming");
 
-        let live: Vec<String> =
-            sqlx::query_scalar("SELECT id FROM project_docs WHERE deleted = 0 ORDER BY id")
-                .fetch_all(&db.pool)
-                .await
-                .expect("live rows");
+        let table = schema.table(table).expect("synced table");
+        let live: Vec<String> = sqlx::query_scalar(sqlx::AssertSqlSafe(format!(
+            "SELECT id FROM {} WHERE deleted = 0 ORDER BY id",
+            table.name
+        )))
+        .fetch_all(&db.pool)
+        .await
+        .expect("live rows");
         let expected: Vec<String> = case["live"]
             .as_array()
             .expect("live")

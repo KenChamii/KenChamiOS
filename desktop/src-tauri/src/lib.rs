@@ -3,6 +3,7 @@ mod db;
 mod domain;
 mod error;
 mod git;
+mod jobs;
 mod media;
 mod state;
 pub mod sync;
@@ -32,6 +33,7 @@ pub fn run() {
                 handle.state::<AppState>().sync.resume().await;
             });
             timer::shell::setup(app.handle())?;
+            jobs::start(app.handle());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -54,6 +56,18 @@ pub fn run() {
             commands::tasks::tasks_update,
             commands::tasks::tasks_delete,
             commands::tasks::tasks_move,
+            commands::tasks::tasks_move_to_project,
+            commands::search::search_all,
+            commands::backups::backups_status,
+            commands::backups::backups_configure,
+            commands::backups::backups_run,
+            commands::backups::backups_restore,
+            commands::habits::habits_list,
+            commands::habits::habits_create,
+            commands::habits::habits_delete,
+            commands::habits::habits_toggle,
+            commands::trash::trash_list,
+            commands::trash::trash_restore,
             commands::checklist::checklist_list,
             commands::checklist::checklist_create,
             commands::checklist::checklist_update,

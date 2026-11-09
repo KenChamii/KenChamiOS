@@ -100,7 +100,7 @@ mod tests {
         let finished = create(&db, create_input(&project.id, "Finished"))
             .await
             .expect("task");
-        move_to(&db, &finished.id, TaskStatus::Done, None)
+        move_to(&db, &finished.id, TaskStatus::Done, None, None)
             .await
             .expect("move");
         let note = |text: &str| SavePointInput {
@@ -171,7 +171,7 @@ mod tests {
         let shipped = create(&db, create_input(&project.id, "Ship the editor"))
             .await
             .expect("task");
-        move_to(&db, &shipped.id, TaskStatus::Done, None)
+        move_to(&db, &shipped.id, TaskStatus::Done, None, None)
             .await
             .expect("move");
         create(&db, create_input(&project.id, "Still open"))

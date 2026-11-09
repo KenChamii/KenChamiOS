@@ -51,7 +51,8 @@
         "priority": "high",
         "due_at": null,
         "order_key": "a0",
-        "tags": "[]"
+        "tags": "[]",
+        "recurrence": "weekly:1"
       }
     },
     {
@@ -172,6 +173,29 @@
         "delta": 1,
         "value_after": 3,
         "logged_at": 1700000005000
+      }
+    },
+    {
+      "table": "habits",
+      "row": {
+        "id": "h1",
+        "created_at": 1700000000000,
+        "updated_at": 111411200393216000,
+        "device_id": "dev-phone",
+        "deleted": 0,
+        "name": "Read"
+      }
+    },
+    {
+      "table": "habit_checks",
+      "row": {
+        "id": "hc1",
+        "created_at": 1700000000000,
+        "updated_at": 111411200393216000,
+        "device_id": "dev-phone",
+        "deleted": 0,
+        "habit_id": "h1",
+        "day": "2023-11-14"
       }
     },
     {

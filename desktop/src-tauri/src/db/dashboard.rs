@@ -14,7 +14,8 @@ const TOP_GENRES: i64 = 5;
 /// Open tasks due before `until` (the end of today in the UI's time zone), overdue ones first.
 pub async fn due_tasks(db: &Db, until: i64) -> AppResult<Vec<DueTask>> {
     let rows = sqlx::query_as(
-        "SELECT t.id, t.title, t.project_id, p.name AS project_name, t.due_at, t.priority, t.status
+        "SELECT t.id, t.title, t.project_id, p.name AS project_name, t.due_at, t.priority, t.status,
+                t.recurrence
            FROM tasks t JOIN projects p ON p.id = t.project_id
           WHERE t.deleted = 0 AND t.status != 'done' AND t.due_at IS NOT NULL AND t.due_at < ?
             AND p.deleted = 0 AND p.archived = 0
@@ -200,6 +201,7 @@ mod tests {
                 priority: Priority::Medium,
                 due_at,
                 tags: vec![],
+                recurrence: None,
             },
         )
         .await
@@ -258,7 +260,7 @@ mod tests {
         task(&db, &project.id, "tomorrow", Some(1000)).await;
         task(&db, &project.id, "no date", None).await;
         let done = task(&db, &project.id, "done", Some(100)).await;
-        tasks::move_to(&db, &done, TaskStatus::Done, None)
+        tasks::move_to(&db, &done, TaskStatus::Done, None, None)
             .await
             .expect("done");
 

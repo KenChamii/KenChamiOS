@@ -18,7 +18,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -36,7 +37,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": true,
     "title": "new"
@@ -60,7 +62,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -78,7 +81,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": false,
     "title": "kept"
@@ -102,7 +106,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -120,7 +125,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": true,
     "title": "b"
@@ -144,7 +150,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -162,7 +169,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": false,
     "title": "b"
@@ -186,7 +194,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -204,7 +213,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": false,
     "title": "same"
@@ -228,7 +238,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -246,7 +257,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": true,
     "title": "edited",
@@ -271,7 +283,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -289,7 +302,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": true,
     "title": "back",
@@ -314,7 +328,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "incoming": {
       "id": "t1",
@@ -332,7 +347,8 @@
       "priority": "high",
       "due_at": null,
       "order_key": "a0",
-      "tags": "[]"
+      "tags": "[]",
+      "recurrence": null
     },
     "applied": false,
     "title": "gone",
