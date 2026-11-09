@@ -17,6 +17,7 @@ import com.kenchami.kenchamios.data.repo.MediaRepository
 import com.kenchami.kenchamios.data.repo.ProjectRepository
 import com.kenchami.kenchamios.data.repo.TaskRepository
 import com.kenchami.kenchamios.data.repo.continueItems
+import com.kenchami.kenchamios.sync.SyncState
 import com.kenchami.kenchamios.timer.TimerController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -27,11 +28,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.Clock
+import java.time.LocalDate
+import java.time.LocalTime
 import javax.inject.Inject
 
 private const val ACTIVITY_LIMIT = 15
@@ -43,6 +45,9 @@ data class TodayState(
     val continueItems: List<LibraryEntry>,
     val projects: List<ProjectSummary>,
     val activity: List<ActivityEntity>,
+    val greeting: String,
+    val date: String,
+    val setup: List<SetupStep>,
 )
 
 @HiltViewModel
@@ -53,6 +58,7 @@ class TodayViewModel @Inject constructor(
     private val timer: TimerController,
     private val checklistRuns: ChecklistRunRepository,
     activity: ActivityRepository,
+    sync: SyncState,
     private val clock: Clock,
 ) : ViewModel() {
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -60,11 +66,26 @@ class TodayViewModel @Inject constructor(
         .flatMapLatest { bounds ->
             combine(
                 tasks.observeDue(bounds.end),
-                media.observeLibrary().map(::continueItems),
-                projects.observeSummaries(null).map { list -> list.filter { it.project.stage != Stage.Done } },
+                media.observeLibrary(),
+                projects.observeSummaries(null),
                 activity.observeRecent(ACTIVITY_LIMIT),
-            ) { due, continuing, active, recent ->
-                TodayState(bounds, clock.millis(), due, continuing, active, recent)
+                sync.observe(),
+            ) { due, library, summaries, recent, snapshot ->
+                TodayState(
+                    bounds = bounds,
+                    now = clock.millis(),
+                    due = due,
+                    continueItems = continueItems(library),
+                    projects = summaries.filter { it.project.stage != Stage.Done },
+                    activity = recent,
+                    greeting = greeting(LocalTime.now(clock)),
+                    date = dateLabel(LocalDate.now(clock)),
+                    setup = setupSteps(
+                        hasProjects = summaries.isNotEmpty(),
+                        hasMedia = library.isNotEmpty(),
+                        paired = snapshot.link != null,
+                    ),
+                )
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), null)

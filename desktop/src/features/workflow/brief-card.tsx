@@ -33,15 +33,10 @@ export function BriefCard({ project }: { project: ProjectSummary }) {
       <Field label="Target file">
         <Select
           value={target.data ?? ""}
+          options={(targets.data ?? []).map((file) => ({ value: file, label: file }))}
           disabled={setTarget.isPending}
-          onChange={(event) => setTarget.mutate(event.target.value)}
-        >
-          {targets.data?.map((file) => (
-            <option key={file} value={file}>
-              {file}
-            </option>
-          ))}
-        </Select>
+          onChange={(file) => setTarget.mutate(file)}
+        />
       </Field>
       <div className="flex flex-wrap items-center gap-2">
         <Button

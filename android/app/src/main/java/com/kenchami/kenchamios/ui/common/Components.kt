@@ -1,7 +1,8 @@
 package com.kenchami.kenchamios.ui.common
 
+import androidx.compose.animation.core.animateIntAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,7 +20,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,13 +37,6 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier.padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
     )
-}
-
-@Composable
-fun EmptyText(text: String, modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp), contentAlignment = Alignment.CenterStart) {
-        Text(text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
 }
 
 @Composable
@@ -83,11 +81,14 @@ fun TonalCard(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     ) { content() }
 }
 
-/** A big bold number over a small muted label. */
+/** A big bold number over a small muted label; it counts up from zero when it first shows. */
 @Composable
-fun HeroStat(value: String, label: String, modifier: Modifier = Modifier) {
+fun HeroStat(value: Int, label: String, modifier: Modifier = Modifier) {
+    var target by remember { mutableIntStateOf(0) }
+    LaunchedEffect(value) { target = value }
+    val shown by animateIntAsState(target, tween(MOTION_MS), label = "hero count")
     Column(modifier) {
-        Text(value, style = MaterialTheme.typography.displayMedium)
+        Text(shown.toString(), style = MaterialTheme.typography.displayLarge)
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }

@@ -1,34 +1,27 @@
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { ChipGroup } from "@/components/ui/chips";
 import { Tabs } from "@/components/ui/tabs";
 import { DocTab } from "@/features/docs/doc-tab";
-import { STAGE_LABELS } from "@/features/projects/meta";
+import { TimeTab } from "@/features/focus/time-tab";
 import { PortfolioTab } from "@/features/portfolio/portfolio-tab";
 import { OverviewTab } from "@/features/projects/overview-tab";
+import { StageBadge } from "@/features/projects/stage-badge";
+import { groupOf, parseTab, projectPath, TAB_GROUPS } from "@/features/projects/tabs";
 import { SavePointsTab } from "@/features/savepoints/save-points-tab";
-import { TimeTab } from "@/features/focus/time-tab";
 import { TasksTab } from "@/features/tasks/tasks-tab";
+import { ProjectPromptsTab } from "@/features/workflow/project-prompts-tab";
 import { useProject } from "@/hooks/use-projects";
 import { errorMessage } from "@/lib/errors";
 
-const TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "idea", label: "Idea" },
-  { id: "plan", label: "Plan" },
-  { id: "tasks", label: "Tasks" },
-  { id: "save-points", label: "Save points" },
-  { id: "time", label: "Time" },
-  { id: "portfolio", label: "Portfolio" },
-] as const;
-
-type TabId = (typeof TABS)[number]["id"];
-
 export function ProjectPage() {
-  const { id = "" } = useParams();
+  const params = useParams();
+  const navigate = useNavigate();
+  const id = params.id ?? "";
+  const tab = parseTab(params.tab);
+  const group = groupOf(tab);
   const project = useProject(id);
-  const [tab, setTab] = useState<TabId>("overview");
 
   if (project.error) {
     return <p className="text-sm text-destructive">{errorMessage(project.error)}</p>;
@@ -45,21 +38,39 @@ export function ProjectPage() {
           <ArrowLeft size={14} />
           Projects
         </Link>
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-tight">{project.data.name}</h1>
-          <Badge>{STAGE_LABELS[project.data.stage]}</Badge>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="text-display">{project.data.name}</h1>
+          <StageBadge stage={project.data.stage} />
           {project.data.archived && <Badge>Archived</Badge>}
         </div>
       </div>
 
-      <Tabs tabs={[...TABS]} value={tab} onChange={setTab} />
+      <div className="flex flex-col gap-3">
+        <Tabs
+          tabs={TAB_GROUPS.map(({ id: groupId, label }) => ({ id: groupId, label }))}
+          value={group.id}
+          onChange={(groupId) => {
+            const next = TAB_GROUPS.find((candidate) => candidate.id === groupId);
+            if (next) navigate(projectPath(id, next.tabs[0].id));
+          }}
+        />
+        {group.tabs.length > 1 && (
+          <ChipGroup
+            aria-label={group.label}
+            options={group.tabs.map((item) => ({ value: item.id, label: item.label }))}
+            value={tab}
+            onChange={(next) => navigate(projectPath(id, next))}
+          />
+        )}
+      </div>
 
       {tab === "overview" && <OverviewTab project={project.data} />}
       {tab === "idea" && <DocTab projectId={id} kind="idea" />}
       {tab === "plan" && <DocTab projectId={id} kind="plan" />}
       {tab === "tasks" && <TasksTab projectId={id} />}
-      {tab === "save-points" && <SavePointsTab project={project.data} />}
       {tab === "time" && <TimeTab projectId={id} />}
+      {tab === "prompts" && <ProjectPromptsTab project={project.data} />}
+      {tab === "save-points" && <SavePointsTab project={project.data} />}
       {tab === "portfolio" && <PortfolioTab project={project.data} />}
     </div>
   );

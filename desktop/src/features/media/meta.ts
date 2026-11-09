@@ -1,4 +1,24 @@
+import {
+  BookOpen,
+  Clapperboard,
+  Disc3,
+  Gamepad2,
+  MicVocal,
+  MonitorPlay,
+  Tv,
+  type LucideIcon,
+} from "lucide-react";
 import type { LibraryEntry, MediaStatus, MediaType } from "@/lib/api/media";
+
+export const TYPE_ICONS: Record<MediaType, LucideIcon> = {
+  anime: Tv,
+  manga: BookOpen,
+  game: Gamepad2,
+  movie: Clapperboard,
+  show: MonitorPlay,
+  album: Disc3,
+  artist: MicVocal,
+};
 
 export const TYPES: { id: MediaType; label: string }[] = [
   { id: "anime", label: "Anime" },

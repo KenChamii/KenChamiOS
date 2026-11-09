@@ -15,11 +15,11 @@ import androidx.compose.ui.unit.dp
 import com.kenchami.kenchamios.context.ChecklistRun
 import com.kenchami.kenchamios.context.RuleAction
 import com.kenchami.kenchamios.context.placeRule
-import com.kenchami.kenchamios.core.DayBounds
+import com.kenchami.kenchamios.todayState
 import com.kenchami.kenchamios.ui.today.ChecklistActions
 import com.kenchami.kenchamios.ui.today.TimerActions
 import com.kenchami.kenchamios.ui.today.TodayContent
-import com.kenchami.kenchamios.ui.today.TodayState
+import com.kenchami.kenchamios.ui.today.TodayNav
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -31,18 +31,22 @@ class ChecklistCardTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private val state =
-        TodayState(DayBounds(0, 1), now = 0, due = emptyList(), continueItems = emptyList(), projects = emptyList(), activity = emptyList())
+    private val noNav = TodayNav({}, {}, {}, {})
+    private val state = todayState()
     private val run = ChecklistRun.start(placeRule("home"), RuleAction.Checklist(listOf("Keys", "Wallet", "Phone"))).toggled(1)
+
+    private fun scrollTo(text: String) = compose.onNodeWithTag("today").performScrollToNode(hasText(text))
 
     @Test
     fun todayShowsTheChecklistWithItsTickedItems() {
         compose.setContent {
-            TodayContent(state, null, TimerActions({}, {}, {}), {}, {}, {}, {}, PaddingValues(0.dp), listOf(run))
+            TodayContent(state, null, TimerActions({}, {}, {}), {}, {}, noNav, PaddingValues(0.dp), listOf(run))
         }
 
+        scrollTo("Place home")
         compose.onNodeWithText("Place home").assertIsDisplayed()
         compose.onNodeWithText("Keys").assertIsDisplayed()
+        scrollTo("Wallet")
         compose.onNodeWithText("Wallet").assertIsDisplayed()
         compose.onAllNodes(isToggleable())[1].assertIsOn()
         compose.onAllNodes(isToggleable())[0].assertIsOff()
@@ -54,13 +58,14 @@ class ChecklistCardTest {
         val dismissed = mutableListOf<String>()
         compose.setContent {
             TodayContent(
-                state, null, TimerActions({}, {}, {}), {}, {}, {}, {}, PaddingValues(0.dp), listOf(run),
+                state, null, TimerActions({}, {}, {}), {}, {}, noNav, PaddingValues(0.dp), listOf(run),
                 ChecklistActions({ id, index -> ticks += id to index }, { dismissed += it }),
             )
         }
 
+        scrollTo("Keys")
         compose.onNodeWithText("Keys").performClick()
-        compose.onNodeWithTag("today").performScrollToNode(hasText("Dismiss"))
+        scrollTo("Dismiss")
         compose.onNodeWithText("Dismiss").performClick()
 
         assertEquals(listOf("home" to 0), ticks)

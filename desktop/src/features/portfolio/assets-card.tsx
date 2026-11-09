@@ -1,7 +1,9 @@
 import { open } from "@tauri-apps/plugin-dialog";
+import { ImagePlus } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { useAddLink, useAddScreenshot, useAssets } from "@/hooks/use-assets";
 import { errorMessage } from "@/lib/errors";
@@ -43,6 +45,9 @@ export function AssetsCard({ projectId }: { projectId: string }) {
       <p className="text-sm text-muted-foreground">
         Shown in the portfolio page. Screenshots are copied into the app, so the original can move.
       </p>
+      {assets.isSuccess && items.length === 0 && (
+        <EmptyState icon={ImagePlus} area="projects" line="No screenshots or links yet." />
+      )}
       {items.length > 0 && (
         <ul className="flex flex-col divide-y divide-border">
           {items.map((asset) => (

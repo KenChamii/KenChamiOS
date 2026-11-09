@@ -1,3 +1,4 @@
+import { CalendarRange } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { PageHeader } from "@/components/layout/page-header";
@@ -27,18 +28,22 @@ export function RecapPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Yearly recap" subtitle="A look back at the year">
+      <PageHeader
+        title="Yearly recap"
+        subtitle="A look back at the year"
+        icon={CalendarRange}
+        area="focus"
+      >
         <Select
           aria-label="Year"
-          value={year}
-          onChange={(event) => setYear(Number(event.target.value))}
-        >
-          {Array.from({ length: YEARS_BACK + 1 }, (_, back) => thisYear - back).map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </Select>
+          className="w-28"
+          value={String(year)}
+          options={Array.from({ length: YEARS_BACK + 1 }, (_, back) => {
+            const value = String(thisYear - back);
+            return { value, label: value };
+          })}
+          onChange={(value) => setYear(Number(value))}
+        />
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground">
           Dashboard
         </Link>

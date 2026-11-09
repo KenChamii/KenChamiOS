@@ -28,14 +28,12 @@ export function EntryForm({ entry }: { entry: LibraryEntry }) {
         <Field label="Status">
           <Select
             value={draft.status}
-            onChange={(e) => setDraft({ ...draft, status: e.target.value as typeof draft.status })}
-          >
-            {STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {STATUS_LABELS[entry.media_type][status]}
-              </option>
-            ))}
-          </Select>
+            options={STATUSES.map((status) => ({
+              value: status,
+              label: STATUS_LABELS[entry.media_type][status],
+            }))}
+            onChange={(status) => setDraft({ ...draft, status })}
+          />
         </Field>
         <Field label="Rating (1-10)">
           <Input

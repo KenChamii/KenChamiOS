@@ -1,11 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { STAGE_LABELS } from "@/features/projects/meta";
+import { StageBadge } from "@/features/projects/stage-badge";
 import { useGitInfo } from "@/hooks/use-git";
 import { useCreateSavePoint } from "@/hooks/use-save-points";
 import type { ProjectSummary } from "@/lib/api/projects";
@@ -44,7 +43,7 @@ function SavePointForm({ project, onDone }: { project: ProjectSummary; onDone: (
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <Badge>{STAGE_LABELS[project.stage]}</Badge>
+        <StageBadge stage={project.stage} />
         {git.data?.state === "repo" && (
           <span>{commitLabel(git.data.branch, git.data.head) ?? branchLabel(git.data)}</span>
         )}

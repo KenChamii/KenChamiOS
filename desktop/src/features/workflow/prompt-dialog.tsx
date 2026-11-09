@@ -65,14 +65,14 @@ function PromptForm({ prompt, defaultProjectId, projects, onDone }: PromptFormPr
         <Input value={title} onChange={(e) => setTitle(e.target.value)} autoFocus required />
       </Field>
       <Field label="Project">
-        <Select value={projectId ?? ""} onChange={(e) => setProjectId(e.target.value || null)}>
-          <option value="">Global</option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.id}>
-              {project.name}
-            </option>
-          ))}
-        </Select>
+        <Select
+          value={projectId ?? ""}
+          options={[
+            { value: "", label: "Global" },
+            ...projects.map((project) => ({ value: project.id, label: project.name })),
+          ]}
+          onChange={(id) => setProjectId(id || null)}
+        />
       </Field>
       <Field label="Tags (comma separated)">
         <Input value={tags} onChange={(e) => setTags(e.target.value)} />

@@ -29,8 +29,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.data.db.entity.PromptEntity
 import com.kenchami.kenchamios.ui.common.AppScreen
-import com.kenchami.kenchamios.ui.common.EmptyText
+import com.kenchami.kenchamios.ui.common.EmptyState
 import com.kenchami.kenchamios.ui.common.QuickAddButton
+import com.kenchami.kenchamios.ui.common.TintedIcon
+import com.kenchami.kenchamios.ui.common.icon
+import com.kenchami.kenchamios.ui.common.listMotion
+import com.kenchami.kenchamios.ui.theme.Area
+import com.kenchami.kenchamios.ui.theme.tint
 import kotlinx.coroutines.launch
 
 @Composable
@@ -40,7 +45,7 @@ fun PromptsScreen(onQuickAdd: () -> Unit, viewModel: PromptsViewModel = hiltView
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    AppScreen("Prompts", snackbar = snackbar, actions = { QuickAddButton(onQuickAdd) }) { padding ->
+    AppScreen("Prompts", area = Area.Workflow, snackbar = snackbar, actions = { QuickAddButton(onQuickAdd) }) { padding ->
         PromptsContent(
             prompts = prompts,
             onCopy = { prompt ->
@@ -52,6 +57,7 @@ fun PromptsScreen(onQuickAdd: () -> Unit, viewModel: PromptsViewModel = hiltView
             },
             onFavorite = { viewModel.setFavorite(it.id, !it.favorite) },
             onDelete = { viewModel.delete(it.id) },
+            onAdd = onQuickAdd,
             padding = padding,
         )
     }
@@ -63,10 +69,12 @@ fun PromptsContent(
     onCopy: (PromptEntity) -> Unit,
     onFavorite: (PromptEntity) -> Unit,
     onDelete: (PromptEntity) -> Unit,
+    onAdd: () -> Unit,
     padding: PaddingValues,
 ) {
+    val tint = Area.Workflow.tint
     if (prompts.isEmpty()) {
-        EmptyText("No prompts yet. Use + to add one.", Modifier.padding(padding).testTag("prompts-empty"))
+        EmptyState(Area.Workflow.icon, "No prompts yet.", "Add a prompt", onAdd, Modifier.padding(padding).testTag("prompts-empty"), tint)
         return
     }
     LazyColumn(contentPadding = padding, modifier = Modifier.testTag("prompts")) {
@@ -75,6 +83,7 @@ fun PromptsContent(
                 headlineContent = { Text(prompt.title) },
                 supportingContent = { Text(prompt.bodyMd, maxLines = 2, overflow = TextOverflow.Ellipsis) },
                 overlineContent = { Text("Used ${prompt.useCount} times") },
+                leadingContent = { TintedIcon(Area.Workflow.icon, tint) },
                 trailingContent = {
                     Row {
                         IconButton(onClick = { onFavorite(prompt) }) {
@@ -89,7 +98,7 @@ fun PromptsContent(
                         }
                     }
                 },
-                modifier = Modifier.clickable { onCopy(prompt) },
+                modifier = Modifier.listMotion(this).clickable { onCopy(prompt) },
             )
         }
     }

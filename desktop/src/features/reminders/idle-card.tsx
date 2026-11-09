@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { STAGE_LABELS } from "@/features/projects/meta";
+import { StageBadge } from "@/features/projects/stage-badge";
+import { projectPath } from "@/features/projects/tabs";
 import { useIdleProjects, useSnoozeProject } from "@/hooks/use-reminders";
 import { errorMessage } from "@/lib/errors";
 import { idleLabel } from "./idle-days";
@@ -25,12 +25,12 @@ export function IdleCard() {
         {idle.data?.map((project) => (
           <li key={project.project_id} className="flex items-center justify-between gap-3">
             <Link
-              to={`/projects/${project.project_id}`}
+              to={projectPath(project.project_id, "save-points")}
               className="flex min-w-0 flex-col text-sm hover:underline"
             >
               <span className="flex items-center gap-2">
                 <span className="truncate font-medium">{project.name}</span>
-                <Badge>{STAGE_LABELS[project.stage]}</Badge>
+                <StageBadge stage={project.stage} />
               </span>
               <span className="text-xs text-muted-foreground">{idleLabel(project.idle_days)}</span>
             </Link>

@@ -10,7 +10,7 @@ const CREDITS = [
 
 export function SourceCredits() {
   return (
-    <div className="mt-4 flex flex-col gap-2 text-xs text-muted-foreground">
+    <div className="flex flex-col gap-2 text-xs text-muted-foreground">
       <p>
         This product uses the TMDB API but is not endorsed, certified, or otherwise approved by
         TMDB.

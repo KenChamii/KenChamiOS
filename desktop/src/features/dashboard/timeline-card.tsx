@@ -1,7 +1,9 @@
+import { Clock } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs } from "@/components/ui/tabs";
+import { ChipGroup } from "@/components/ui/chips";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useTimeline } from "@/hooks/use-dashboard";
 import type { TimelineGroup } from "@/lib/api/dashboard";
 import { timeAgo } from "@/lib/dates";
@@ -11,11 +13,11 @@ const PAGE = 25;
 
 type Filter = TimelineGroup | "all";
 
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "projects", label: "Projects" },
-  { id: "focus", label: "Focus" },
-  { id: "media", label: "Media" },
+const FILTERS: { value: Filter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "projects", label: "Projects" },
+  { value: "focus", label: "Focus" },
+  { value: "media", label: "Media" },
 ];
 
 export function TimelineCard({ now }: { now: number }) {
@@ -23,12 +25,15 @@ export function TimelineCard({ now }: { now: number }) {
   const [limit, setLimit] = useState(PAGE);
   const timeline = useTimeline(filter === "all" ? null : filter, limit);
   const items = timeline.data ?? [];
+  // nothing has happened at all yet
+  if (filter === "all" && timeline.data?.length === 0) return null;
 
   return (
     <Card className="flex flex-col gap-3">
       <h2 className="font-semibold tracking-tight">Timeline</h2>
-      <Tabs
-        tabs={FILTERS}
+      <ChipGroup
+        aria-label="Show"
+        options={FILTERS}
         value={filter}
         onChange={(next) => {
           setFilter(next);
@@ -37,7 +42,15 @@ export function TimelineCard({ now }: { now: number }) {
       />
       {timeline.error && <p className="text-sm text-destructive">{errorMessage(timeline.error)}</p>}
       {timeline.data?.length === 0 && (
-        <p className="text-sm text-muted-foreground">Nothing has happened here yet.</p>
+        <EmptyState
+          icon={Clock}
+          line="Nothing has happened here yet."
+          action={
+            <Button variant="outline" onClick={() => setFilter("all")}>
+              Show everything
+            </Button>
+          }
+        />
       )}
       <ul className="flex flex-col divide-y divide-border">
         {items.map((item) => (

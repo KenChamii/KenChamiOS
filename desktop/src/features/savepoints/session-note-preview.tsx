@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/ui/field";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -64,21 +65,14 @@ export function SessionNotePreview({
               aria-label={`Task for ${choice.item}`}
               className="w-56"
               value={choice.taskId ?? ""}
-              onChange={(event) =>
-                setDone(
-                  done.map((c, i) =>
-                    i === index ? { ...c, taskId: event.target.value || null } : c,
-                  ),
-                )
+              options={[
+                { value: "", label: "No task" },
+                ...openTasks.map((task) => ({ value: task.id, label: `Mark done: ${task.title}` })),
+              ]}
+              onChange={(taskId) =>
+                setDone(done.map((c, i) => (i === index ? { ...c, taskId: taskId || null } : c)))
               }
-            >
-              <option value="">No task</option>
-              {openTasks.map((task) => (
-                <option key={task.id} value={task.id}>
-                  Mark done: {task.title}
-                </option>
-              ))}
-            </Select>
+            />
           </div>
         ))}
       </section>
@@ -88,15 +82,10 @@ export function SessionNotePreview({
         {next.length === 0 && <p className="text-sm text-muted-foreground">Nothing found.</p>}
         {next.map((choice, index) => (
           <label key={index} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+            <Checkbox
               checked={choice.createTask}
-              onChange={(event) =>
-                setNext(
-                  next.map((c, i) =>
-                    i === index ? { ...c, createTask: event.target.checked } : c,
-                  ),
-                )
+              onCheckedChange={(createTask) =>
+                setNext(next.map((c, i) => (i === index ? { ...c, createTask } : c)))
               }
             />
             {choice.item}

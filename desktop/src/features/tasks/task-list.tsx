@@ -1,6 +1,8 @@
+import { Checkbox } from "@/components/ui/checkbox";
 import { useMoveTask } from "@/hooks/use-tasks";
 import type { Task } from "@/lib/api/tasks";
 import { cn } from "@/lib/cn";
+import { stagger } from "@/lib/motion";
 import { StartTimerButton } from "@/features/focus/start-timer-button";
 import { CopyTaskPromptButton } from "@/features/workflow/copy-task-prompt-button";
 import { TaskMetaBadges } from "./task-meta-badges";
@@ -16,16 +18,19 @@ export function TaskList({ projectId, tasks, onSelect }: TaskListProps) {
 
   return (
     <ul className="flex flex-col divide-y divide-border rounded-2xl bg-card shadow-soft">
-      {tasks.map((task) => {
+      {tasks.map((task, index) => {
         const done = task.status === "done";
         return (
-          <li key={task.id} className="flex items-center gap-3 px-4 py-2">
-            <input
-              type="checkbox"
+          <li
+            key={task.id}
+            className="stagger-in flex items-center gap-3 px-4 py-2"
+            style={stagger(index)}
+          >
+            <Checkbox
               aria-label={`Complete ${task.title}`}
               checked={done}
-              onChange={() =>
-                move.mutate({ id: task.id, status: done ? "todo" : "done", beforeId: null })
+              onCheckedChange={(checked) =>
+                move.mutate({ id: task.id, status: checked ? "done" : "todo", beforeId: null })
               }
             />
             <button

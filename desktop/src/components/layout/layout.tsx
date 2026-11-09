@@ -1,22 +1,29 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { TimerBar } from "@/features/focus/timer-bar";
+import { CommandPalette } from "@/features/palette/command-palette";
+import { QuickAddDialog } from "@/features/quick-add/quick-add-dialog";
+import { useShortcuts } from "@/hooks/use-shortcuts";
 import { useRefreshOnSync } from "@/hooks/use-sync";
+import { ShortcutsDialog } from "./shortcuts-dialog";
 import { Sidebar } from "./sidebar";
 
 export function Layout() {
   useRefreshOnSync();
-  const { pathname } = useLocation();
+  useShortcuts();
+  // animate between pages, not between the tabs of one project
+  const page = useLocation().pathname.split("/").slice(0, 3).join("/");
   return (
     <div className="flex h-screen">
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
-        <TimerBar />
         <main className="flex-1 overflow-auto px-8 pb-10 pt-6">
-          <div key={pathname} className="mx-auto max-w-6xl animate-page-in">
+          <div key={page} className="mx-auto max-w-6xl animate-page-in">
             <Outlet />
           </div>
         </main>
       </div>
+      <CommandPalette />
+      <QuickAddDialog />
+      <ShortcutsDialog />
     </div>
   );
 }

@@ -23,7 +23,7 @@ export function PromptCard({ prompt, projectName, onCopy, onEdit }: PromptCardPr
   const error = favorite.error ?? remove.error;
 
   return (
-    <Card className="flex flex-col gap-2">
+    <Card className="lift flex h-full flex-col gap-2">
       <div className="flex items-start gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h3 className="font-medium">{prompt.title}</h3>

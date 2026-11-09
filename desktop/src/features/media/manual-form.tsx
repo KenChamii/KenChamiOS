@@ -34,22 +34,21 @@ export function ManualForm({ initialType, onBack, onDone }: ManualFormProps) {
       </p>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Type">
-          <Select value={type} onChange={(e) => setType(e.target.value as MediaType)}>
-            {(Object.keys(TYPE_LABELS) as MediaType[]).map((value) => (
-              <option key={value} value={value}>
-                {TYPE_LABELS[value]}
-              </option>
-            ))}
-          </Select>
+          <Select
+            value={type}
+            options={(Object.keys(TYPE_LABELS) as MediaType[]).map((value) => ({
+              value,
+              label: TYPE_LABELS[value],
+            }))}
+            onChange={setType}
+          />
         </Field>
         <Field label="Status">
-          <Select value={status} onChange={(e) => setStatus(e.target.value as MediaStatus)}>
-            {STATUSES.map((value) => (
-              <option key={value} value={value}>
-                {STATUS_LABELS[type][value]}
-              </option>
-            ))}
-          </Select>
+          <Select
+            value={status}
+            options={STATUSES.map((value) => ({ value, label: STATUS_LABELS[type][value] }))}
+            onChange={setStatus}
+          />
         </Field>
       </div>
       <Field label="Title">

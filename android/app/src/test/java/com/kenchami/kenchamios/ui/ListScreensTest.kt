@@ -35,7 +35,8 @@ class ListScreensTest {
     fun projectsShowStageAndProgressAndOpenOnTap() {
         var opened: String? = null
         compose.setContent {
-            ProjectsContent("", {}, listOf(projectSummary("p9", "Alpha")), now = 1, onOpenProject = { opened = it }, padding = noPadding)
+            ProjectsContent("", {
+            }, listOf(projectSummary("p9", "Alpha")), now = 1, onOpenProject = { opened = it }, onAddIdea = {}, padding = noPadding)
         }
 
         compose.onNodeWithText("Alpha").performClick()
@@ -47,19 +48,40 @@ class ListScreensTest {
     @Test
     fun projectsReportTypedSearch() {
         var query = ""
-        compose.setContent { ProjectsContent("", { query = it }, emptyList(), 1, {}, noPadding) }
+        compose.setContent { ProjectsContent("", { query = it }, listOf(projectSummary()), 1, {}, {}, noPadding) }
 
         compose.onNodeWithText("Search").performTextInput("alp")
 
         assertEquals("alp", query)
-        compose.onNodeWithText("No projects yet. Use + to add an idea.").assertIsDisplayed()
+    }
+
+    @Test
+    fun noProjectsOffersToAddAnIdea() {
+        var added = false
+        compose.setContent { ProjectsContent("", {}, emptyList(), 1, {}, { added = true }, noPadding) }
+
+        compose.onNodeWithText("No projects yet.").assertIsDisplayed()
+        compose.onNodeWithText("Add an idea").performClick()
+
+        assertEquals(true, added)
+    }
+
+    @Test
+    fun aSearchWithNoMatchOffersToClearIt() {
+        var query: String? = null
+        compose.setContent { ProjectsContent("zzz", { query = it }, emptyList(), 1, {}, {}, noPadding) }
+
+        compose.onNodeWithText("No project matches \"zzz\".").assertIsDisplayed()
+        compose.onNodeWithText("Clear search").performClick()
+
+        assertEquals("", query)
     }
 
     @Test
     fun tappingAPromptCopiesIt() {
         var copied: String? = null
         compose.setContent {
-            PromptsContent(listOf(prompt(title = "Review", uses = 2)), { copied = it.id }, {}, {}, noPadding)
+            PromptsContent(listOf(prompt(title = "Review", uses = 2)), { copied = it.id }, {}, {}, {}, noPadding)
         }
 
         compose.onNodeWithText("Used 2 times").assertIsDisplayed()
@@ -72,7 +94,7 @@ class ListScreensTest {
     fun promptStarTogglesTheFavorite() {
         var toggled: Boolean? = null
         compose.setContent {
-            PromptsContent(listOf(prompt(favorite = true)), {}, { toggled = it.favorite }, {}, noPadding)
+            PromptsContent(listOf(prompt(favorite = true)), {}, { toggled = it.favorite }, {}, {}, noPadding)
         }
 
         compose.onNodeWithContentDescription("Remove from favorites").performClick()
@@ -81,10 +103,40 @@ class ListScreensTest {
     }
 
     @Test
-    fun emptyPromptLibraryExplainsHowToAdd() {
-        compose.setContent { PromptsContent(emptyList(), {}, {}, {}, noPadding) }
+    fun emptyPromptLibraryOffersToAddOne() {
+        var added = false
+        compose.setContent { PromptsContent(emptyList(), {}, {}, {}, { added = true }, noPadding) }
 
-        compose.onNodeWithText("No prompts yet. Use + to add one.").assertIsDisplayed()
+        compose.onNodeWithText("No prompts yet.").assertIsDisplayed()
+        compose.onNodeWithText("Add a prompt").performClick()
+
+        assertEquals(true, added)
+    }
+
+    @Test
+    fun emptyLibraryOffersToAddATitle() {
+        var added = false
+        compose.setContent { MediaContent(MediaState(MediaFilters(), emptyList()), {}, {}, {}, {}, { added = true }, noPadding) }
+
+        compose.onNodeWithText("Your library is empty.").assertIsDisplayed()
+        compose.onNodeWithText("Add a title").performClick()
+
+        assertEquals(true, added)
+    }
+
+    @Test
+    fun filtersWithNoMatchOfferToShowEverything() {
+        var type: MediaType? = MediaType.Game
+        var status: MediaStatus? = MediaStatus.Dropped
+        compose.setContent {
+            MediaContent(MediaState(MediaFilters(type, status), emptyList()), { type = it }, { status = it }, {}, {}, {}, noPadding)
+        }
+
+        compose.onNodeWithText("Nothing matches these filters.").assertIsDisplayed()
+        compose.onNodeWithText("Show everything").performClick()
+
+        assertEquals(null, type)
+        assertEquals(null, status)
     }
 
     @Test
@@ -92,7 +144,7 @@ class ListScreensTest {
         var added: String? = null
         val entries = listOf(libraryEntry("open", "Open", progress = 3), libraryEntry("full", "Full", progress = 12))
         compose.setContent {
-            MediaContent(MediaState(MediaFilters(), entries), {}, {}, { added = it }, {}, noPadding)
+            MediaContent(MediaState(MediaFilters(), entries), {}, {}, { added = it }, {}, {}, noPadding)
         }
 
         compose.onNodeWithText("Anime - In progress - 3/12").assertIsDisplayed()
@@ -106,7 +158,7 @@ class ListScreensTest {
         var type: MediaType? = null
         var status: MediaStatus? = null
         compose.setContent {
-            MediaContent(MediaState(MediaFilters(), emptyList()), { type = it }, { status = it }, {}, {}, noPadding)
+            MediaContent(MediaState(MediaFilters(), emptyList()), { type = it }, { status = it }, {}, {}, {}, noPadding)
         }
 
         compose.onNodeWithText("Manga").performClick()

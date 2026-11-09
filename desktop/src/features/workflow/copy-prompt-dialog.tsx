@@ -45,14 +45,14 @@ function CopyPromptForm({ prompt, variables, projects, onClose }: CopyPromptForm
       <p className="text-sm text-muted-foreground">{prompt.title}</p>
       {prompt.project_id === null && (
         <Field label="Project (optional)">
-          <Select value={projectId ?? ""} onChange={(e) => setProjectId(e.target.value || null)}>
-            <option value="">No project</option>
-            {projects.map((project) => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </Select>
+          <Select
+            value={projectId ?? ""}
+            options={[
+              { value: "", label: "No project" },
+              ...projects.map((project) => ({ value: project.id, label: project.name })),
+            ]}
+            onChange={(id) => setProjectId(id || null)}
+          />
         </Field>
       )}
       {variables.map((name, index) => (

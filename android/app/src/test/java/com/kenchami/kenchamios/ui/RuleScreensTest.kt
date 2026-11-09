@@ -17,6 +17,7 @@ import com.kenchami.kenchamios.context.wifiRule
 import com.kenchami.kenchamios.ui.rules.ContextSettingsContent
 import com.kenchami.kenchamios.ui.rules.ContextSettingsState
 import com.kenchami.kenchamios.ui.rules.LEAVING_HOME_PRESET
+import com.kenchami.kenchamios.ui.rules.NEW_RULE
 import com.kenchami.kenchamios.ui.rules.PermissionSteps
 import com.kenchami.kenchamios.ui.rules.RuleEditorContent
 import com.kenchami.kenchamios.ui.rules.RuleForm
@@ -56,6 +57,8 @@ class RuleScreensTest {
         compose.onNodeWithText("Add the Leaving home checklist").performClick()
 
         assertEquals(LEAVING_HOME_PRESET, opened)
+        compose.onNodeWithText("Add a rule").performClick()
+        assertEquals(NEW_RULE, opened)
     }
 
     @Test

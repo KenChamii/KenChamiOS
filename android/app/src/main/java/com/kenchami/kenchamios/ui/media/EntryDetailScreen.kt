@@ -2,8 +2,6 @@ package com.kenchami.kenchamios.ui.media
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,11 +12,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,8 +34,14 @@ import com.kenchami.kenchamios.data.db.LibraryEntry
 import com.kenchami.kenchamios.data.model.MediaStatus
 import com.kenchami.kenchamios.data.repo.EntryInput
 import com.kenchami.kenchamios.ui.common.AppScreen
+import com.kenchami.kenchamios.ui.common.AppTextField
+import com.kenchami.kenchamios.ui.common.ChoiceChips
 import com.kenchami.kenchamios.ui.common.ConfirmDialog
+import com.kenchami.kenchamios.ui.common.TintedIcon
+import com.kenchami.kenchamios.ui.common.icon
 import com.kenchami.kenchamios.ui.common.label
+import com.kenchami.kenchamios.ui.theme.Area
+import com.kenchami.kenchamios.ui.theme.tint
 
 @Composable
 fun EntryDetailScreen(onBack: () -> Unit, viewModel: EntryDetailViewModel = hiltViewModel()) {
@@ -47,6 +51,7 @@ fun EntryDetailScreen(onBack: () -> Unit, viewModel: EntryDetailViewModel = hilt
     AppScreen(
         title = entry?.title.orEmpty(),
         onBack = onBack,
+        area = Area.Media,
         actions = {
             IconButton(onClick = { confirmDelete = true }) {
                 Icon(Icons.Filled.Delete, contentDescription = "Delete entry")
@@ -85,41 +90,22 @@ fun EntryForm(entry: LibraryEntry, onSave: (EntryInput) -> Unit, onAddOne: () ->
         Modifier.padding(padding).padding(16.dp).verticalScroll(rememberScrollState()).testTag("entry-form"),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("${entry.mediaType.label} - ${progressText(entry)}")
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            TintedIcon(entry.mediaType.icon, Area.Media.tint)
+            Text("${entry.mediaType.label} - ${progressText(entry)}", style = MaterialTheme.typography.titleMedium)
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedButton(onClick = onSubtractOne, enabled = entry.progress > 0) { Text("-1") }
+            FilledTonalButton(onClick = onSubtractOne, enabled = entry.progress > 0) { Text("-1") }
             Button(onClick = onAddOne, enabled = entry.canIncrement) { Text("+1") }
         }
-        StatusChips(status) { status = it }
-        OutlinedTextField(
-            value = total,
-            onValueChange = { total = it },
-            label = { Text("Total") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = rating,
-            onValueChange = { rating = it },
-            label = { Text("Rating (1 to 10)") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(notes, { notes = it }, label = { Text("Notes") }, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(tags, { tags = it }, label = { Text("Tags, separated by commas") }, modifier = Modifier.fillMaxWidth())
+        ChoiceChips(MediaStatus.entries, status, { it.label }, { status = it }, tint = Area.Media.tint)
+        val number = KeyboardOptions(keyboardType = KeyboardType.Number)
+        val wide = Modifier.fillMaxWidth()
+        AppTextField(total, { total = it }, "Total", wide, singleLine = true, keyboardOptions = number)
+        AppTextField(rating, { rating = it }, "Rating (1 to 10)", wide, singleLine = true, keyboardOptions = number)
+        AppTextField(notes, { notes = it }, "Notes", wide)
+        AppTextField(tags, { tags = it }, "Tags, separated by commas", wide)
         Button(onClick = { input?.let(onSave) }, enabled = input != null) { Text("Save") }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun StatusChips(selected: MediaStatus, onSelect: (MediaStatus) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        MediaStatus.entries.forEach { status ->
-            FilterChip(selected = selected == status, onClick = { onSelect(status) }, label = { Text(status.label) })
-        }
     }
 }
 

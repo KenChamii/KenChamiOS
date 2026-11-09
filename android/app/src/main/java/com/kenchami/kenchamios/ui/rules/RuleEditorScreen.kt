@@ -4,15 +4,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +28,10 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.context.PlaceTransition
 import com.kenchami.kenchamios.context.WifiTransition
+import com.kenchami.kenchamios.ui.common.AppChip
 import com.kenchami.kenchamios.ui.common.AppScreen
+import com.kenchami.kenchamios.ui.common.AppTextField
+import com.kenchami.kenchamios.ui.common.ChoiceChips
 import com.kenchami.kenchamios.ui.common.ConfirmDialog
 import com.kenchami.kenchamios.ui.common.SectionTitle
 import java.time.DayOfWeek
@@ -68,24 +70,24 @@ fun RuleEditorContent(
         Modifier.padding(padding).padding(horizontal = 16.dp).verticalScroll(rememberScrollState()).testTag("rule-editor"),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        OutlinedTextField(form.name, { v -> onChange { it.copy(name = v) } }, label = { Text("Name") }, singleLine = true)
+        AppTextField(form.name, { v -> onChange { it.copy(name = v) } }, "Name", Modifier.fillMaxWidth(), singleLine = true)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Switch(checked = form.enabled, onCheckedChange = { v -> onChange { it.copy(enabled = v) } })
             Text("Enabled")
         }
         SectionTitle("When")
-        Choices(TriggerKind.entries, form.trigger, { it.label }) { v -> onChange { it.copy(trigger = v) } }
+        ChoiceChips(TriggerKind.entries, form.trigger, { it.label }, onSelect = { v -> onChange { it.copy(trigger = v) } })
         when (form.trigger) {
             TriggerKind.Place -> PlaceFields(form, onChange)
             TriggerKind.Time -> TimeFields(form, onChange)
             TriggerKind.Wifi -> WifiFields(form, onChange)
         }
         SectionTitle("Then")
-        Choices(ActionKind.entries, form.action, { it.label }) { v -> onChange { it.copy(action = v) } }
+        ChoiceChips(ActionKind.entries, form.action, { it.label }, onSelect = { v -> onChange { it.copy(action = v) } })
         ActionFields(form, onChange)
         message?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.testTag("rule-error")) }
         Button(onClick = onSave) { Text("Save") }
-        if (!isNew) OutlinedButton(onClick = { confirmDelete = true }) { Text("Delete") }
+        if (!isNew) FilledTonalButton(onClick = { confirmDelete = true }) { Text("Delete") }
     }
     if (confirmDelete) {
         ConfirmDialog(
@@ -100,9 +102,12 @@ fun RuleEditorContent(
 
 @Composable
 private fun PlaceFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> Unit) {
-    Choices(PlaceTransition.entries, form.placeTransition, { if (it == PlaceTransition.Leave) "Leave" else "Arrive" }) { v ->
-        onChange { it.copy(placeTransition = v) }
-    }
+    ChoiceChips(
+        PlaceTransition.entries,
+        form.placeTransition,
+        label = { if (it == PlaceTransition.Leave) "Leave" else "Arrive" },
+        onSelect = { v -> onChange { it.copy(placeTransition = v) } },
+    )
     NumberField("Latitude", form.latitude, decimal = true) { v -> onChange { it.copy(latitude = v) } }
     NumberField("Longitude", form.longitude, decimal = true) { v -> onChange { it.copy(longitude = v) } }
     NumberField("Radius in metres (100 to 5000)", form.radius, decimal = false) { v -> onChange { it.copy(radius = v) } }
@@ -120,10 +125,10 @@ private fun TimeFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> Uni
     }
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         DayOfWeek.entries.forEach { day ->
-            FilterChip(
+            AppChip(
                 selected = day in form.days,
                 onClick = { onChange { it.copy(days = if (day in it.days) it.days - day else it.days + day) } },
-                label = { Text(dayLabel(day).take(2)) },
+                label = dayLabel(day).take(2),
             )
         }
     }
@@ -131,9 +136,12 @@ private fun TimeFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> Uni
 
 @Composable
 private fun WifiFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> Unit) {
-    Choices(WifiTransition.entries, form.wifiTransition, { if (it == WifiTransition.Connect) "Join Wi-Fi" else "Leave Wi-Fi" }) { v ->
-        onChange { it.copy(wifiTransition = v) }
-    }
+    ChoiceChips(
+        WifiTransition.entries,
+        form.wifiTransition,
+        label = { if (it == WifiTransition.Connect) "Join Wi-Fi" else "Leave Wi-Fi" },
+        onSelect = { v -> onChange { it.copy(wifiTransition = v) } },
+    )
     Text("Any Wi-Fi network counts. The network name is not read.", style = MaterialTheme.typography.bodySmall)
 }
 
@@ -141,11 +149,12 @@ private fun WifiFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> Uni
 private fun ActionFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> Unit) {
     when (form.action) {
         ActionKind.ShowTasks -> Text("A notification lists the tasks due today or overdue.", style = MaterialTheme.typography.bodySmall)
-        ActionKind.Remind -> OutlinedTextField(form.text, { v -> onChange { it.copy(text = v) } }, label = { Text("Reminder text") })
-        ActionKind.Checklist -> OutlinedTextField(
+        ActionKind.Remind -> AppTextField(form.text, { v -> onChange { it.copy(text = v) } }, "Reminder text", Modifier.fillMaxWidth())
+        ActionKind.Checklist -> AppTextField(
             value = form.items,
             onValueChange = { v -> onChange { it.copy(items = v) } },
-            label = { Text("Items, one per line") },
+            label = "Items, one per line",
+            modifier = Modifier.fillMaxWidth(),
             minLines = 3,
         )
     }
@@ -153,21 +162,12 @@ private fun ActionFields(form: RuleForm, onChange: ((RuleForm) -> RuleForm) -> U
 
 @Composable
 private fun NumberField(label: String, value: String, decimal: Boolean, modifier: Modifier = Modifier, onValue: (String) -> Unit) {
-    OutlinedTextField(
+    AppTextField(
         value = value,
         onValueChange = onValue,
-        label = { Text(label) },
+        label = label,
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = if (decimal) KeyboardType.Decimal else KeyboardType.Number),
         modifier = modifier,
     )
-}
-
-@Composable
-private fun <T> Choices(options: List<T>, selected: T, label: (T) -> String, onSelect: (T) -> Unit) {
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        options.forEach { option ->
-            FilterChip(selected = option == selected, onClick = { onSelect(option) }, label = { Text(label(option)) })
-        }
-    }
 }

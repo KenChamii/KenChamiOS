@@ -14,6 +14,14 @@
   --accent: oklch(0.68 0.16 45);
   --destructive: oklch(0.58 0.2 25);
   --overlay: oklch(0 0 0 / 0.35);
+  --projects: oklch(0.55 0.17 255);
+  --projects-soft: oklch(0.55 0.17 255 / 0.12);
+  --media: oklch(0.53 0.2 295);
+  --media-soft: oklch(0.53 0.2 295 / 0.12);
+  --focus: oklch(0.66 0.17 50);
+  --focus-soft: oklch(0.66 0.17 50 / 0.14);
+  --workflow: oklch(0.56 0.13 155);
+  --workflow-soft: oklch(0.56 0.13 155 / 0.13);
   --shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 8px 24px oklch(0 0 0 / 0.06);
   --duration-fast: 150ms;
   --duration-base: 220ms;
@@ -32,6 +40,14 @@
   --accent: oklch(0.75 0.15 50);
   --destructive: oklch(0.68 0.19 25);
   --overlay: oklch(0 0 0 / 0.6);
+  --projects: oklch(0.72 0.14 255);
+  --projects-soft: oklch(0.72 0.14 255 / 0.16);
+  --media: oklch(0.72 0.16 295);
+  --media-soft: oklch(0.72 0.16 295 / 0.16);
+  --focus: oklch(0.76 0.15 55);
+  --focus-soft: oklch(0.76 0.15 55 / 0.16);
+  --workflow: oklch(0.74 0.14 155);
+  --workflow-soft: oklch(0.74 0.14 155 / 0.16);
   --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 8px 24px oklch(0 0 0 / 0.35);
 }
 
@@ -47,9 +63,31 @@
   --color-accent: var(--accent);
   --color-destructive: var(--destructive);
   --color-overlay: var(--overlay);
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --color-projects: var(--projects);
+  --color-projects-soft: var(--projects-soft);
+  --color-media: var(--media);
+  --color-media-soft: var(--media-soft);
+  --color-focus: var(--focus);
+  --color-focus-soft: var(--focus-soft);
+  --color-workflow: var(--workflow);
+  --color-workflow-soft: var(--workflow-soft);
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --radius-2xl: 1.25rem;
   --shadow-soft: var(--shadow);
+  --text-display: 3rem;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.04em;
+  --text-display--font-weight: 700;
+  --text-title: 1.625rem;
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.025em;
+  --text-title--font-weight: 650;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.55;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1rem;
+  --text-label--letter-spacing: 0.01em;
+  --text-label--font-weight: 500;
   --text-hero: 9rem;
   --text-hero--line-height: 1;
   --text-hero--letter-spacing: -0.05em;
@@ -60,6 +98,37 @@
   --animate-fade-in: fade-in var(--duration-fast) var(--ease-out);
   --animate-pop-in: pop-in var(--duration-base) var(--ease-out);
   --animate-slide-in: slide-in var(--duration-base) var(--ease-out);
+  --animate-tick: tick var(--duration-base) var(--ease-out);
+}
+
+/* list items fade up one after another; set --i with stagger() */
+@utility stagger-in {
+  animation: item-in var(--duration-base) var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 10) * 25ms);
+}
+
+/* cards rise a little under the pointer */
+@utility lift {
+  transition:
+    translate var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+  &:hover {
+    translate: 0 -3px;
+  }
+}
+
+@keyframes item-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes tick {
+  from {
+    opacity: 0;
+    transform: scale(0.4) rotate(-12deg);
+  }
 }
 
 @keyframes page-in {
@@ -94,6 +163,7 @@
   *::before,
   *::after {
     animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
@@ -104,6 +174,7 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
   -webkit-font-smoothing: antialiased;
 }
 
@@ -171,11 +242,6 @@ body {
   border-left: 3px solid var(--border);
   padding-left: 0.75rem;
   color: var(--muted-foreground);
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-  accent-color: var(--accent);
 }
 
 :root {

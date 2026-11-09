@@ -1,14 +1,17 @@
-import { Plus } from "lucide-react";
+import { FolderKanban, Plus } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chips";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ProjectCard } from "@/features/projects/project-card";
 import { NewProjectDialog } from "@/features/projects/project-dialog";
 import { useProjects } from "@/hooks/use-projects";
 import { errorMessage } from "@/lib/errors";
+import { stagger } from "@/lib/motion";
 
 export function ProjectsPage() {
   const navigate = useNavigate();
@@ -29,7 +32,12 @@ export function ProjectsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Projects" subtitle="Everything you are building">
+      <PageHeader
+        title="Projects"
+        subtitle="Everything you are building"
+        icon={FolderKanban}
+        area="projects"
+      >
         <Button onClick={() => setDialogOpen(true)}>
           <Plus size={16} />
           New project
@@ -43,41 +51,54 @@ export function ProjectsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <Select value={tag} onChange={(e) => setTag(e.target.value)} aria-label="Filter by tag">
-          <option value="">All tags</option>
-          {allTags.map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </Select>
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            checked={showArchived}
-            onChange={(e) => setShowArchived(e.target.checked)}
-          />
+        <Select
+          aria-label="Filter by tag"
+          className="w-44"
+          value={tag}
+          options={[
+            { value: "", label: "All tags" },
+            ...allTags.map((value) => ({ value, label: value })),
+          ]}
+          onChange={setTag}
+        />
+        <Chip selected={showArchived} onClick={() => setShowArchived(!showArchived)}>
           Show archived
-        </label>
+        </Chip>
       </div>
 
       {projects.error ? (
         <p className="text-sm text-destructive">{errorMessage(projects.error)}</p>
       ) : projects.data?.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <p className="text-muted-foreground">
-            {isFiltering
+        <EmptyState
+          icon={FolderKanban}
+          area="projects"
+          line={
+            isFiltering
               ? "No projects match these filters."
-              : "No projects yet. Start with an idea."}
-          </p>
-          {!isFiltering && (
-            <Button onClick={() => setDialogOpen(true)}>Create your first project</Button>
-          )}
-        </div>
+              : "No projects yet. Start with an idea."
+          }
+          action={
+            isFiltering ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch("");
+                  setTag("");
+                }}
+              >
+                Clear filters
+              </Button>
+            ) : (
+              <Button onClick={() => setDialogOpen(true)}>Create your first project</Button>
+            )
+          }
+        />
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(18rem,1fr))] gap-6">
-          {projects.data?.map((project) => (
-            <ProjectCard key={project.id} project={project} />
+          {projects.data?.map((project, index) => (
+            <div key={project.id} className="stagger-in" style={stagger(index)}>
+              <ProjectCard project={project} />
+            </div>
           ))}
         </div>
       )}

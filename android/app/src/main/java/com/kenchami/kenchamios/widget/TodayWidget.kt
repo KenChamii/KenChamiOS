@@ -28,7 +28,7 @@ class TodayWidget : GlanceAppWidget() {
 
         provideContent {
             val current by data.collectAsState(WidgetData())
-            GlanceTheme { TodayWidgetContent(current, today.start) }
+            GlanceTheme(colors = WidgetColors) { TodayWidgetContent(current, today.start) }
         }
     }
 }
