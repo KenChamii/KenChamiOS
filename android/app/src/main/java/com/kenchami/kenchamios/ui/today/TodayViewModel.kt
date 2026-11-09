@@ -2,6 +2,8 @@ package com.kenchami.kenchamios.ui.today
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kenchami.kenchamios.context.ChecklistRun
+import com.kenchami.kenchamios.context.ChecklistRunRepository
 import com.kenchami.kenchamios.core.DayBounds
 import com.kenchami.kenchamios.core.dayBounds
 import com.kenchami.kenchamios.data.db.DueTask
@@ -49,6 +51,7 @@ class TodayViewModel @Inject constructor(
     private val media: MediaRepository,
     projects: ProjectRepository,
     private val timer: TimerController,
+    private val checklistRuns: ChecklistRunRepository,
     activity: ActivityRepository,
     private val clock: Clock,
 ) : ViewModel() {
@@ -85,6 +88,17 @@ class TodayViewModel @Inject constructor(
 
     fun stopTimer() {
         viewModelScope.launch { timer.stop() }
+    }
+
+    val checklists: StateFlow<List<ChecklistRun>> = checklistRuns.observe()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), emptyList())
+
+    fun toggleChecklist(ruleId: String, index: Int) {
+        viewModelScope.launch { checklistRuns.toggle(ruleId, index) }
+    }
+
+    fun dismissChecklist(ruleId: String) {
+        viewModelScope.launch { checklistRuns.dismiss(ruleId) }
     }
 
     fun finishTask(id: String) {

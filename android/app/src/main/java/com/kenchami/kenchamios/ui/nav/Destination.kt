@@ -19,8 +19,13 @@ object Routes {
     const val PROJECT = "project/{id}"
     const val ENTRY = "media/{entryId}"
     const val SYNC = "sync"
+    const val RULES = "rules"
+    const val RULE = "rules/{id}"
+    const val RULES_SETTINGS = "rules-settings"
 
     fun project(id: String) = "project/$id"
 
     fun entry(id: String) = "media/$id"
+
+    fun rule(id: String) = "rules/$id"
 }
