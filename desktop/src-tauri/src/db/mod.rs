@@ -10,6 +10,8 @@ pub mod metadata_cache;
 pub mod projects;
 pub mod prompts;
 pub mod save_points;
+#[cfg(test)]
+mod schema_contract;
 pub mod session_notes;
 pub mod settings;
 pub mod tasks;

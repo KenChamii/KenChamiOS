@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "KenChamiOS shared enums",
+  "$defs": {
+    "asset_kind": {
+      "type": "string",
+      "enum": ["screenshot", "link"]
+    },
+    "doc_kind": {
+      "type": "string",
+      "enum": ["idea", "plan", "adr", "note"]
+    },
+    "media_source": {
+      "type": "string",
+      "enum": ["anilist", "rawg", "tmdb", "musicbrainz", "manual"]
+    },
+    "media_status": {
+      "type": "string",
+      "enum": ["in_progress", "planned", "completed", "on_hold", "dropped"]
+    },
+    "media_type": {
+      "type": "string",
+      "enum": ["anime", "manga", "game", "movie", "show", "album", "artist"]
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "medium", "high"]
+    },
+    "save_point_source": {
+      "type": "string",
+      "enum": ["manual", "session_note"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": ["idea", "plan", "build", "review", "done"]
+    },
+    "task_status": {
+      "type": "string",
+      "enum": ["todo", "doing", "review", "done"]
+    },
+    "template_kind": {
+      "type": "string",
+      "enum": ["brief", "task_prompt", "portfolio"]
+    },
+    "time_entry_kind": {
+      "type": "string",
+      "enum": ["focus", "break", "manual"]
+    },
+    "timer_phase": {
+      "type": "string",
+      "enum": ["focus", "break", "long_break"]
+    },
+    "timer_status": {
+      "type": "string",
+      "enum": ["running", "paused"]
+    }
+  }
+}
