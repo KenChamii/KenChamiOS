@@ -5,7 +5,7 @@ use crate::error::{AppError, AppResult};
 use sqlx::SqliteConnection;
 use sqlx::types::Json;
 
-// activity on a project's tasks and docs counts as activity on the project
+// activity on a project's tasks, docs and save points counts as activity on the project
 macro_rules! summary_sql {
     ($tail:literal) => {
         concat!(
@@ -20,7 +20,9 @@ macro_rules! summary_sql {
                            WHERE a.entity_id = p.id
                               OR a.entity_id IN (SELECT id FROM tasks WHERE project_id = p.id)
                               OR a.entity_id IN
-                                 (SELECT id FROM project_docs WHERE project_id = p.id)),
+                                 (SELECT id FROM project_docs WHERE project_id = p.id)
+                              OR a.entity_id IN
+                                 (SELECT id FROM save_points WHERE project_id = p.id)),
                          p.created_at) AS last_activity_at
              FROM projects p ",
             $tail
@@ -173,6 +175,8 @@ pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
     require_changed(result, "project")?;
     for sql in [
         "UPDATE project_docs SET deleted = 1, updated_at = ?, device_id = ?
+          WHERE project_id = ? AND deleted = 0",
+        "UPDATE save_points SET deleted = 1, updated_at = ?, device_id = ?
           WHERE project_id = ? AND deleted = 0",
         "UPDATE tasks SET deleted = 1, updated_at = ?, device_id = ?
           WHERE project_id = ? AND deleted = 0",

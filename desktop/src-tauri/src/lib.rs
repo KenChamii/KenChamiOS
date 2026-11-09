@@ -2,6 +2,7 @@ mod commands;
 mod db;
 mod domain;
 mod error;
+mod git;
 mod state;
 pub mod sync;
 
@@ -38,6 +39,11 @@ pub fn run() {
             commands::checklist::checklist_create,
             commands::checklist::checklist_update,
             commands::checklist::checklist_delete,
+            commands::git::git_info,
+            commands::save_points::save_points_list,
+            commands::save_points::save_points_create,
+            commands::save_points::save_points_delete,
+            commands::save_points::save_points_export,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

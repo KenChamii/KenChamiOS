@@ -8,6 +8,8 @@ pub enum AppError {
     Migration(#[from] sqlx::migrate::MigrateError),
     #[error("file system error: {0}")]
     Io(#[from] std::io::Error),
+    #[error("git error: {0}")]
+    Git(#[from] git2::Error),
     #[error("invalid stored value: {0}")]
     Json(#[from] serde_json::Error),
     #[error("{0} not found")]
@@ -25,6 +27,7 @@ impl AppError {
             Self::Migration(_) => "migration",
             Self::Io(_) => "io",
             Self::Json(_) => "json",
+            Self::Git(_) => "git",
             Self::Tauri(_) => "tauri",
             Self::NotFound(_) => "not_found",
             Self::Invalid(_) => "invalid",
