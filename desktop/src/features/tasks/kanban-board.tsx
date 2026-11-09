@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { useMoveTask } from "@/hooks/use-tasks";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/api/tasks";
 import { cn } from "@/lib/cn";
+import { StartTimerButton } from "@/features/focus/start-timer-button";
 import { CopyTaskPromptButton } from "@/features/workflow/copy-task-prompt-button";
 import { dropTarget, groupByStatus } from "./board";
 import { STATUS_LABELS } from "./meta";
@@ -110,7 +111,10 @@ function TaskCard({ task }: { task: Task }) {
     <Card className="flex cursor-grab flex-col gap-2 p-3">
       <div className="flex items-start justify-between gap-1">
         <span className="text-sm">{task.title}</span>
-        <CopyTaskPromptButton taskId={task.id} />
+        <div className="flex">
+          <StartTimerButton taskId={task.id} />
+          <CopyTaskPromptButton taskId={task.id} />
+        </div>
       </div>
       <div className="flex flex-wrap gap-1">
         <TaskMetaBadges task={task} />

@@ -1,3 +1,4 @@
+use super::portfolio::PortfolioCtx;
 use super::{Project, SavePoint, Task};
 use crate::error::AppResult;
 use crate::git::GitInfo;
@@ -7,7 +8,15 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 
 // names the app fills itself; anything else in a prompt is asked from the user
-const KNOWN_VARIABLES: [&str; 6] = ["project", "docs", "tasks", "task", "save_point", "git"];
+const KNOWN_VARIABLES: [&str; 7] = [
+    "project",
+    "docs",
+    "tasks",
+    "task",
+    "save_point",
+    "git",
+    "portfolio",
+];
 
 #[derive(Debug, Default, Serialize)]
 pub struct RenderContext {
@@ -20,6 +29,8 @@ pub struct RenderContext {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub save_point: Option<SavePointCtx>,
     pub git: GitCtx,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub portfolio: Option<PortfolioCtx>,
     /// user supplied values for the unknown variables of a prompt
     #[serde(flatten)]
     pub variables: BTreeMap<String, String>,
@@ -152,6 +163,7 @@ impl RenderContext {
                 commit: "0123456789abcdef".into(),
                 dirty_files: 2,
             },
+            portfolio: Some(PortfolioCtx::sample()),
             variables: BTreeMap::new(),
         }
     }
@@ -187,7 +199,7 @@ mod tests {
     use crate::domain::TemplateKind;
 
     fn shipped(kind: TemplateKind) -> &'static str {
-        kind.default_body().expect("default body")
+        kind.default_body()
     }
 
     #[test]

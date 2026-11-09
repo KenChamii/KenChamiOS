@@ -1,9 +1,11 @@
 mod app_info;
+pub mod asset;
 pub mod brief;
 mod checklist;
 mod doc;
 pub mod export;
 pub mod order_key;
+pub mod portfolio;
 pub mod project;
 mod prompt;
 pub mod render;
@@ -12,6 +14,7 @@ pub mod session_note;
 pub mod tags;
 pub mod task;
 mod template;
+pub mod time_entry;
 
 pub use app_info::AppInfo;
 pub use checklist::ChecklistItem;

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
+import { TimerSettingsCard } from "@/features/focus/timer-settings";
 import { TemplateSettings } from "@/features/workflow/template-settings";
 import { getAppInfo } from "@/lib/api/app";
 
@@ -24,6 +25,7 @@ export function SettingsPage() {
           </dl>
         )}
       </Card>
+      <TimerSettingsCard />
       <TemplateSettings />
     </div>
   );

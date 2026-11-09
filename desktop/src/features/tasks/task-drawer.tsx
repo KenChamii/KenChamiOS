@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { StartTimerButton } from "@/features/focus/start-timer-button";
 import { CopyTaskPromptButton } from "@/features/workflow/copy-task-prompt-button";
 import { useDeleteTask, useUpdateTask } from "@/hooks/use-tasks";
 import type { Task } from "@/lib/api/tasks";
@@ -35,7 +36,8 @@ function TaskDetail({ task, subtasks, onClose }: TaskDetailProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
+      <div className="flex gap-2">
+        <StartTimerButton taskId={task.id} showLabel />
         <CopyTaskPromptButton taskId={task.id} showLabel />
       </div>
       <TaskForm
