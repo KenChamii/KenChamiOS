@@ -1,9 +1,10 @@
+use super::safe_path::resolve_inside;
 use crate::domain::brief::{self, DiffLine};
-use crate::error::{AppError, AppResult};
+use crate::error::AppResult;
 use serde::Serialize;
 use std::fs;
 use std::io::ErrorKind;
-use std::path::{Component, Path, PathBuf};
+use std::path::Path;
 
 #[derive(Debug, Serialize)]
 pub struct BriefPreview {
@@ -15,7 +16,7 @@ pub struct BriefPreview {
 }
 
 pub fn preview(repo_path: &str, target: &str, rendered: &str) -> AppResult<BriefPreview> {
-    let path = resolve_target(repo_path, target)?;
+    let path = resolve_inside(repo_path, target)?;
     let existing = read_existing(&path)?;
     let proposed = brief::merge(existing.as_deref(), rendered)?;
     let old = existing.as_deref().unwrap_or_default();
@@ -30,40 +31,13 @@ pub fn preview(repo_path: &str, target: &str, rendered: &str) -> AppResult<Brief
 
 /// Writes the brief into the marked section of the target file inside the repo.
 pub fn write(repo_path: &str, target: &str, rendered: &str) -> AppResult<()> {
-    let path = resolve_target(repo_path, target)?;
+    let path = resolve_inside(repo_path, target)?;
     let merged = brief::merge(read_existing(&path)?.as_deref(), rendered)?;
     if let Some(dir) = path.parent() {
         fs::create_dir_all(dir)?;
     }
     fs::write(path, merged)?;
     Ok(())
-}
-
-/// The absolute path of `target`, which must be a plain relative path that stays inside the repo.
-fn resolve_target(repo_path: &str, target: &str) -> AppResult<PathBuf> {
-    let relative = Path::new(target);
-    let plain = relative
-        .components()
-        .all(|part| matches!(part, Component::Normal(_)));
-    if target.trim().is_empty() || !plain {
-        return Err(AppError::Invalid(
-            "the target file must be a relative path inside the repository",
-        ));
-    }
-    let root = fs::canonicalize(repo_path)
-        .map_err(|_| AppError::Invalid("the repository folder does not exist"))?;
-    if !root.is_dir() {
-        return Err(AppError::Invalid("the repository path is not a folder"));
-    }
-    let path = root.join(relative);
-    // a symlink anywhere on the way must not lead out of the repo
-    let existing = path.ancestors().find(|p| p.exists()).unwrap_or(&root);
-    if !fs::canonicalize(existing)?.starts_with(&root) {
-        return Err(AppError::Invalid(
-            "the target file resolves outside the repository",
-        ));
-    }
-    Ok(path)
 }
 
 fn read_existing(path: &Path) -> AppResult<Option<String>> {
@@ -78,6 +52,8 @@ fn read_existing(path: &Path) -> AppResult<Option<String>> {
 mod tests {
     use super::*;
     use crate::domain::brief::DiffKind;
+    use crate::error::AppError;
+    use std::path::PathBuf;
 
     struct TempRepo(PathBuf);
 

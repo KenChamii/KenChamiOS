@@ -11,17 +11,16 @@ pub enum TemplateKind {
 }
 
 impl TemplateKind {
-    /// The shipped body, or None for kinds that have no default yet.
-    pub fn default_body(self) -> Option<&'static str> {
+    pub const ALL: [Self; 3] = [Self::Brief, Self::TaskPrompt, Self::Portfolio];
+
+    /// The shipped body.
+    pub fn default_body(self) -> &'static str {
         match self {
-            Self::Brief => Some(include_str!("../../templates/brief.md.j2")),
-            Self::TaskPrompt => Some(include_str!("../../templates/task_prompt.md.j2")),
-            Self::Portfolio => None,
+            Self::Brief => include_str!("../../templates/brief.md.j2"),
+            Self::TaskPrompt => include_str!("../../templates/task_prompt.md.j2"),
+            Self::Portfolio => include_str!("../../templates/portfolio.md.j2"),
         }
     }
-
-    /// Kinds that are seeded on first run.
-    pub const SEEDED: [Self; 2] = [Self::Brief, Self::TaskPrompt];
 }
 
 #[derive(Debug, Clone, FromRow, Serialize)]

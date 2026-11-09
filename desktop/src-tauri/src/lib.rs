@@ -5,6 +5,7 @@ mod error;
 mod git;
 mod state;
 pub mod sync;
+mod timer;
 mod workflow;
 
 use state::AppState;
@@ -15,10 +16,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
+        .on_window_event(timer::shell::keep_timer_alive)
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             let state = tauri::async_runtime::block_on(AppState::init(data_dir))?;
             app.manage(state);
+            timer::shell::setup(app.handle())?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -65,6 +69,24 @@ pub fn run() {
             commands::prompts::tasks_prompt,
             commands::session_notes::session_note_preview,
             commands::session_notes::session_note_confirm,
+            commands::timer::timer_get,
+            commands::timer::timer_start,
+            commands::timer::timer_pause,
+            commands::timer::timer_resume,
+            commands::timer::timer_stop,
+            commands::timer::timer_settings_get,
+            commands::timer::timer_settings_set,
+            commands::time_entries::time_entries_list,
+            commands::time_entries::time_entries_create,
+            commands::time_entries::time_entries_update,
+            commands::time_entries::time_entries_delete,
+            commands::assets::assets_list,
+            commands::assets::assets_add_screenshot,
+            commands::assets::assets_add_link,
+            commands::assets::assets_set_caption,
+            commands::assets::assets_delete,
+            commands::portfolio::portfolio_render,
+            commands::portfolio::portfolio_export,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

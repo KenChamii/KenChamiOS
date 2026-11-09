@@ -1,0 +1,41 @@
+# {{ project.name }}
+{% if project.description %}
+{{ project.description }}
+{% endif %}{% if project.tags %}
+Tech stack: {{ project.tags | join(", ") }}
+{% endif %}{% if docs.idea %}
+## Problem
+
+{{ docs.idea }}
+{% endif %}{% if docs.plan %}
+## Solution
+
+{{ docs.plan }}
+{% endif %}{% if portfolio.features %}
+## Key features
+{% for feature in portfolio.features %}
+- {{ feature }}
+{%- endfor %}
+{% endif %}{% if portfolio.timeline %}
+## Timeline
+{% for step in portfolio.timeline %}
+- {{ step.date }} ({{ step.stage }}): {{ step.note }}
+{%- endfor %}
+{% endif %}{% if portfolio.time.total %}
+## Time spent
+
+- Total: {{ portfolio.time.total }}
+- Focus sessions: {{ portfolio.time.sessions }}
+{% endif %}{% if portfolio.screenshots %}
+## Screenshots
+{% for shot in portfolio.screenshots %}
+![{{ shot.caption }}]({{ shot.path }})
+{% endfor %}{% endif %}{% if portfolio.links %}
+## Links
+{% for link in portfolio.links %}
+- [{{ link.caption or link.url }}]({{ link.url }})
+{%- endfor %}
+{% endif %}
+## What I learned
+
+Add what you learned here.

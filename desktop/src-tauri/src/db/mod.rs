@@ -1,4 +1,5 @@
 mod activity;
+pub mod assets;
 pub mod checklist;
 pub mod docs;
 mod handle;
@@ -9,8 +10,10 @@ pub mod session_notes;
 pub mod settings;
 pub mod tasks;
 pub mod templates;
+pub mod time_entries;
+pub mod timer;
 
-pub use handle::Db;
+pub use handle::{Db, new_id, now_ms};
 
 use crate::error::AppResult;
 use sqlx::SqlitePool;

@@ -4,12 +4,10 @@ use crate::domain::render::{RenderContext, render};
 use crate::domain::{ExportTemplate, TemplateKind};
 use crate::error::{AppError, AppResult};
 
-/// Inserts the shipped template of each seeded kind that has no active one yet.
+/// Inserts the shipped template of each kind that has no active one yet.
 pub async fn ensure_defaults(db: &Db) -> AppResult<()> {
-    for kind in TemplateKind::SEEDED {
-        let Some(body) = kind.default_body() else {
-            continue;
-        };
+    for kind in TemplateKind::ALL {
+        let body = kind.default_body();
         sqlx::query(
             "INSERT INTO export_templates
                 (id, created_at, updated_at, device_id, kind, name, body, is_default)
@@ -63,9 +61,7 @@ pub async fn reset(db: &Db, id: &str) -> AppResult<ExportTemplate> {
             .fetch_optional(&db.pool)
             .await?
             .ok_or(AppError::NotFound("template"))?;
-    let body = kind
-        .default_body()
-        .ok_or(AppError::Invalid("this template has no default"))?;
+    let body = kind.default_body();
     write_body(db, id, body, "template.reset", "Reset template to default").await
 }
 
@@ -119,7 +115,14 @@ mod tests {
             .iter()
             .map(|t| t.kind)
             .collect();
-        assert_eq!(kinds, [TemplateKind::Brief, TemplateKind::TaskPrompt]);
+        assert_eq!(
+            kinds,
+            [
+                TemplateKind::Brief,
+                TemplateKind::Portfolio,
+                TemplateKind::TaskPrompt
+            ]
+        );
     }
 
     #[tokio::test]
@@ -133,10 +136,7 @@ mod tests {
         assert_eq!(edited.body, "Hello {{ project.name }}");
 
         let restored = reset(&db, &brief.id).await.expect("reset");
-        assert_eq!(
-            Some(restored.body.as_str()),
-            TemplateKind::Brief.default_body()
-        );
+        assert_eq!(restored.body, TemplateKind::Brief.default_body());
         assert_eq!(
             kinds_for(&db, &brief.id).await,
             ["template.updated", "template.reset"]

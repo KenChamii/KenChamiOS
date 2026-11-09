@@ -51,7 +51,7 @@ fn short_hash(hash: &str) -> &str {
 }
 
 /// UTC date as YYYY-MM-DD from unix ms.
-fn format_date(ms: i64) -> String {
+pub fn format_date(ms: i64) -> String {
     // civil-from-days, shifted so the year starts in March
     let z = ms.div_euclid(86_400_000) + 719_468;
     let era = z.div_euclid(146_097);

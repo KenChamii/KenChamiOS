@@ -1,4 +1,5 @@
-use crate::db::{Db, docs, projects, save_points, tasks};
+use crate::db::{Db, assets, docs, projects, save_points, tasks, time_entries};
+use crate::domain::portfolio::PortfolioCtx;
 use crate::domain::render::{GitCtx, ProjectCtx, RenderContext, SavePointCtx, TaskCtx};
 use crate::domain::{DocKind, TaskStatus};
 use crate::error::AppResult;
@@ -31,6 +32,26 @@ pub async fn project_context(db: &Db, project_id: &str) -> AppResult<RenderConte
     Ok(ctx)
 }
 
+/// The project context plus finished tasks, timeline, time spent and assets.
+pub async fn portfolio_context(db: &Db, project_id: &str) -> AppResult<RenderContext> {
+    let mut ctx = project_context(db, project_id).await?;
+    let done_tasks: Vec<_> = tasks::list(db, project_id)
+        .await?
+        .into_iter()
+        .filter(|t| t.parent_id.is_none() && t.status == TaskStatus::Done)
+        .collect();
+    let points = save_points::list(db, project_id).await?;
+    let entries = time_entries::list(db, project_id).await?;
+    let project_assets = assets::list(db, project_id).await?;
+    ctx.portfolio = Some(PortfolioCtx::build(
+        &done_tasks,
+        &points,
+        &entries,
+        &project_assets,
+    ));
+    Ok(ctx)
+}
+
 /// The project context plus one task.
 pub async fn task_context(db: &Db, task_id: &str) -> AppResult<RenderContext> {
     let task = tasks::get(db, task_id).await?;
@@ -58,7 +79,13 @@ mod tests {
     use super::*;
     use crate::db::projects::create_for_test;
     use crate::db::tasks::{create, create_input, move_to};
+    use crate::db::templates;
+    use crate::domain::ProjectInput;
     use crate::domain::SavePointInput;
+    use crate::domain::TemplateKind;
+    use crate::domain::asset::AssetKind;
+    use crate::domain::render::render;
+    use crate::domain::time_entry::{EntryKind, TimeEntryInput};
 
     #[tokio::test]
     async fn collects_open_tasks_docs_and_last_save_point() {
@@ -110,5 +137,178 @@ mod tests {
 
         assert_eq!(ctx.task.map(|t| t.title).as_deref(), Some("Do it"));
         assert_eq!(ctx.project.map(|p| p.name).as_deref(), Some("Demo"));
+    }
+
+    #[tokio::test]
+    async fn portfolio_page_collects_everything_about_a_finished_project() {
+        let db = Db::in_memory().await;
+        let project = projects::create(
+            &db,
+            ProjectInput {
+                name: "Demo App".to_string(),
+                description: "A small demo.".to_string(),
+                repo_path: None,
+                color: None,
+                tags: vec!["rust".to_string(), "tauri".to_string()],
+                archived: false,
+            },
+        )
+        .await
+        .expect("project")
+        .project;
+        docs::upsert(&db, &project.id, DocKind::Idea, "Idea", "Notes get lost.")
+            .await
+            .expect("idea");
+        docs::upsert(
+            &db,
+            &project.id,
+            DocKind::Plan,
+            "Plan",
+            "Keep them in one app.",
+        )
+        .await
+        .expect("plan");
+        let shipped = create(&db, create_input(&project.id, "Ship the editor"))
+            .await
+            .expect("task");
+        move_to(&db, &shipped.id, TaskStatus::Done, None)
+            .await
+            .expect("move");
+        create(&db, create_input(&project.id, "Still open"))
+            .await
+            .expect("task");
+        for (note, created_at) in [("Wrapped up", 1_794_182_400_000_i64), ("Started", 0)] {
+            let input = SavePointInput {
+                note: note.to_string(),
+                done_md: String::new(),
+                next_md: String::new(),
+            };
+            let point = save_points::create(&db, &project.id, input, None, None)
+                .await
+                .expect("save point");
+            sqlx::query("UPDATE save_points SET created_at = ? WHERE id = ?")
+                .bind(created_at)
+                .bind(point.id)
+                .execute(&db.pool)
+                .await
+                .expect("set date");
+        }
+        time_entries::create_manual(
+            &db,
+            &project.id,
+            TimeEntryInput {
+                task_id: None,
+                started_at: 0,
+                duration_s: 90 * 60,
+                note: String::new(),
+            },
+        )
+        .await
+        .expect("manual entry");
+        let mut conn = db.pool.acquire().await.expect("conn");
+        time_entries::insert(
+            &mut conn,
+            &db,
+            &time_entries::NewEntry {
+                project_id: &project.id,
+                task_id: None,
+                kind: EntryKind::Focus,
+                started_at: 0,
+                ended_at: 25 * 60_000,
+                duration_s: 25 * 60,
+                note: "",
+            },
+        )
+        .await
+        .expect("focus entry");
+        drop(conn);
+        assets::add(&db, &project.id, AssetKind::Screenshot, "abc.png", "Editor")
+            .await
+            .expect("screenshot");
+        assets::add(
+            &db,
+            &project.id,
+            AssetKind::Link,
+            "https://demo.test",
+            "Demo",
+        )
+        .await
+        .expect("link");
+        assets::add(&db, &project.id, AssetKind::Link, "https://repo.test", "")
+            .await
+            .expect("link");
+        templates::ensure_defaults(&db).await.expect("seed");
+        let template = templates::get_default(&db, TemplateKind::Portfolio)
+            .await
+            .expect("template");
+
+        let ctx = portfolio_context(&db, &project.id).await.expect("context");
+        let page = render(&template.body, &ctx).expect("render");
+
+        assert_eq!(
+            page,
+            "# Demo App
+
+A small demo.
+
+Tech stack: rust, tauri
+
+## Problem
+
+Notes get lost.
+
+## Solution
+
+Keep them in one app.
+
+## Key features
+
+- Ship the editor
+
+## Timeline
+
+- 1970-01-01 (idea): Started
+- 2026-11-09 (idea): Wrapped up
+
+## Time spent
+
+- Total: 1h 55m
+- Focus sessions: 1
+
+## Screenshots
+
+![Editor](images/abc.png)
+
+## Links
+
+- [Demo](https://demo.test)
+- [https://repo.test](https://repo.test)
+
+## What I learned
+
+Add what you learned here."
+        );
+    }
+
+    #[tokio::test]
+    async fn portfolio_page_of_a_bare_project_has_only_the_basics() {
+        let db = Db::in_memory().await;
+        let project = create_for_test(&db, "Bare").await;
+        templates::ensure_defaults(&db).await.expect("seed");
+        let template = templates::get_default(&db, TemplateKind::Portfolio)
+            .await
+            .expect("template");
+
+        let ctx = portfolio_context(&db, &project.id).await.expect("context");
+        let page = render(&template.body, &ctx).expect("render");
+
+        assert_eq!(
+            page,
+            "# Bare
+
+## What I learned
+
+Add what you learned here."
+        );
     }
 }
