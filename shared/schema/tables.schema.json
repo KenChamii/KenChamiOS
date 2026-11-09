@@ -1,0 +1,716 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tables.schema.json",
+  "title": "KenChamiOS table rows",
+  "description": "One row per table as stored by the desktop migrations. Sync columns: id, created_at, updated_at, device_id, deleted.",
+  "$defs": {
+    "activity": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "kind": {
+          "type": "string"
+        },
+        "entity_type": {
+          "type": "string"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "summary": {
+          "type": "string"
+        },
+        "at": {
+          "type": "integer"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "kind", "entity_type", "entity_id", "summary", "at"],
+      "additionalProperties": false
+    },
+    "checklist_items": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "done": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "order_key": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "task_id", "text", "done", "order_key"],
+      "additionalProperties": false
+    },
+    "export_templates": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "kind": {
+          "$ref": "enums.schema.json#/$defs/template_kind"
+        },
+        "name": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "is_default": {
+          "type": "integer",
+          "enum": [0, 1]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "kind", "name", "body", "is_default"],
+      "additionalProperties": false
+    },
+    "media_entries": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "media_item_id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "enums.schema.json#/$defs/media_status"
+        },
+        "progress": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "progress_total": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "rating": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 10
+        },
+        "notes": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string",
+          "x-encoding": "json-string-array"
+        },
+        "started_at": {
+          "type": ["integer", "null"]
+        },
+        "finished_at": {
+          "type": ["integer", "null"]
+        },
+        "platform": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "media_item_id", "status", "progress", "notes", "tags"],
+      "additionalProperties": false
+    },
+    "media_items": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "type": {
+          "$ref": "enums.schema.json#/$defs/media_type"
+        },
+        "title": {
+          "type": "string"
+        },
+        "cover_url": {
+          "type": ["string", "null"]
+        },
+        "cover_cache_path": {
+          "type": ["string", "null"]
+        },
+        "year": {
+          "type": ["integer", "null"]
+        },
+        "genres": {
+          "type": "string",
+          "x-encoding": "json-string-array"
+        },
+        "synopsis": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "enums.schema.json#/$defs/media_source"
+        },
+        "external_id": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "type", "title", "genres", "synopsis", "source"],
+      "additionalProperties": false
+    },
+    "media_progress_log": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "entry_id": {
+          "type": "string"
+        },
+        "delta": {
+          "type": "integer"
+        },
+        "value_after": {
+          "type": "integer"
+        },
+        "logged_at": {
+          "type": "integer"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "entry_id", "delta", "value_after", "logged_at"],
+      "additionalProperties": false
+    },
+    "metadata_cache": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "provider answers cached on this device",
+      "x-android": false,
+      "properties": {
+        "cache_key": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "string"
+        },
+        "fetched_at": {
+          "type": "integer"
+        }
+      },
+      "required": ["cache_key", "payload", "fetched_at"],
+      "additionalProperties": false
+    },
+    "project_assets": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "enums.schema.json#/$defs/asset_kind"
+        },
+        "path_or_url": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "order_key": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "kind", "path_or_url", "caption", "order_key"],
+      "additionalProperties": false
+    },
+    "project_docs": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "enums.schema.json#/$defs/doc_kind"
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "kind", "title", "body_md"],
+      "additionalProperties": false
+    },
+    "projects": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "name": {
+          "type": "string"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "stage": {
+          "$ref": "enums.schema.json#/$defs/stage"
+        },
+        "description": {
+          "type": "string"
+        },
+        "repo_path": {
+          "type": ["string", "null"]
+        },
+        "color": {
+          "type": ["string", "null"]
+        },
+        "tags": {
+          "type": "string",
+          "x-encoding": "json-string-array"
+        },
+        "archived": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "finished_at": {
+          "type": ["integer", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "name", "slug", "stage", "description", "tags", "archived"],
+      "additionalProperties": false
+    },
+    "prompts": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": ["string", "null"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string",
+          "x-encoding": "json-string-array"
+        },
+        "favorite": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "use_count": {
+          "type": "integer"
+        },
+        "last_used_at": {
+          "type": ["integer", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "title", "body_md", "tags", "favorite", "use_count"],
+      "additionalProperties": false
+    },
+    "save_points": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "stage": {
+          "$ref": "enums.schema.json#/$defs/stage"
+        },
+        "source": {
+          "$ref": "enums.schema.json#/$defs/save_point_source"
+        },
+        "note": {
+          "type": "string"
+        },
+        "done_md": {
+          "type": "string"
+        },
+        "next_md": {
+          "type": "string"
+        },
+        "session_summary_md": {
+          "type": "string"
+        },
+        "git_branch": {
+          "type": ["string", "null"]
+        },
+        "git_commit": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "stage", "source", "note", "done_md", "next_md", "session_summary_md"],
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "holds this device's id and local preferences",
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "key": {
+          "type": "string"
+        },
+        "value_json": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "key", "value_json"],
+      "additionalProperties": false
+    },
+    "tasks": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "parent_id": {
+          "type": ["string", "null"]
+        },
+        "title": {
+          "type": "string"
+        },
+        "body_md": {
+          "type": "string"
+        },
+        "acceptance_md": {
+          "type": "string"
+        },
+        "related_files": {
+          "type": "string",
+          "x-encoding": "json-string-array"
+        },
+        "status": {
+          "$ref": "enums.schema.json#/$defs/task_status"
+        },
+        "priority": {
+          "$ref": "enums.schema.json#/$defs/priority"
+        },
+        "due_at": {
+          "type": ["integer", "null"]
+        },
+        "order_key": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string",
+          "x-encoding": "json-string-array"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "title", "body_md", "acceptance_md", "related_files", "status", "priority", "order_key", "tags"],
+      "additionalProperties": false
+    },
+    "time_entries": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": ["string", "null"]
+        },
+        "kind": {
+          "$ref": "enums.schema.json#/$defs/time_entry_kind"
+        },
+        "started_at": {
+          "type": "integer"
+        },
+        "ended_at": {
+          "type": "integer"
+        },
+        "duration_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "kind", "started_at", "ended_at", "duration_s", "note"],
+      "additionalProperties": false
+    },
+    "timer_state": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "one timer per device",
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "phase": {
+          "$ref": "enums.schema.json#/$defs/timer_phase"
+        },
+        "status": {
+          "$ref": "enums.schema.json#/$defs/timer_status"
+        },
+        "round": {
+          "type": "integer"
+        },
+        "phase_started_at": {
+          "type": "integer"
+        },
+        "phase_length_s": {
+          "type": "integer"
+        },
+        "elapsed_ms": {
+          "type": "integer"
+        },
+        "running_since": {
+          "type": ["integer", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "task_id", "phase", "status", "round", "phase_started_at", "phase_length_s", "elapsed_ms"],
+      "additionalProperties": false
+    }
+  }
+}
