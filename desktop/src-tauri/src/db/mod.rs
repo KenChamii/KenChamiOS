@@ -10,6 +10,7 @@ pub mod metadata_cache;
 pub mod paired_devices;
 pub mod projects;
 pub mod prompts;
+pub mod reminders;
 pub mod save_points;
 #[cfg(test)]
 mod schema_contract;

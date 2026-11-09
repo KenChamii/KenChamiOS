@@ -13,10 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kenchami.kenchamios.context.ChecklistRun
 import com.kenchami.kenchamios.data.repo.nextLabel
 import com.kenchami.kenchamios.ui.common.AppScreen
 import com.kenchami.kenchamios.ui.common.EmptyText
 import com.kenchami.kenchamios.ui.common.QuickAddButton
+import com.kenchami.kenchamios.ui.common.RulesButton
 import com.kenchami.kenchamios.ui.common.SectionTitle
 import com.kenchami.kenchamios.ui.common.SyncButton
 import com.kenchami.kenchamios.ui.common.label
@@ -29,17 +31,24 @@ fun TodayScreen(
     onOpenEntry: (String) -> Unit,
     onQuickAdd: () -> Unit,
     onOpenSync: () -> Unit,
+    onOpenRules: () -> Unit,
     viewModel: TodayViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val focus by viewModel.focus.collectAsStateWithLifecycle()
+    val checklists by viewModel.checklists.collectAsStateWithLifecycle()
     AppScreen("Today", actions = {
+        RulesButton(onOpenRules)
         SyncButton(onOpenSync)
         QuickAddButton(onQuickAdd)
     }) { padding ->
         state?.let {
             val timer = TimerActions(viewModel::pauseTimer, viewModel::resumeTimer, viewModel::stopTimer)
-            TodayContent(it, focus, timer, viewModel::finishTask, viewModel::addOne, onOpenProject, onOpenEntry, padding)
+            val checklistActions = ChecklistActions(viewModel::toggleChecklist, viewModel::dismissChecklist)
+            TodayContent(
+                it, focus, timer, viewModel::finishTask, viewModel::addOne, onOpenProject, onOpenEntry,
+                padding, checklists, checklistActions,
+            )
         }
     }
 }
@@ -54,11 +63,14 @@ fun TodayContent(
     onOpenProject: (String) -> Unit,
     onOpenEntry: (String) -> Unit,
     padding: PaddingValues,
+    checklists: List<ChecklistRun> = emptyList(),
+    checklistActions: ChecklistActions = ChecklistActions({ _, _ -> }, {}),
 ) {
     LazyColumn(contentPadding = padding, modifier = Modifier.testTag("today")) {
         focus?.let { card ->
             item { FocusCardView(card, System::currentTimeMillis, timer.onPause, timer.onResume, timer.onStop) }
         }
+        items(checklists, key = { "checklist-" + it.ruleId }) { ChecklistCard(it, checklistActions) }
         item { SectionTitle("Tasks due") }
         if (state.due.isEmpty()) item { EmptyText("Nothing due or overdue.") }
         items(state.due, key = { it.id }) { task ->

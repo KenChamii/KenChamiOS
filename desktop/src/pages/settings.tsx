@@ -4,6 +4,7 @@ import { GamesKeyCard } from "@/features/media/games-key-card";
 import { SourceCredits } from "@/features/media/source-credits";
 import { TmdbTokenCard } from "@/features/media/tmdb-token-card";
 import { TimerSettingsCard } from "@/features/focus/timer-settings";
+import { ReminderSettingsCard } from "@/features/reminders/reminder-settings";
 import { SyncCard } from "@/features/sync/sync-card";
 import { TemplateSettings } from "@/features/workflow/template-settings";
 import { getAppInfo } from "@/lib/api/app";
@@ -32,6 +33,7 @@ export function SettingsPage() {
       </Card>
       <SyncCard />
       <TimerSettingsCard />
+      <ReminderSettingsCard />
       <GamesKeyCard />
       <TmdbTokenCard />
       <TemplateSettings />

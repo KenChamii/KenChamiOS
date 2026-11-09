@@ -24,6 +24,9 @@ import com.kenchami.kenchamios.ui.projects.ProjectDetailScreen
 import com.kenchami.kenchamios.ui.projects.ProjectsScreen
 import com.kenchami.kenchamios.ui.prompts.PromptsScreen
 import com.kenchami.kenchamios.ui.quickadd.QuickAddSheet
+import com.kenchami.kenchamios.ui.rules.ContextSettingsScreen
+import com.kenchami.kenchamios.ui.rules.RuleEditorScreen
+import com.kenchami.kenchamios.ui.rules.RulesScreen
 import com.kenchami.kenchamios.ui.sync.SyncScreen
 import com.kenchami.kenchamios.ui.today.TodayScreen
 
@@ -67,6 +70,7 @@ fun AppScaffold() {
                     onOpenEntry = { navController.navigate(Routes.entry(it)) },
                     onQuickAdd = openQuickAdd,
                     onOpenSync = { navController.navigate(Routes.SYNC) },
+                    onOpenRules = { navController.navigate(Routes.RULES) },
                 )
             }
             composable(Destination.Projects.route) {
@@ -79,6 +83,15 @@ fun AppScaffold() {
             composable(Routes.PROJECT) { ProjectDetailScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.ENTRY) { EntryDetailScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.SYNC) { SyncScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.RULES) {
+                RulesScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenRule = { navController.navigate(Routes.rule(it)) },
+                    onOpenSettings = { navController.navigate(Routes.RULES_SETTINGS) },
+                )
+            }
+            composable(Routes.RULE) { RuleEditorScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.RULES_SETTINGS) { ContextSettingsScreen(onBack = { navController.popBackStack() }) }
         }
     }
 

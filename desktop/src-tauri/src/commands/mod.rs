@@ -11,6 +11,7 @@ pub mod metadata;
 pub mod portfolio;
 pub mod projects;
 pub mod prompts;
+pub mod reminders;
 pub mod save_points;
 pub mod session_notes;
 pub mod sync;

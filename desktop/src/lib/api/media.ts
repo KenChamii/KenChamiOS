@@ -106,3 +106,15 @@ export function setTmdbToken(token: string) {
 export function clearTmdbToken() {
   return invoke<void>("tmdb_token_clear");
 }
+
+export type Recommendation = {
+  entry_id: string;
+  title: string;
+  media_type: MediaType;
+  score: number;
+  reason: string;
+};
+
+export function listRecommendations(mediaType: MediaType | null) {
+  return invoke<Recommendation[]>("media_recommendations", { mediaType });
+}
