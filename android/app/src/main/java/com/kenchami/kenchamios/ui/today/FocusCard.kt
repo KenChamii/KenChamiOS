@@ -1,0 +1,61 @@
+package com.kenchami.kenchamios.ui.today
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.dp
+import com.kenchami.kenchamios.data.model.TimerPhase
+import com.kenchami.kenchamios.data.model.TimerStatus
+import com.kenchami.kenchamios.timer.TimerState
+import com.kenchami.kenchamios.ui.common.formatClock
+import kotlinx.coroutines.delay
+
+private const val TICK_MS = 1_000L
+
+/** The running timer with its task, as the Today screen shows it. */
+data class FocusCard(val timer: TimerState, val taskTitle: String)
+
+@Composable
+fun FocusCardView(card: FocusCard, now: () -> Long, onPause: () -> Unit, onResume: () -> Unit, onStop: () -> Unit) {
+    val current by produceState(now(), card) {
+        while (true) {
+            value = now()
+            delay(TICK_MS)
+        }
+    }
+    val timer = card.timer
+    Card(Modifier.fillMaxWidth().padding(16.dp).testTag("focus-card")) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                when (timer.phase) {
+                    TimerPhase.Focus -> "Focus"
+                    TimerPhase.Break -> "Break"
+                    TimerPhase.LongBreak -> "Long break"
+                },
+            )
+            Text(formatClock(timer.remainingS(current)), modifier = Modifier.testTag("focus-clock"))
+            Text(card.taskTitle)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (timer.status == TimerStatus.Running) {
+                    Button(onClick = onPause) { Text("Pause") }
+                } else {
+                    Button(onClick = onResume) { Text("Resume") }
+                }
+                OutlinedButton(onClick = onStop) { Text("Stop") }
+            }
+        }
+    }
+}
+
+class TimerActions(val onPause: () -> Unit, val onResume: () -> Unit, val onStop: () -> Unit)
