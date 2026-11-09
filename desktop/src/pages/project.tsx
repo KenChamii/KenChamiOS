@@ -6,6 +6,7 @@ import { Tabs } from "@/components/ui/tabs";
 import { DocTab } from "@/features/docs/doc-tab";
 import { STAGE_LABELS } from "@/features/projects/meta";
 import { OverviewTab } from "@/features/projects/overview-tab";
+import { SavePointsTab } from "@/features/savepoints/save-points-tab";
 import { TasksTab } from "@/features/tasks/tasks-tab";
 import { useProject } from "@/hooks/use-projects";
 import { errorMessage } from "@/lib/errors";
@@ -54,9 +55,7 @@ export function ProjectPage() {
       {tab === "idea" && <DocTab projectId={id} kind="idea" />}
       {tab === "plan" && <DocTab projectId={id} kind="plan" />}
       {tab === "tasks" && <TasksTab projectId={id} />}
-      {tab === "save-points" && (
-        <p className="text-muted-foreground">Save points are not available yet.</p>
-      )}
+      {tab === "save-points" && <SavePointsTab project={project.data} />}
       {tab === "time" && (
         <p className="text-muted-foreground">Time tracking is not available yet.</p>
       )}
