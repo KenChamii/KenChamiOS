@@ -1,3 +1,5 @@
+use crate::error::AppResult;
+use sqlx::SqlitePool;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -39,6 +41,17 @@ impl Hlc {
             }
         }
     }
+}
+
+/// Moves the clock past every stored change, so a restart cannot hand out older values.
+pub async fn restore(pool: &SqlitePool, hlc: &Hlc) -> AppResult<()> {
+    let newest: Option<i64> = sqlx::query_scalar("SELECT MAX(hlc) FROM change_log")
+        .fetch_one(pool)
+        .await?;
+    if let Some(newest) = newest.and_then(|v| u64::try_from(v).ok()) {
+        hlc.merge(newest);
+    }
+    Ok(())
 }
 
 fn wall_clock() -> u64 {

@@ -13,6 +13,7 @@ pub mod projects;
 pub mod prompts;
 pub mod save_points;
 pub mod session_notes;
+pub mod sync;
 pub mod tasks;
 pub mod templates;
 pub mod time_entries;

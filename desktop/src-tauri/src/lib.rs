@@ -10,7 +10,7 @@ mod timer;
 mod workflow;
 
 use state::AppState;
-use tauri::Manager;
+use tauri::{Emitter, Manager};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -22,7 +22,15 @@ pub fn run() {
         .setup(|app| {
             let data_dir = app.path().app_data_dir()?;
             let state = tauri::async_runtime::block_on(AppState::init(data_dir))?;
+            let handle = app.handle().clone();
+            state.sync.on_data_changed(move || {
+                let _ = handle.emit("sync-changed", ());
+            });
             app.manage(state);
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                handle.state::<AppState>().sync.resume().await;
+            });
             timer::shell::setup(app.handle())?;
             Ok(())
         })
@@ -36,6 +44,11 @@ pub fn run() {
             commands::projects::project_set_stage,
             commands::docs::docs_get,
             commands::docs::docs_upsert,
+            commands::sync::sync_status,
+            commands::sync::sync_set_enabled,
+            commands::sync::sync_pairing_start,
+            commands::sync::sync_pairing_cancel,
+            commands::sync::sync_revoke_device,
             commands::tasks::tasks_list,
             commands::tasks::tasks_create,
             commands::tasks::tasks_update,

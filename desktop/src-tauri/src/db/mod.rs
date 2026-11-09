@@ -7,6 +7,7 @@ mod handle;
 pub mod media;
 pub mod media_import;
 pub mod metadata_cache;
+pub mod paired_devices;
 pub mod projects;
 pub mod prompts;
 pub mod save_points;
