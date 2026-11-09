@@ -37,6 +37,11 @@ describe("manualInputOf", () => {
     });
   });
 
+  it("keeps the total for shows but not movies", () => {
+    expect(manualInputOf({ ...draft, type: "show" })).toMatchObject({ progress_total: 28 });
+    expect(manualInputOf({ ...draft, type: "movie" })).toMatchObject({ progress_total: null });
+  });
+
   it("rejects a blank title and bad numbers", () => {
     expect(manualInputOf({ ...draft, title: "  " })).toBeNull();
     expect(manualInputOf({ ...draft, year: "20x3" })).toBeNull();
