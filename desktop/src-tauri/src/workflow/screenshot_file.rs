@@ -89,6 +89,13 @@ fn image_extension(path: &Path) -> AppResult<String> {
     }
 }
 
+/// The file extension for the image type the first bytes announce.
+pub fn detect_extension(header: &[u8]) -> Option<&'static str> {
+    ["png", "jpg", "gif", "webp"]
+        .into_iter()
+        .find(|extension| matches_type(extension, header))
+}
+
 fn matches_type(extension: &str, header: &[u8]) -> bool {
     match extension {
         "png" => header.starts_with(&[0x89, b'P', b'N', b'G']),
@@ -218,6 +225,14 @@ mod tests {
         assert!(path_of(&assets, "proj", "../../secret.png").is_err());
         assert!(path_of(&assets, "proj", "").is_err());
         assert!(!temp.0.join("outside").exists());
+    }
+
+    #[test]
+    fn detects_the_extension_from_the_first_bytes() {
+        assert_eq!(detect_extension(PNG), Some("png"));
+        assert_eq!(detect_extension(&[0xFF, 0xD8, 0xFF, 0xE0]), Some("jpg"));
+        assert_eq!(detect_extension(b"<html>"), None);
+        assert_eq!(detect_extension(b""), None);
     }
 
     #[test]

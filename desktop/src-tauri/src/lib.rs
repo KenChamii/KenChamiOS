@@ -3,6 +3,7 @@ mod db;
 mod domain;
 mod error;
 mod git;
+mod media;
 mod state;
 pub mod sync;
 mod timer;
@@ -87,6 +88,16 @@ pub fn run() {
             commands::assets::assets_delete,
             commands::portfolio::portfolio_render,
             commands::portfolio::portfolio_export,
+            commands::media::media_list,
+            commands::media::media_update,
+            commands::media::media_set_progress,
+            commands::media::media_delete,
+            commands::metadata::media_search,
+            commands::metadata::media_add,
+            commands::metadata::media_add_manual,
+            commands::metadata::games_key_status,
+            commands::metadata::games_key_set,
+            commands::metadata::games_key_clear,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

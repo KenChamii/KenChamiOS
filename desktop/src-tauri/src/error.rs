@@ -18,6 +18,10 @@ pub enum AppError {
     NotFound(&'static str),
     #[error("{0}")]
     Invalid(&'static str),
+    #[error("{0}")]
+    Provider(String),
+    #[error("credential store error: {0}")]
+    Keyring(#[from] keyring::Error),
     #[error("app error: {0}")]
     Tauri(#[from] tauri::Error),
 }
@@ -32,6 +36,8 @@ impl AppError {
             Self::Git(_) => "git",
             Self::Template(_) => "template",
             Self::Tauri(_) => "tauri",
+            Self::Provider(_) => "provider",
+            Self::Keyring(_) => "keyring",
             Self::NotFound(_) => "not_found",
             Self::Invalid(_) => "invalid",
         }

@@ -3,6 +3,8 @@ pub mod assets;
 pub mod checklist;
 pub mod docs;
 mod handle;
+pub mod media;
+pub mod metadata_cache;
 pub mod projects;
 pub mod prompts;
 pub mod save_points;
