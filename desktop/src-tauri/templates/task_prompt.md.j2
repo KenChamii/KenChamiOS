@@ -1,0 +1,8 @@
+Goal: {{ task.title }}
+Context: project {{ project.name }}, stage {{ project.stage }}{% if git.branch %}, branch {{ git.branch }}{% endif %}
+Details: {{ task.body }}
+Acceptance criteria:
+{{ task.acceptance }}
+Likely files: {{ task.related_files | join(", ") }}
+Constraints: follow the project brief; keep changes focused on this task.
+Done when: all acceptance criteria pass and tests are green.

@@ -27,6 +27,8 @@ uuid = { version = "1.29.2", features = ["v7"] }
 thiserror = "2.0.21"
 tauri-plugin-dialog = "2"
 git2 = "0.21.0"
+minijinja = { version = "3.1.0", features = ["serde"] }
+similar = "3.2.1"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

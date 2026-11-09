@@ -32,6 +32,16 @@ pub enum Priority {
     High,
 }
 
+impl Priority {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Low => "low",
+            Self::Medium => "medium",
+            Self::High => "high",
+        }
+    }
+}
+
 #[derive(Debug, Clone, FromRow, Serialize)]
 pub struct Task {
     pub id: String,

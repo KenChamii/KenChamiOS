@@ -160,7 +160,7 @@ pub async fn set_stage(db: &Db, id: &str, stage: Stage) -> AppResult<ProjectSumm
     get(db, id).await
 }
 
-/// Soft deletes the project with its docs, tasks and checklist items.
+/// Soft deletes the project with its docs, prompts, save points, tasks and checklist items.
 pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
     let mut tx = db.pool.begin().await?;
     let result = sqlx::query(
@@ -175,6 +175,8 @@ pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
     require_changed(result, "project")?;
     for sql in [
         "UPDATE project_docs SET deleted = 1, updated_at = ?, device_id = ?
+          WHERE project_id = ? AND deleted = 0",
+        "UPDATE prompts SET deleted = 1, updated_at = ?, device_id = ?
           WHERE project_id = ? AND deleted = 0",
         "UPDATE save_points SET deleted = 1, updated_at = ?, device_id = ?
           WHERE project_id = ? AND deleted = 0",

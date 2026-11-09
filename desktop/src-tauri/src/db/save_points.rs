@@ -1,8 +1,9 @@
 use super::activity;
 use super::handle::{Db, new_id, now_ms, require_changed};
 use super::projects;
-use crate::domain::{SavePoint, SavePointInput};
+use crate::domain::{SavePoint, SavePointInput, Stage};
 use crate::error::{AppError, AppResult};
+use sqlx::SqliteConnection;
 
 /// Newest first.
 pub async fn list(db: &Db, project_id: &str) -> AppResult<Vec<SavePoint>> {
@@ -16,6 +17,19 @@ pub async fn list(db: &Db, project_id: &str) -> AppResult<Vec<SavePoint>> {
     Ok(rows)
 }
 
+/// Everything stored for one save point; the stage is the project's at save time.
+pub(super) struct NewSavePoint<'a> {
+    pub project_id: &'a str,
+    pub stage: Stage,
+    pub source: &'a str,
+    pub note: &'a str,
+    pub done_md: &'a str,
+    pub next_md: &'a str,
+    pub session_summary_md: &'a str,
+    pub git_branch: Option<&'a str>,
+    pub git_commit: Option<&'a str>,
+}
+
 /// Stores a manual save point at the project's current stage.
 pub async fn create(
     db: &Db,
@@ -24,39 +38,22 @@ pub async fn create(
     git_branch: Option<&str>,
     git_commit: Option<&str>,
 ) -> AppResult<SavePoint> {
-    let note = input.note.trim();
-    if note.is_empty() {
-        return Err(AppError::Invalid("save point note is required"));
-    }
     let stage = projects::get(db, project_id).await?.project.stage;
-    let id = new_id();
     let mut tx = db.pool.begin().await?;
-    sqlx::query(
-        "INSERT INTO save_points
-            (id, created_at, updated_at, device_id, project_id, stage, note,
-             done_md, next_md, git_branch, git_commit)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    )
-    .bind(&id)
-    .bind(now_ms())
-    .bind(db.stamp())
-    .bind(&db.device_id)
-    .bind(project_id)
-    .bind(stage)
-    .bind(note)
-    .bind(input.done_md.trim())
-    .bind(input.next_md.trim())
-    .bind(git_branch)
-    .bind(git_commit)
-    .execute(&mut *tx)
-    .await?;
-    activity::record(
+    let id = insert(
         &mut tx,
         db,
-        "save_point.created",
-        "save_point",
-        &id,
-        &format!("Save point: {note}"),
+        &NewSavePoint {
+            project_id,
+            stage,
+            source: "manual",
+            note: &input.note,
+            done_md: &input.done_md,
+            next_md: &input.next_md,
+            session_summary_md: "",
+            git_branch,
+            git_commit,
+        },
     )
     .await?;
     let created = sqlx::query_as("SELECT * FROM save_points WHERE id = ?")
@@ -65,6 +62,50 @@ pub async fn create(
         .await?;
     tx.commit().await?;
     Ok(created)
+}
+
+// takes a connection so callers can add a save point inside their own transaction
+pub(super) async fn insert(
+    conn: &mut SqliteConnection,
+    db: &Db,
+    point: &NewSavePoint<'_>,
+) -> AppResult<String> {
+    let note = point.note.trim();
+    if note.is_empty() {
+        return Err(AppError::Invalid("save point note is required"));
+    }
+    let id = new_id();
+    sqlx::query(
+        "INSERT INTO save_points
+            (id, created_at, updated_at, device_id, project_id, stage, source, note,
+             done_md, next_md, session_summary_md, git_branch, git_commit)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(&id)
+    .bind(now_ms())
+    .bind(db.stamp())
+    .bind(&db.device_id)
+    .bind(point.project_id)
+    .bind(point.stage)
+    .bind(point.source)
+    .bind(note)
+    .bind(point.done_md.trim())
+    .bind(point.next_md.trim())
+    .bind(point.session_summary_md)
+    .bind(point.git_branch)
+    .bind(point.git_commit)
+    .execute(&mut *conn)
+    .await?;
+    activity::record(
+        conn,
+        db,
+        "save_point.created",
+        "save_point",
+        &id,
+        &format!("Save point: {note}"),
+    )
+    .await?;
+    Ok(id)
 }
 
 pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
@@ -97,7 +138,6 @@ mod tests {
     use super::*;
     use crate::db::activity::kinds_for;
     use crate::db::projects::{create_for_test, set_stage};
-    use crate::domain::Stage;
 
     fn input(note: &str) -> SavePointInput {
         SavePointInput {

@@ -5,6 +5,7 @@ mod error;
 mod git;
 mod state;
 pub mod sync;
+mod workflow;
 
 use state::AppState;
 use tauri::Manager;
@@ -44,6 +45,26 @@ pub fn run() {
             commands::save_points::save_points_create,
             commands::save_points::save_points_delete,
             commands::save_points::save_points_export,
+            commands::templates::templates_list,
+            commands::templates::templates_update,
+            commands::templates::templates_reset,
+            commands::templates::templates_preview,
+            commands::brief::brief_targets,
+            commands::brief::brief_get_target,
+            commands::brief::brief_set_target,
+            commands::brief::brief_render,
+            commands::brief::brief_preview,
+            commands::brief::brief_write,
+            commands::prompts::prompts_list,
+            commands::prompts::prompts_create,
+            commands::prompts::prompts_update,
+            commands::prompts::prompts_set_favorite,
+            commands::prompts::prompts_delete,
+            commands::prompts::prompts_variables,
+            commands::prompts::prompts_copy,
+            commands::prompts::tasks_prompt,
+            commands::session_notes::session_note_preview,
+            commands::session_notes::session_note_confirm,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,5 +1,5 @@
 use crate::db::settings::ensure_device_id;
-use crate::db::{self, Db};
+use crate::db::{self, Db, templates};
 use crate::error::AppResult;
 use crate::sync::hlc::Hlc;
 use std::path::PathBuf;
@@ -17,9 +17,8 @@ impl AppState {
         let pool = db::open(&db_path).await?;
         let hlc = Hlc::new();
         let device_id = ensure_device_id(&pool, &hlc).await?;
-        Ok(Self {
-            db: Db::new(pool, hlc, device_id),
-            db_path,
-        })
+        let db = Db::new(pool, hlc, device_id);
+        templates::ensure_defaults(&db).await?;
+        Ok(Self { db, db_path })
     }
 }
