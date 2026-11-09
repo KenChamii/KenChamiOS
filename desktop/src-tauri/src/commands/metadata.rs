@@ -77,3 +77,18 @@ pub fn games_key_set(state: State<'_, AppState>, key: String) -> AppResult<()> {
 pub fn games_key_clear(state: State<'_, AppState>) -> AppResult<()> {
     state.metadata.clear_games_key()
 }
+
+#[tauri::command]
+pub fn tmdb_token_status(state: State<'_, AppState>) -> AppResult<bool> {
+    state.metadata.has_tmdb_token()
+}
+
+#[tauri::command]
+pub fn tmdb_token_set(state: State<'_, AppState>, token: String) -> AppResult<()> {
+    state.metadata.set_tmdb_token(&token)
+}
+
+#[tauri::command]
+pub fn tmdb_token_clear(state: State<'_, AppState>) -> AppResult<()> {
+    state.metadata.clear_tmdb_token()
+}

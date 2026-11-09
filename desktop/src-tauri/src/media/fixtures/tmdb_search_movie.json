@@ -1,0 +1,24 @@
+{
+  "page": 1,
+  "results": [
+    {
+      "id": 603,
+      "title": "The Matrix",
+      "release_date": "1999-03-30",
+      "poster_path": "/matrix.jpg",
+      "overview": "A hacker learns what the world really is.",
+      "genre_ids": [28, 878]
+    },
+    {
+      "id": 604,
+      "title": "The Matrix Reloaded",
+      "release_date": "",
+      "poster_path": null
+    },
+    {
+      "id": 605
+    }
+  ],
+  "total_pages": 1,
+  "total_results": 3
+}

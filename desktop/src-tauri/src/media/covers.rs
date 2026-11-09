@@ -22,6 +22,7 @@ pub async fn download<H: HttpClient>(
     let request = HttpRequest {
         url: url.to_string(),
         params: Vec::new(),
+        headers: Vec::new(),
         body: None,
         max_bytes: MAX_BYTES,
     };

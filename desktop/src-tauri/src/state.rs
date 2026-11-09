@@ -2,6 +2,7 @@ use crate::db::settings::ensure_device_id;
 use crate::db::{self, Db, templates};
 use crate::error::AppResult;
 use crate::media::http::ReqwestClient;
+use crate::media::pacing::SystemClock;
 use crate::media::secrets::KeyringStore;
 use crate::media::service::MetadataService;
 use crate::sync::hlc::Hlc;
@@ -18,7 +19,7 @@ pub struct AppState {
     pub assets_dir: PathBuf,
     pub covers_dir: PathBuf,
     pub timer: TimerService,
-    pub metadata: MetadataService<ReqwestClient, KeyringStore>,
+    pub metadata: MetadataService<ReqwestClient, KeyringStore, SystemClock>,
 }
 
 impl AppState {
@@ -32,7 +33,8 @@ impl AppState {
         let timer = TimerService::recover(&db).await?;
         let assets_dir = data_dir.join(ASSETS_DIR);
         let covers_dir = data_dir.join(COVERS_DIR);
-        let metadata = MetadataService::new(ReqwestClient::new()?, KeyringStore);
+        let metadata =
+            MetadataService::new(ReqwestClient::new()?, KeyringStore, SystemClock::default());
         Ok(Self {
             db,
             db_path,
