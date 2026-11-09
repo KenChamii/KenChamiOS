@@ -1,0 +1,48 @@
+{
+  "changes": [
+    {
+      "table": "tasks",
+      "row": {
+        "id": "t1",
+        "created_at": 1700000000000,
+        "updated_at": 111411200131072000,
+        "device_id": "dev-phone",
+        "deleted": 0,
+        "project_id": "p1",
+        "parent_id": null,
+        "title": "Write tests",
+        "body_md": "",
+        "acceptance_md": "",
+        "related_files": "[]",
+        "status": "todo",
+        "priority": "high",
+        "due_at": null,
+        "order_key": "a0",
+        "tags": "[]"
+      }
+    },
+    {
+      "table": "tasks",
+      "row": {
+        "id": "t2",
+        "created_at": 1700000000000,
+        "updated_at": 111411200589824000,
+        "device_id": "dev-desktop",
+        "deleted": 1,
+        "project_id": "p1",
+        "parent_id": null,
+        "title": "Write tests",
+        "body_md": "",
+        "acceptance_md": "",
+        "related_files": "[]",
+        "status": "todo",
+        "priority": "high",
+        "due_at": null,
+        "order_key": "a0",
+        "tags": "[]"
+      }
+    }
+  ],
+  "next": 42,
+  "has_more": false
+}

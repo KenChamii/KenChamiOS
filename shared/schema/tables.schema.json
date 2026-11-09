@@ -44,6 +44,56 @@
       "required": ["id", "created_at", "updated_at", "device_id", "deleted", "kind", "entity_type", "entity_id", "summary", "at"],
       "additionalProperties": false
     },
+    "change_log": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "sync bookkeeping, one entry per changed row on this device",
+      "x-android": true,
+      "properties": {
+        "seq": {
+          "type": "integer"
+        },
+        "table_name": {
+          "type": "string"
+        },
+        "row_id": {
+          "type": "string"
+        },
+        "hlc": {
+          "type": "integer"
+        }
+      },
+      "required": ["seq", "table_name", "row_id", "hlc"],
+      "additionalProperties": false
+    },
+    "paired_devices": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "desktop only: the phones allowed to sync, with the hash of their token",
+      "x-android": false,
+      "properties": {
+        "device_id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "token_hash": {
+          "type": "string"
+        },
+        "paired_at": {
+          "type": "integer"
+        },
+        "last_sync_at": {
+          "type": ["integer", "null"]
+        },
+        "pulled_seq": {
+          "type": "integer"
+        }
+      },
+      "required": ["device_id", "name", "token_hash", "paired_at", "pulled_seq"],
+      "additionalProperties": false
+    },
     "checklist_items": {
       "type": "object",
       "x-synced": true,
@@ -84,7 +134,8 @@
     },
     "export_templates": {
       "type": "object",
-      "x-synced": true,
+      "x-synced": false,
+      "x-not-synced-reason": "desktop-only workflow data, the phone does not create this table",
       "x-android": false,
       "properties": {
         "id": {
@@ -124,6 +175,7 @@
       "type": "object",
       "x-synced": true,
       "x-android": true,
+      "x-unique-live": ["media_item_id"],
       "properties": {
         "id": {
           "type": "string"
@@ -184,6 +236,8 @@
       "type": "object",
       "x-synced": true,
       "x-android": true,
+      "x-local-columns": ["cover_cache_path"],
+      "x-unique-live": ["source", "external_id"],
       "properties": {
         "id": {
           "type": "string"
@@ -291,7 +345,8 @@
     },
     "project_assets": {
       "type": "object",
-      "x-synced": true,
+      "x-synced": false,
+      "x-not-synced-reason": "desktop-only workflow data, the phone does not create this table; screenshot files stay on the desktop",
       "x-android": false,
       "properties": {
         "id": {
@@ -333,6 +388,7 @@
       "type": "object",
       "x-synced": true,
       "x-android": true,
+      "x-unique-live": ["project_id", "kind"],
       "properties": {
         "id": {
           "type": "string"
