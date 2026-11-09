@@ -39,7 +39,7 @@ export function AssetsCard({ projectId }: { projectId: string }) {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Screenshots and links</h2>
+      <h2 className="font-semibold tracking-tight">Screenshots and links</h2>
       <p className="text-sm text-muted-foreground">
         Shown in the portfolio page. Screenshots are copied into the app, so the original can move.
       </p>

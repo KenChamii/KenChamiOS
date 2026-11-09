@@ -5,9 +5,12 @@ export function Progress({ value, max }: { value: number; max: number }) {
       role="progressbar"
       aria-valuenow={value}
       aria-valuemax={max}
-      className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+      className="h-2 w-full overflow-hidden rounded-full bg-muted"
     >
-      <div className="h-full bg-primary" style={{ width: `${percent}%` }} />
+      <div
+        className="h-full bg-accent transition-[width] duration-(--duration-base) ease-(--ease-out)"
+        style={{ width: `${percent}%` }}
+      />
     </div>
   );
 }

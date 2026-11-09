@@ -19,7 +19,7 @@ export function WeeklyRecapCard({ now }: { now: number }) {
 
   return (
     <Card className="flex flex-col gap-4">
-      <h2 className="font-medium">This week</h2>
+      <h2 className="font-semibold tracking-tight">This week</h2>
       {recap.error && <p className="text-sm text-destructive">{errorMessage(recap.error)}</p>}
       {view && (
         <>

@@ -13,7 +13,7 @@ export function DayChart({ days }: { days: DayTotal[] }) {
           title={`${day.date}: ${formatDuration(day.seconds)}`}
         >
           <div
-            className="min-h-px rounded-t bg-primary"
+            className="min-h-px rounded-t bg-accent"
             style={{ height: `${(day.seconds / peak) * 100}%` }}
           />
         </div>

@@ -23,7 +23,7 @@ function ActiveTimer({ view }: { view: TimerView }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-4 border-b border-border px-6 py-2 text-sm",
+        "mx-8 mt-4 flex items-center gap-4 rounded-2xl px-5 py-2 text-sm shadow-soft",
         view.phase === "focus" ? "bg-card" : "bg-muted",
       )}
     >

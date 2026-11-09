@@ -23,13 +23,13 @@ export function TodayCard({ now }: TodayCardProps) {
 
   return (
     <Card className="flex flex-col gap-4">
-      <h2 className="font-medium">Today</h2>
+      <h2 className="font-semibold tracking-tight">Today</h2>
       {error && <p className="text-sm text-destructive">{errorMessage(error)}</p>}
 
       {timer.data && (
         <Link
           to={`/projects/${timer.data.project_id}`}
-          className="flex items-center gap-3 rounded-md bg-muted px-3 py-2 text-sm"
+          className="flex items-center gap-3 rounded-xl bg-muted px-3 py-2 text-sm"
         >
           <span className="font-medium">{PHASE_LABELS[timer.data.phase]}</span>
           <span className="font-mono tabular-nums">{formatClock(timer.data.remaining_s)}</span>

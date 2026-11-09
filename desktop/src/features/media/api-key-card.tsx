@@ -29,7 +29,7 @@ export function ApiKeyCard({ title, intro, helpUrl, label, status, save, clear }
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">{title}</h2>
+      <h2 className="font-semibold tracking-tight">{title}</h2>
       <p className="text-sm text-muted-foreground">
         {intro} It is kept in the Windows Credential Manager, never in the app database.{" "}
         <button type="button" className="underline" onClick={() => openUrl(helpUrl)}>

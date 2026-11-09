@@ -32,7 +32,7 @@ function TimerSettingsForm({ saved }: { saved: TimerSettings }) {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Focus timer</h2>
+      <h2 className="font-semibold tracking-tight">Focus timer</h2>
       <p className="text-sm text-muted-foreground">
         A long break replaces every fourth break. Changes apply from the next phase.
       </p>

@@ -13,10 +13,10 @@ export function SheetContent({
 }: ComponentProps<typeof DialogPrimitive.Content>) {
   return (
     <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50" />
+      <DialogPrimitive.Overlay className="fixed inset-0 animate-fade-in bg-overlay backdrop-blur-sm" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed right-0 top-0 h-full w-full max-w-lg overflow-auto border-l border-border bg-card p-6 shadow-lg",
+          "fixed right-0 top-0 h-full w-full max-w-lg animate-slide-in overflow-auto bg-card p-6 shadow-soft",
           className,
         )}
         {...props}

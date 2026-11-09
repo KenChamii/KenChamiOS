@@ -10,7 +10,10 @@ type TabsProps<T extends string> = {
 
 export function Tabs<T extends string>({ tabs, value, onChange }: TabsProps<T>) {
   return (
-    <div role="tablist" className="flex gap-1 border-b border-border">
+    <div
+      role="tablist"
+      className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-xl bg-muted p-1"
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}
@@ -19,8 +22,8 @@ export function Tabs<T extends string>({ tabs, value, onChange }: TabsProps<T>) 
           aria-selected={tab.id === value}
           onClick={() => onChange(tab.id)}
           className={cn(
-            "-mb-px border-b-2 border-transparent px-3 py-2 text-sm text-muted-foreground hover:text-foreground",
-            tab.id === value && "border-primary font-medium text-foreground",
+            "cursor-pointer rounded-lg px-3.5 py-1.5 text-sm text-muted-foreground transition-[background-color,color,box-shadow] duration-(--duration-fast) ease-(--ease-out) hover:text-foreground",
+            tab.id === value && "bg-card font-medium text-foreground shadow-soft",
           )}
         >
           {tab.label}

@@ -119,7 +119,7 @@ function PickerBody({
         <button
           type="button"
           onClick={() => onOpenEntry(picked.id)}
-          className="flex items-center gap-3 rounded-md border border-border p-3 text-left"
+          className="flex items-center gap-3 rounded-xl bg-muted p-3 text-left transition-colors duration-(--duration-fast) hover:bg-border"
         >
           <Cover
             title={picked.title}

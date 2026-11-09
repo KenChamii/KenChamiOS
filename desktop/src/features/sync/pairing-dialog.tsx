@@ -57,7 +57,7 @@ function PairingDetails({ info, onExpired }: { info: PairingInfo; onExpired: () 
     <div className="mt-4 flex flex-col items-center gap-3">
       <img
         alt="Pairing QR code"
-        className="h-56 w-56 rounded bg-white p-2"
+        className="h-56 w-56 rounded-xl bg-white p-2"
         src={`data:image/svg+xml;utf8,${encodeURIComponent(info.qr_svg)}`}
       />
       <p className="text-sm">
@@ -79,7 +79,7 @@ function PairingDetails({ info, onExpired }: { info: PairingInfo; onExpired: () 
         </summary>
         <textarea
           readOnly
-          className="mt-2 h-20 w-full rounded border border-border bg-muted p-2 font-mono text-xs"
+          className="mt-2 h-20 w-full rounded-xl bg-muted p-2 font-mono text-xs"
           value={pairingText(payload)}
           onFocus={(event) => event.currentTarget.select()}
         />

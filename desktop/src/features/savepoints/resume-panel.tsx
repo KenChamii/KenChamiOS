@@ -19,7 +19,7 @@ export function ResumePanel({ project }: { project: ProjectSummary }) {
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="font-medium">Resume</h2>
+        <h2 className="font-semibold tracking-tight">Resume</h2>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => setPastingNote(true)}>
             Paste session note

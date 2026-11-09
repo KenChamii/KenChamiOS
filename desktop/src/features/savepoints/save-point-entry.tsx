@@ -19,7 +19,7 @@ export function SavePointEntry({ savePoint, initiallyOpen }: SavePointEntryProps
   const Chevron = open ? ChevronDown : ChevronRight;
 
   return (
-    <li className="rounded-lg border border-border bg-card">
+    <li className="rounded-2xl bg-card shadow-soft">
       <button
         type="button"
         aria-expanded={open}

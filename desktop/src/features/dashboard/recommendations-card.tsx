@@ -9,7 +9,7 @@ export function RecommendationsCard() {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">From your plans</h2>
+      <h2 className="font-semibold tracking-tight">From your plans</h2>
       <p className="text-sm text-muted-foreground">
         Planned titles that match what you rated well. Worked out on this computer from your own
         ratings, genres and tags.

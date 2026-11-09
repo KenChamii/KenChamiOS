@@ -12,7 +12,7 @@ export function ContinueRow() {
 
   return (
     <Card className="flex flex-col gap-3">
-      <h2 className="font-medium">Continue</h2>
+      <h2 className="font-semibold tracking-tight">Continue</h2>
       {media.error && <p className="text-sm text-destructive">{errorMessage(media.error)}</p>}
       {items.length === 0 && !media.error && (
         <p className="text-sm text-muted-foreground">

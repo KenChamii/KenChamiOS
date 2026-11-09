@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { PageHeader } from "@/components/layout/page-header";
 import { ContinueRow } from "@/features/dashboard/continue-row";
+import { Hero } from "@/features/dashboard/hero";
 import { RecommendationsCard } from "@/features/dashboard/recommendations-card";
 import { IdleCard } from "@/features/reminders/idle-card";
 import { StatsCard } from "@/features/dashboard/stats-card";
@@ -12,19 +14,19 @@ export function DashboardPage() {
   const [now] = useState(() => Date.now());
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <Link to="/recap" className="text-sm underline">
+    <div className="flex flex-col gap-6">
+      <PageHeader title="Dashboard" subtitle="Where things stand today">
+        <Link to="/recap" className="text-sm text-muted-foreground hover:text-foreground">
           Yearly recap
         </Link>
-      </div>
+      </PageHeader>
+      <Hero now={now} />
       <IdleCard />
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <TodayCard now={now} />
         <ContinueRow />
       </div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <WeeklyRecapCard now={now} />
         <StatsCard now={now} />
       </div>
