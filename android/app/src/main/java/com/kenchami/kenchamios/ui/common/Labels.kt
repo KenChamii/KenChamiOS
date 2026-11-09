@@ -5,6 +5,7 @@ import com.kenchami.kenchamios.data.model.MediaType
 import com.kenchami.kenchamios.data.model.Priority
 import com.kenchami.kenchamios.data.model.Stage
 import com.kenchami.kenchamios.data.model.TaskStatus
+import com.kenchami.kenchamios.data.model.TrashKind
 
 val Stage.label: String
     get() = when (this) {
@@ -48,4 +49,14 @@ val MediaStatus.label: String
         MediaStatus.Completed -> "Completed"
         MediaStatus.OnHold -> "On hold"
         MediaStatus.Dropped -> "Dropped"
+    }
+
+val TrashKind.label: String
+    get() = when (this) {
+        TrashKind.Project -> "Project"
+        TrashKind.Task -> "Task"
+        TrashKind.Prompt -> "Prompt"
+        TrashKind.SavePoint -> "Save point"
+        TrashKind.Media -> "Library entry"
+        TrashKind.Habit -> "Habit"
     }

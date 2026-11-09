@@ -4,8 +4,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kenchami.kenchamios.data.db.LibraryEntry
+import com.kenchami.kenchamios.data.model.TrashKind
 import com.kenchami.kenchamios.data.repo.EntryInput
 import com.kenchami.kenchamios.data.repo.MediaRepository
+import com.kenchami.kenchamios.data.repo.TrashRepository
+import com.kenchami.kenchamios.ui.common.UndoBus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +17,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class EntryDetailViewModel @Inject constructor(savedState: SavedStateHandle, private val repository: MediaRepository) : ViewModel() {
+class EntryDetailViewModel @Inject constructor(
+    savedState: SavedStateHandle,
+    private val repository: MediaRepository,
+    private val trash: TrashRepository,
+    private val undo: UndoBus,
+) : ViewModel() {
     private val entryId: String = checkNotNull(savedState["entryId"])
 
     /** Null while loading and after the entry was deleted. */
@@ -34,7 +42,10 @@ class EntryDetailViewModel @Inject constructor(savedState: SavedStateHandle, pri
     }
 
     fun delete() {
-        viewModelScope.launch { repository.delete(entryId) }
+        viewModelScope.launch {
+            repository.delete(entryId)
+            undo.offer("Removed from the library") { trash.restore(TrashKind.Media, entryId) }
+        }
     }
 
     private companion object {

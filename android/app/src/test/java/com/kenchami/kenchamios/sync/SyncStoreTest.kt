@@ -58,7 +58,7 @@ class SyncStoreTest {
             localStore.apply(listOf(change(table, case.getJSONObject("incoming"))))
 
             val live = local.database.openHelper.writableDatabase.query(
-                "SELECT id FROM project_docs WHERE deleted = 0 ORDER BY id",
+                "SELECT id FROM $table WHERE deleted = 0 ORDER BY id",
             ).use { cursor ->
                 generateSequence { if (cursor.moveToNext()) cursor.getString(0) else null }.toList()
             }
@@ -119,7 +119,7 @@ class SyncStoreTest {
 
         assertEquals(4, first.changes.size)
         assertTrue(first.hasMore)
-        assertEquals(7, rest.changes.size)
+        assertEquals(SyncFixtures.changes("push-valid").size - 4, rest.changes.size)
         assertEquals(false, rest.hasMore)
     }
 

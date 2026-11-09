@@ -14,6 +14,7 @@ import com.kenchami.kenchamios.data.model.TaskStatus
 import com.kenchami.kenchamios.data.model.TimeEntryKind
 import com.kenchami.kenchamios.data.model.TimerPhase
 import com.kenchami.kenchamios.data.model.TimerStatus
+import com.kenchami.kenchamios.data.model.TrashKind
 import com.kenchami.kenchamios.data.model.fromWire
 
 class Converters {
@@ -64,4 +65,8 @@ class Converters {
     @TypeConverter fun timerStatus(value: TimerStatus): String = value.wire
 
     @TypeConverter fun timerStatus(value: String): TimerStatus = fromWire(value)
+
+    @TypeConverter fun trashKind(value: TrashKind): String = value.wire
+
+    @TypeConverter fun trashKind(value: String): TrashKind = fromWire(value)
 }

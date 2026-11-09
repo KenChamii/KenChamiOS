@@ -7,6 +7,7 @@ import com.kenchami.kenchamios.data.Stamper
 import com.kenchami.kenchamios.data.db.AppDatabase
 import com.kenchami.kenchamios.data.db.ProjectSummary
 import com.kenchami.kenchamios.data.db.entity.ProjectEntity
+import com.kenchami.kenchamios.data.model.Inbox
 import com.kenchami.kenchamios.data.model.Stage
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -59,6 +60,7 @@ class ProjectRepository @Inject constructor(
     }
 
     suspend fun setStage(id: String, stage: Stage) {
+        refuseInbox(id)
         database.withTransaction {
             val project = checkNotNull(projects.get(id)) { "project not found" }
             projects.update(
@@ -75,6 +77,7 @@ class ProjectRepository @Inject constructor(
 
     /** Soft deletes the project and everything that belongs to it. */
     suspend fun delete(id: String) {
+        refuseInbox(id)
         database.withTransaction {
             val project = checkNotNull(projects.get(id)) { "project not found" }
             val device = stamper.deviceId()
@@ -88,6 +91,9 @@ class ProjectRepository @Inject constructor(
             activity.record("project.deleted", "project", id, "Deleted project")
         }
     }
+
+    // the inbox is a fixed capture list, not a project the user manages
+    private fun refuseInbox(id: String) = require(id != Inbox.ID) { "the inbox cannot be changed or deleted" }
 
     private suspend fun uniqueSlug(name: String): String {
         val base = slugify(name)

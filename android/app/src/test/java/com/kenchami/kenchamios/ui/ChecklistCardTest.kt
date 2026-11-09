@@ -31,7 +31,7 @@ class ChecklistCardTest {
     @get:Rule
     val compose = createComposeRule()
 
-    private val noNav = TodayNav({}, {}, {}, {})
+    private val noNav = TodayNav({}, {}, {}, {}, {}, {}, {})
     private val state = todayState()
     private val run = ChecklistRun.start(placeRule("home"), RuleAction.Checklist(listOf("Keys", "Wallet", "Phone"))).toggled(1)
 

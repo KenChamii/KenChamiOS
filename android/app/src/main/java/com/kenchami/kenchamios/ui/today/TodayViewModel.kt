@@ -19,6 +19,7 @@ import com.kenchami.kenchamios.data.repo.TaskRepository
 import com.kenchami.kenchamios.data.repo.continueItems
 import com.kenchami.kenchamios.sync.SyncState
 import com.kenchami.kenchamios.timer.TimerController
+import com.kenchami.kenchamios.ui.common.UndoableTasks
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -53,6 +54,7 @@ data class TodayState(
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     private val tasks: TaskRepository,
+    private val taskActions: UndoableTasks,
     private val media: MediaRepository,
     projects: ProjectRepository,
     private val timer: TimerController,
@@ -123,7 +125,7 @@ class TodayViewModel @Inject constructor(
     }
 
     fun finishTask(id: String) {
-        viewModelScope.launch { tasks.setStatus(id, TaskStatus.Done) }
+        viewModelScope.launch { taskActions.setStatus(id, TaskStatus.Done) }
     }
 
     // a new boundary at midnight, so "due today" moves on while the app stays open

@@ -7,6 +7,7 @@ import com.kenchami.kenchamios.core.Uuid7Generator
 import com.kenchami.kenchamios.data.db.AppDatabase
 import com.kenchami.kenchamios.data.db.ChangeLogCallback
 import com.kenchami.kenchamios.data.db.MIGRATION_1_2
+import com.kenchami.kenchamios.data.db.MIGRATION_2_3
 import com.kenchami.kenchamios.data.db.dao.ActivityDao
 import com.kenchami.kenchamios.data.db.dao.SettingDao
 import dagger.Module
@@ -36,7 +37,7 @@ object DataModule {
     @Singleton
     fun database(@ApplicationContext context: Context, hlc: Hlc): AppDatabase =
         Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
             .addCallback(ChangeLogCallback(hlc))
             .build()
 

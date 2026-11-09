@@ -1,17 +1,22 @@
 package com.kenchami.kenchamios.data.repo
 
+import com.kenchami.kenchamios.core.startOfDay
 import com.kenchami.kenchamios.data.TestDatabase
+import com.kenchami.kenchamios.data.model.Inbox
 import com.kenchami.kenchamios.data.model.Priority
 import com.kenchami.kenchamios.data.model.TaskStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @RunWith(RobolectricTestRunner::class)
 class TaskRepositoryTest {
@@ -22,7 +27,7 @@ class TaskRepositoryTest {
     @Before
     fun setUp() {
         env = TestDatabase()
-        tasks = TaskRepository(env.database, env.stamper, env.activity)
+        tasks = TaskRepository(env.database, env.stamper, env.activity, env.clock)
         projectId = runBlocking { ProjectRepository(env.database, env.stamper, env.activity).create("P") }
     }
 
@@ -80,6 +85,69 @@ class TaskRepositoryTest {
 
         assertEquals(listOf("B"), titles(TaskStatus.Todo))
         assertThrows(IllegalStateException::class.java) { runBlocking { tasks.delete(a) } }
+    }
+
+    @Test
+    fun completingARepeatingTaskAddsTheNextOneOnce() = runBlocking<Unit> {
+        // the test clock is 2023-11-14 in UTC
+        val due = startOfDay(LocalDate.of(2023, 11, 14), ZoneOffset.UTC)
+        val task = tasks.create(projectId, "Water plants", Priority.High, dueAt = due, recurrence = "daily:2")
+
+        val nextId = checkNotNull(tasks.setStatus(task, TaskStatus.Done))
+
+        val next = checkNotNull(tasks.get(nextId))
+        assertEquals("Water plants", next.title)
+        assertEquals(TaskStatus.Todo, next.status)
+        assertEquals(Priority.High, next.priority)
+        assertEquals("daily:2", next.recurrence)
+        assertEquals(startOfDay(LocalDate.of(2023, 11, 16), ZoneOffset.UTC), next.dueAt)
+        // moving within done again is not a new completion
+        assertNull(tasks.setStatus(task, TaskStatus.Done))
+        assertEquals(2, tasks.observeTopLevel(projectId).first().size)
+    }
+
+    @Test
+    fun oneOffTasksAddNothingAndBadRulesAreRefused() = runBlocking<Unit> {
+        val task = tasks.create(projectId, "Once")
+
+        assertNull(tasks.setStatus(task, TaskStatus.Done))
+        assertThrows(IllegalArgumentException::class.java) { runBlocking { tasks.create(projectId, "Bad", recurrence = "yearly:1") } }
+    }
+
+    @Test
+    fun theFirstInboxTaskCreatesTheInboxWithItsFixedId() = runBlocking<Unit> {
+        tasks.create(Inbox.ID, "First")
+        tasks.create(Inbox.ID, "Second")
+
+        assertEquals(1, env.count("SELECT COUNT(*) FROM projects WHERE id = '${Inbox.ID}' AND slug = 'inbox' AND name = 'Inbox'"))
+        assertEquals(listOf("First", "Second"), tasks.observeTopLevel(Inbox.ID).first().map { it.title })
+    }
+
+    @Test
+    fun aDeletedInboxComesBackOnTheNextCapture() = runBlocking<Unit> {
+        tasks.create(Inbox.ID, "First")
+        env.database.openHelper.writableDatabase.execSQL("UPDATE projects SET deleted = 1 WHERE id = '${Inbox.ID}'")
+
+        tasks.create(Inbox.ID, "Again")
+
+        assertEquals(1, env.count("SELECT COUNT(*) FROM projects WHERE id = '${Inbox.ID}' AND deleted = 0"))
+    }
+
+    @Test
+    fun moveToProjectTakesTheSubtasksAlong() = runBlocking<Unit> {
+        val captured = tasks.create(Inbox.ID, "Captured")
+        env.database.openHelper.writableDatabase.execSQL(
+            "INSERT INTO tasks (id, created_at, updated_at, device_id, deleted, project_id, parent_id, title, body_md, acceptance_md, " +
+                "related_files, status, priority, order_key, tags) " +
+                "VALUES ('sub', 1, 1, 'd', 0, '${Inbox.ID}', '$captured', 'Sub', '', '', '[]', 'todo', 'medium', 'a0', '[]')",
+        )
+
+        tasks.moveToProject(captured, projectId)
+
+        assertEquals(listOf("Captured"), titles(TaskStatus.Todo))
+        assertEquals(0, env.count("SELECT COUNT(*) FROM tasks WHERE project_id = '${Inbox.ID}'"))
+        assertThrows(IllegalArgumentException::class.java) { runBlocking { tasks.moveToProject("sub", Inbox.ID) } }
+        assertThrows(IllegalStateException::class.java) { runBlocking { tasks.moveToProject(captured, "missing") } }
     }
 
     @Test

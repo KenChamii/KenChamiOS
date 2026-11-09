@@ -53,6 +53,9 @@ class TodayNav(
     val openEntry: (String) -> Unit,
     val quickAdd: (QuickAddTab) -> Unit,
     val openSync: () -> Unit,
+    val openInbox: () -> Unit,
+    val openHabits: () -> Unit,
+    val openTrash: () -> Unit,
 )
 
 @Composable
@@ -64,6 +67,7 @@ fun TodayScreen(nav: TodayNav, onOpenRules: () -> Unit, viewModel: TodayViewMode
         RulesButton(onOpenRules)
         SyncButton(nav.openSync)
         QuickAddButton { nav.quickAdd(QuickAddTab.Task) }
+        MoreMenu(nav)
     }) { padding ->
         state?.let {
             val timer = TimerActions(viewModel::pauseTimer, viewModel::resumeTimer, viewModel::stopTimer)

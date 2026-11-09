@@ -41,7 +41,7 @@ class TodayScreenTest {
     private val noTimer = TimerActions({}, {}, {})
     private val quickAdds = mutableListOf<QuickAddTab>()
     private var syncOpened = false
-    private val nav = TodayNav({}, {}, { quickAdds += it }, { syncOpened = true })
+    private val nav = TodayNav({}, {}, { quickAdds += it }, { syncOpened = true }, {}, {}, {})
 
     // the hero pushes the lists below the first screenful
     private fun scrollTo(text: String) = compose.onNodeWithTag("today").performScrollToNode(hasText(text))

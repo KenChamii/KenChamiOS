@@ -33,6 +33,8 @@ data class TaskEntity(
     @ColumnInfo(name = "due_at") val dueAt: Long?,
     @ColumnInfo(name = "order_key") val orderKey: String,
     val tags: List<String>,
+    /** `unit:interval` like `weekly:2`; null for a one-off task */
+    val recurrence: String?,
 )
 
 @Entity(

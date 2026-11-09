@@ -2,6 +2,7 @@ package com.kenchami.kenchamios.data
 
 import android.database.Cursor
 import com.kenchami.kenchamios.data.model.DocKind
+import com.kenchami.kenchamios.data.model.Inbox
 import com.kenchami.kenchamios.data.model.MediaSource
 import com.kenchami.kenchamios.data.model.MediaStatus
 import com.kenchami.kenchamios.data.model.MediaType
@@ -82,6 +83,15 @@ class SchemaContractTest {
             val expected = strings(enums.getJSONObject(id).getJSONArray("enum"))
             assertEquals("enum $id", expected, kotlinEnums.getValue(id).map { it.wire })
         }
+    }
+
+    @Test
+    fun theInboxHasTheWellKnownIdNameAndSlug() {
+        val inbox = read("well-known.json").getJSONObject("inbox_project")
+        assertEquals(
+            listOf(inbox.getString("id"), inbox.getString("name"), inbox.getString("slug")),
+            listOf(Inbox.ID, Inbox.NAME, Inbox.SLUG),
+        )
     }
 
     private fun read(file: String) = JSONObject(File(schemaDir, file).readText())
