@@ -16,6 +16,7 @@ import { Card } from "@/components/ui/card";
 import { useMoveTask } from "@/hooks/use-tasks";
 import { TASK_STATUSES, type Task, type TaskStatus } from "@/lib/api/tasks";
 import { cn } from "@/lib/cn";
+import { CopyTaskPromptButton } from "@/features/workflow/copy-task-prompt-button";
 import { dropTarget, groupByStatus } from "./board";
 import { STATUS_LABELS } from "./meta";
 import { TaskMetaBadges } from "./task-meta-badges";
@@ -107,7 +108,10 @@ function SortableCard({ task, onSelect }: { task: Task; onSelect: (id: string) =
 function TaskCard({ task }: { task: Task }) {
   return (
     <Card className="flex cursor-grab flex-col gap-2 p-3">
-      <span className="text-sm">{task.title}</span>
+      <div className="flex items-start justify-between gap-1">
+        <span className="text-sm">{task.title}</span>
+        <CopyTaskPromptButton taskId={task.id} />
+      </div>
       <div className="flex flex-wrap gap-1">
         <TaskMetaBadges task={task} />
       </div>

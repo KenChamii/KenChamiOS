@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
+import { TemplateSettings } from "@/features/workflow/template-settings";
 import { getAppInfo } from "@/lib/api/app";
 
 export function SettingsPage() {
@@ -23,6 +24,7 @@ export function SettingsPage() {
           </dl>
         )}
       </Card>
+      <TemplateSettings />
     </div>
   );
 }

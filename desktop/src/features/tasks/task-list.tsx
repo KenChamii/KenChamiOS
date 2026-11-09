@@ -1,6 +1,7 @@
 import { useMoveTask } from "@/hooks/use-tasks";
 import type { Task } from "@/lib/api/tasks";
 import { cn } from "@/lib/cn";
+import { CopyTaskPromptButton } from "@/features/workflow/copy-task-prompt-button";
 import { TaskMetaBadges } from "./task-meta-badges";
 
 type TaskListProps = {
@@ -37,6 +38,7 @@ export function TaskList({ projectId, tasks, onSelect }: TaskListProps) {
               {task.title}
             </button>
             <TaskMetaBadges task={task} />
+            <CopyTaskPromptButton taskId={task.id} />
           </li>
         );
       })}

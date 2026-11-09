@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { CopyTaskPromptButton } from "@/features/workflow/copy-task-prompt-button";
 import { useDeleteTask, useUpdateTask } from "@/hooks/use-tasks";
 import type { Task } from "@/lib/api/tasks";
 import { errorMessage } from "@/lib/errors";
@@ -34,6 +35,9 @@ function TaskDetail({ task, subtasks, onClose }: TaskDetailProps) {
 
   return (
     <div className="flex flex-col gap-6">
+      <div>
+        <CopyTaskPromptButton taskId={task.id} showLabel />
+      </div>
       <TaskForm
         task={task}
         pending={update.isPending}

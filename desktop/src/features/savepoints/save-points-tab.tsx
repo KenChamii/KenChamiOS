@@ -6,11 +6,13 @@ import type { ProjectSummary } from "@/lib/api/projects";
 import { errorMessage } from "@/lib/errors";
 import { SavePointDialog } from "./save-point-dialog";
 import { SavePointEntry } from "./save-point-entry";
+import { SessionNoteDialog } from "./session-note-dialog";
 
 export function SavePointsTab({ project }: { project: ProjectSummary }) {
   const savePoints = useSavePoints(project.id);
   const exportMarkdown = useExportSavePoints(project.id);
   const [creating, setCreating] = useState(false);
+  const [pastingNote, setPastingNote] = useState(false);
 
   async function handleExport() {
     const path = await save({
@@ -26,6 +28,9 @@ export function SavePointsTab({ project }: { project: ProjectSummary }) {
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <Button onClick={() => setCreating(true)}>Create save point</Button>
+        <Button variant="outline" onClick={() => setPastingNote(true)}>
+          Paste session note
+        </Button>
         <Button variant="outline" disabled={exportMarkdown.isPending} onClick={handleExport}>
           Export to Markdown
         </Button>
@@ -45,6 +50,7 @@ export function SavePointsTab({ project }: { project: ProjectSummary }) {
         ))}
       </ol>
       <SavePointDialog project={project} open={creating} onOpenChange={setCreating} />
+      <SessionNoteDialog project={project} open={pastingNote} onOpenChange={setPastingNote} />
     </div>
   );
 }
