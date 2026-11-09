@@ -1,0 +1,7 @@
+#!/bin/sh
+# keep me as the only contributor: drop co-author and AI attribution lines
+msg_file="$1"
+tmp="$msg_file.tmp"
+
+grep -viE '^(co-authored-by:|claude-session:|.*generated with \[?claude code)' "$msg_file" > "$tmp"
+mv "$tmp" "$msg_file"

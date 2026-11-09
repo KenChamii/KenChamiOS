@@ -1,0 +1,46 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+local.properties
+
+# Node / frontend
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.log
+
+# Rust / Tauri
+target/
+desktop/src-tauri/gen/schemas/
+
+# Android / Gradle
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local app data and exports
+*.db
+*.db-shm
+*.db-wal
+export/
+
+# Editors / OS
+.idea/
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+.DS_Store
+Thumbs.db
+
+# Markdown docs stay local, never pushed
+*.md
+
+# Claude Code local config
+.claude/
