@@ -6,13 +6,14 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.kenchami.kenchamios.ui.theme.Area
 
-/** The four screens of the bottom bar. */
-enum class Destination(val route: String, val label: String, val icon: ImageVector) {
-    Today("today", "Today", Icons.Filled.Home),
-    Projects("projects", "Projects", Icons.AutoMirrored.Filled.List),
-    Prompts("prompts", "Prompts", Icons.Filled.Create),
-    Media("media", "Media", Icons.Filled.PlayArrow),
+/** The four screens of the bottom bar; Today belongs to no area and stays neutral. */
+enum class Destination(val route: String, val label: String, val icon: ImageVector, val area: Area?) {
+    Today("today", "Today", Icons.Filled.Home, null),
+    Projects("projects", "Projects", Icons.AutoMirrored.Filled.List, Area.Projects),
+    Prompts("prompts", "Prompts", Icons.Filled.Create, Area.Workflow),
+    Media("media", "Media", Icons.Filled.PlayArrow, Area.Media),
 }
 
 object Routes {

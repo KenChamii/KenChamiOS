@@ -14,8 +14,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import com.kenchami.kenchamios.data.db.entity.TaskEntity
 import com.kenchami.kenchamios.data.model.TaskStatus
+import com.kenchami.kenchamios.ui.common.TaskTitle
 import com.kenchami.kenchamios.ui.common.formatDate
 import com.kenchami.kenchamios.ui.common.label
 import java.time.ZoneId
@@ -28,11 +30,13 @@ fun TaskRow(
     onStartFocus: () -> Unit,
     onStatus: (TaskStatus) -> Unit,
     onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
     val details = listOfNotNull(task.priority.label, task.dueAt?.let { "due ${formatDate(it, zone)}" })
     ListItem(
-        headlineContent = { Text(task.title) },
+        modifier = modifier,
+        headlineContent = { TaskTitle(task.title, task.status == TaskStatus.Done) },
         supportingContent = { Text(details.joinToString(" - ")) },
         leadingContent = {
             Checkbox(

@@ -2,14 +2,10 @@ package com.kenchami.kenchamios.ui.quickadd
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,8 +20,13 @@ import com.kenchami.kenchamios.data.db.ProjectSummary
 import com.kenchami.kenchamios.data.model.MediaStatus
 import com.kenchami.kenchamios.data.model.MediaType
 import com.kenchami.kenchamios.data.model.Priority
-import com.kenchami.kenchamios.ui.common.EmptyText
+import com.kenchami.kenchamios.ui.common.AppTextField
+import com.kenchami.kenchamios.ui.common.ChoiceChips
+import com.kenchami.kenchamios.ui.common.EmptyState
+import com.kenchami.kenchamios.ui.common.icon
 import com.kenchami.kenchamios.ui.common.label
+import com.kenchami.kenchamios.ui.theme.Area
+import com.kenchami.kenchamios.ui.theme.tint
 import java.time.Clock
 import java.time.LocalDate
 
@@ -34,26 +35,18 @@ private fun FormColumn(content: @Composable () -> Unit) {
     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) { content() }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun <T> ChoiceChips(options: List<T>, selected: T?, label: (T) -> String, onSelect: (T) -> Unit) {
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        options.forEach { option ->
-            FilterChip(selected = selected == option, onClick = { onSelect(option) }, label = { Text(label(option)) })
-        }
-    }
-}
-
 @Composable
 fun TaskForm(
     projects: List<ProjectSummary>,
     clock: Clock,
+    onAddIdea: () -> Unit,
     onSubmit: (projectId: String, title: String, priority: Priority, dueAt: Long?) -> Unit,
 ) {
     if (projects.isEmpty()) {
-        EmptyText("Add an idea first, a task needs a project.")
+        EmptyState(Area.Projects.icon, "A task needs a project first.", "Add an idea", onAddIdea, tint = Area.Projects.tint)
         return
     }
+    val tint = Area.Projects.tint
     var title by rememberSaveable { mutableStateOf("") }
     var projectId by rememberSaveable { mutableStateOf(projects.first().project.id) }
     var priority by rememberSaveable { mutableStateOf(Priority.Medium) }
@@ -63,16 +56,22 @@ fun TaskForm(
     val today = LocalDate.now(clock)
 
     FormColumn {
-        OutlinedTextField(title, { title = it }, label = { Text("Task") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+        AppTextField(title, { title = it }, "Task", Modifier.fillMaxWidth(), singleLine = true)
         Text("Project")
-        ChoiceChips(projects, projects.firstOrNull { it.project.id == projectId }, { it.project.name }) { projectId = it.project.id }
+        ChoiceChips(
+            projects,
+            projects.firstOrNull { it.project.id == projectId },
+            { it.project.name },
+            { projectId = it.project.id },
+            tint = tint,
+        )
         Text("Priority")
-        ChoiceChips(Priority.entries, priority, { it.label }) { priority = it }
+        ChoiceChips(Priority.entries, priority, { it.label }, { priority = it }, tint = tint)
         Text("Due")
-        ChoiceChips(DueChoice.entries, due, { it.label }) {
+        ChoiceChips(DueChoice.entries, due, { it.label }, tint = tint, onSelect = {
             due = it
             picking = it == DueChoice.Pick
-        }
+        })
         if (picking) {
             DatePickerSheet(
                 onPick = {
@@ -105,8 +104,8 @@ fun IdeaForm(onSubmit: (name: String, description: String) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     FormColumn {
-        OutlinedTextField(name, { name = it }, label = { Text("Idea") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(description, { description = it }, label = { Text("Description") }, modifier = Modifier.fillMaxWidth())
+        AppTextField(name, { name = it }, "Idea", Modifier.fillMaxWidth(), singleLine = true)
+        AppTextField(description, { description = it }, "Description", Modifier.fillMaxWidth())
         Button(onClick = { onSubmit(name, description) }, enabled = name.isNotBlank()) { Text("Add idea") }
     }
 }
@@ -117,15 +116,16 @@ fun PromptForm(projects: List<ProjectSummary>, onSubmit: (title: String, body: S
     var body by rememberSaveable { mutableStateOf("") }
     var projectId by rememberSaveable { mutableStateOf<String?>(null) }
     FormColumn {
-        OutlinedTextField(title, { title = it }, label = { Text("Title") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        OutlinedTextField(body, { body = it }, label = { Text("Prompt") }, minLines = 3, modifier = Modifier.fillMaxWidth())
+        AppTextField(title, { title = it }, "Title", Modifier.fillMaxWidth(), singleLine = true)
+        AppTextField(body, { body = it }, "Prompt", Modifier.fillMaxWidth(), minLines = 3)
         Text("Project")
-        ChoiceChips(listOf<ProjectSummary?>(null) + projects, projects.firstOrNull { it.project.id == projectId }, {
-            it?.project?.name
-                ?: "None"
-        }) {
-            projectId = it?.project?.id
-        }
+        ChoiceChips(
+            listOf<ProjectSummary?>(null) + projects,
+            projects.firstOrNull { it.project.id == projectId },
+            { it?.project?.name ?: "None" },
+            { projectId = it?.project?.id },
+            tint = Area.Workflow.tint,
+        )
         Button(onClick = { onSubmit(title, body, projectId) }, enabled = title.isNotBlank()) { Text("Add prompt") }
     }
 }
@@ -140,13 +140,14 @@ fun MediaForm(onSubmit: (type: MediaType, title: String, status: MediaStatus, to
     val totalValid = total.isBlank() || totalValue != null
 
     FormColumn {
-        OutlinedTextField(title, { title = it }, label = { Text("Title") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-        ChoiceChips(MediaType.entries, type, { it.label }) { type = it }
-        ChoiceChips(MediaStatus.entries, status, { it.label }) { status = it }
-        OutlinedTextField(
+        AppTextField(title, { title = it }, "Title", Modifier.fillMaxWidth(), singleLine = true)
+        val tint = Area.Media.tint
+        ChoiceChips(MediaType.entries, type, { it.label }, { type = it }, tint = tint, icon = { it.icon })
+        ChoiceChips(MediaStatus.entries, status, { it.label }, { status = it }, tint = tint)
+        AppTextField(
             value = total,
             onValueChange = { total = it },
-            label = { Text("Total episodes, chapters or hours (optional)") },
+            label = "Total episodes, chapters or hours (optional)",
             singleLine = true,
             isError = !totalValid,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

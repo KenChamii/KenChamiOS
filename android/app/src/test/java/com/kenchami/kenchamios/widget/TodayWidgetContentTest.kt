@@ -21,7 +21,7 @@ class TodayWidgetContentTest {
         setContext(ApplicationProvider.getApplicationContext())
         val data = WidgetData(due = listOf(dueTask("Write docs", 2_000), dueTask("Old task", 500)))
 
-        provideComposable { GlanceTheme { TodayWidgetContent(data, dayStart) } }
+        provideComposable { GlanceTheme(colors = WidgetColors) { TodayWidgetContent(data, dayStart) } }
 
         onNode(hasText("Write docs")).assertExists()
         onNode(hasText("Old task - overdue")).assertExists()
@@ -31,7 +31,7 @@ class TodayWidgetContentTest {
     fun saysWhenThereIsNothingToShow() = runGlanceAppWidgetUnitTest {
         setContext(ApplicationProvider.getApplicationContext())
 
-        provideComposable { GlanceTheme { TodayWidgetContent(WidgetData(), dayStart) } }
+        provideComposable { GlanceTheme(colors = WidgetColors) { TodayWidgetContent(WidgetData(), dayStart) } }
 
         onNode(hasText("Nothing due or overdue")).assertExists()
         onNode(hasText("Nothing in progress")).assertExists()
@@ -42,7 +42,7 @@ class TodayWidgetContentTest {
         setContext(ApplicationProvider.getApplicationContext())
         val data = WidgetData(continuing = listOf(libraryEntry("e1", progress = 12), libraryEntry("e2", progress = 3)))
 
-        provideComposable { GlanceTheme { TodayWidgetContent(data, dayStart) } }
+        provideComposable { GlanceTheme(colors = WidgetColors) { TodayWidgetContent(data, dayStart) } }
 
         onNode(hasText("Frieren - Episode 4")).assertExists()
         onNode(hasText("+1")).assertHasRunCallbackClickAction<AddOneAction>(actionParametersOf(EntryIdKey to "e2"))

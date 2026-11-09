@@ -39,7 +39,8 @@ class FormsTest {
         var submitted: List<Any?>? = null
         val clock = TestClock()
         compose.setContent {
-            TaskForm(listOf(projectSummary("p1", "Alpha"), projectSummary("p2", "Beta")), clock) { project, title, priority, due ->
+            TaskForm(listOf(projectSummary("p1", "Alpha"), projectSummary("p2", "Beta")), clock, onAddIdea = {
+            }) { project, title, priority, due ->
                 submitted = listOf(project, title, priority, due)
             }
         }
@@ -58,7 +59,7 @@ class FormsTest {
         var due: Long? = null
         val clock = TestClock(ms = 1_700_000_000_000)
         compose.setContent {
-            TaskForm(listOf(projectSummary()), clock) { _, _, _, dueAt -> due = dueAt }
+            TaskForm(listOf(projectSummary()), clock, onAddIdea = {}) { _, _, _, dueAt -> due = dueAt }
         }
 
         compose.onNodeWithText("Task").performTextInput("A")
@@ -70,9 +71,13 @@ class FormsTest {
 
     @Test
     fun taskFormAsksForAnIdeaFirstWithoutProjects() {
-        compose.setContent { TaskForm(emptyList(), TestClock()) { _, _, _, _ -> } }
+        var wantsIdea = false
+        compose.setContent { TaskForm(emptyList(), TestClock(), onAddIdea = { wantsIdea = true }) { _, _, _, _ -> } }
 
-        compose.onNodeWithText("Add an idea first, a task needs a project.").assertIsDisplayed()
+        compose.onNodeWithText("A task needs a project first.").assertIsDisplayed()
+        compose.onNodeWithText("Add an idea").performClick()
+
+        assertEquals(true, wantsIdea)
     }
 
     @Test

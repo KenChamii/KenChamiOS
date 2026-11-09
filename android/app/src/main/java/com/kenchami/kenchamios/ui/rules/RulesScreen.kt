@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,7 +27,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.context.Rule
 import com.kenchami.kenchamios.ui.common.AppScreen
-import com.kenchami.kenchamios.ui.common.EmptyText
+import com.kenchami.kenchamios.ui.common.EmptyState
+import com.kenchami.kenchamios.ui.common.listMotion
 
 @Composable
 fun RulesScreen(
@@ -55,7 +57,9 @@ fun RulesScreen(
 @Composable
 fun RulesContent(rules: List<Rule>, onToggle: (Rule, Boolean) -> Unit, onOpenRule: (String) -> Unit, padding: PaddingValues) {
     LazyColumn(contentPadding = padding, modifier = Modifier.testTag("rules")) {
-        if (rules.isEmpty()) item { EmptyText("No rules yet. Add one, or start from the Leaving home checklist.") }
+        if (rules.isEmpty()) {
+            item { EmptyState(Icons.Filled.Notifications, "No rules yet.", "Add a rule", { onOpenRule(NEW_RULE) }) }
+        }
         items(rules, key = { it.id }) { rule ->
             ListItem(
                 headlineContent = { Text(rule.name) },
@@ -63,7 +67,7 @@ fun RulesContent(rules: List<Rule>, onToggle: (Rule, Boolean) -> Unit, onOpenRul
                 trailingContent = {
                     Switch(checked = rule.enabled, onCheckedChange = { onToggle(rule, it) })
                 },
-                modifier = Modifier.clickable { onOpenRule(rule.id) },
+                modifier = Modifier.listMotion(this).clickable { onOpenRule(rule.id) },
             )
         }
         item {

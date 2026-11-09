@@ -15,8 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -124,7 +124,7 @@ fun ContextSettingsContent(
             "Time rules use one inexact wake-up, so they can run a few minutes late. " +
                 "Wi-Fi rules react to the system's own network events. Neither keeps the phone awake.",
         )
-        OutlinedButton(onClick = onOpenSystemSettings, modifier = Modifier.padding(horizontal = 16.dp)) {
+        FilledTonalButton(onClick = onOpenSystemSettings, modifier = Modifier.padding(horizontal = 16.dp)) {
             Text("Open system settings")
         }
     }

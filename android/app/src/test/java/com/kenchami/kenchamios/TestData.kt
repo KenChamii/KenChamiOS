@@ -1,5 +1,6 @@
 package com.kenchami.kenchamios
 
+import com.kenchami.kenchamios.core.DayBounds
 import com.kenchami.kenchamios.data.db.DueTask
 import com.kenchami.kenchamios.data.db.LibraryEntry
 import com.kenchami.kenchamios.data.db.ProjectSummary
@@ -11,6 +12,8 @@ import com.kenchami.kenchamios.data.model.MediaType
 import com.kenchami.kenchamios.data.model.Priority
 import com.kenchami.kenchamios.data.model.Stage
 import com.kenchami.kenchamios.data.model.TaskStatus
+import com.kenchami.kenchamios.ui.today.SetupStep
+import com.kenchami.kenchamios.ui.today.TodayState
 
 fun dueTask(title: String, dueAt: Long) = DueTask("t-$title", title, "p1", "Demo", dueAt, Priority.Medium, TaskStatus.Todo)
 
@@ -55,4 +58,21 @@ fun projectSummary(id: String = "p1", name: String = "Demo", stage: Stage = Stag
 fun prompt(id: String = "pr1", title: String = "Review", favorite: Boolean = false, uses: Int = 0) = PromptEntity(
     id = id, createdAt = 1, updatedAt = 1, deviceId = "d", deleted = false, projectId = null, title = title,
     bodyMd = "Review the diff", tags = emptyList(), favorite = favorite, useCount = uses, lastUsedAt = null,
+)
+
+fun todayState(
+    due: List<DueTask> = emptyList(),
+    entries: List<LibraryEntry> = emptyList(),
+    projects: List<ProjectSummary> = listOf(projectSummary()),
+    setup: List<SetupStep> = emptyList(),
+) = TodayState(
+    bounds = DayBounds(start = 10_000, end = 20_000),
+    now = 15_000,
+    due = due,
+    continueItems = entries,
+    projects = projects,
+    activity = emptyList(),
+    greeting = "Good morning",
+    date = "Tuesday, 10 November",
+    setup = setup,
 )

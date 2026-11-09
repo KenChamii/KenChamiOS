@@ -1,6 +1,8 @@
 package com.kenchami.kenchamios.ui.common
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
@@ -16,13 +18,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import com.kenchami.kenchamios.ui.theme.Area
+import com.kenchami.kenchamios.ui.theme.tint
 
-/** A screen with a top bar; the bottom bar and insets belong to the app scaffold. */
+/** A screen with a top bar; the bottom bar and insets belong to the app scaffold. [area] tints the header mark. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppScreen(
     title: String,
     onBack: (() -> Unit)? = null,
+    area: Area? = null,
     snackbar: SnackbarHostState? = null,
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
@@ -30,7 +38,12 @@ fun AppScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(title, style = MaterialTheme.typography.headlineSmall) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        area?.let { TintedIcon(it.icon, it.tint, size = 32.dp) }
+                        Text(title, style = MaterialTheme.typography.headlineSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {

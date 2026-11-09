@@ -8,9 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,6 +25,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.sync.SyncSnapshot
 import com.kenchami.kenchamios.ui.common.AppScreen
+import com.kenchami.kenchamios.ui.common.AppTextField
 import com.kenchami.kenchamios.ui.common.ConfirmDialog
 import com.kenchami.kenchamios.ui.common.SectionTitle
 import com.kenchami.kenchamios.ui.common.timeAgo
@@ -79,7 +79,11 @@ fun SyncContent(
             Button(onClick = onSyncNow, enabled = !progress.busy, modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text(if (progress.busy) "Working..." else "Sync now")
             }
-            OutlinedButton(onClick = { confirmUnpair = true }, enabled = !progress.busy, modifier = Modifier.padding(horizontal = 16.dp)) {
+            FilledTonalButton(
+                onClick = { confirmUnpair = true },
+                enabled = !progress.busy,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            ) {
                 Text("Unpair")
             }
         }
@@ -116,12 +120,12 @@ private fun PairForm(enabled: Boolean, onPair: (String) -> Unit, onScan: () -> U
             style = MaterialTheme.typography.bodyMedium,
         )
         Button(onClick = onScan, enabled = enabled) { Text("Scan QR code") }
-        OutlinedTextField(
+        AppTextField(
             value = text,
             onValueChange = { text = it },
-            label = { Text("Or paste the pairing text") },
+            label = "Or paste the pairing text",
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedButton(onClick = { onPair(text) }, enabled = enabled && text.isNotBlank()) { Text("Pair with pasted text") }
+        FilledTonalButton(onClick = { onPair(text) }, enabled = enabled && text.isNotBlank()) { Text("Pair with pasted text") }
     }
 }
