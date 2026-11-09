@@ -1,0 +1,329 @@
+[
+  {
+    "name": "table outside the allow-list",
+    "changes": [
+      {
+        "table": "settings",
+        "row": {
+          "id": "x",
+          "created_at": 1700000000000,
+          "updated_at": 111411200065536000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "key": "k",
+          "value_json": "1"
+        }
+      }
+    ]
+  },
+  {
+    "name": "local-only table",
+    "changes": [
+      {
+        "table": "timer_state",
+        "row": {
+          "id": "x",
+          "created_at": 1700000000000,
+          "updated_at": 111411200065536000,
+          "device_id": "dev-phone",
+          "deleted": 0
+        }
+      }
+    ]
+  },
+  {
+    "name": "unknown table",
+    "changes": [
+      {
+        "table": "sqlite_master",
+        "row": {}
+      }
+    ]
+  },
+  {
+    "name": "extra column",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]",
+          "extra": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "missing column",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "enum value outside the list",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "blocked",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "wrong type",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": "tomorrow",
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "null in a required column",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": null,
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "deleted flag out of range",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 2,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "id with forbidden characters",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1'; DROP TABLE tasks;--",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "empty id",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "tags that are not a json string array",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 111411200131072000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "{\"a\":1}"
+        }
+      }
+    ]
+  },
+  {
+    "name": "negative hlc",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": -5,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  },
+  {
+    "name": "hlc far in the future",
+    "changes": [
+      {
+        "table": "tasks",
+        "row": {
+          "id": "t1",
+          "created_at": 1700000000000,
+          "updated_at": 9000000000000000000,
+          "device_id": "dev-phone",
+          "deleted": 0,
+          "project_id": "p1",
+          "parent_id": null,
+          "title": "Write tests",
+          "body_md": "",
+          "acceptance_md": "",
+          "related_files": "[]",
+          "status": "todo",
+          "priority": "high",
+          "due_at": null,
+          "order_key": "a0",
+          "tags": "[]"
+        }
+      }
+    ]
+  }
+]

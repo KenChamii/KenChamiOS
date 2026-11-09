@@ -30,7 +30,7 @@ data class MediaItemEntity(
 @Entity(
     tableName = "media_entries",
     foreignKeys = [ForeignKey(MediaItemEntity::class, parentColumns = ["id"], childColumns = ["media_item_id"])],
-    indices = [Index("media_item_id", unique = true), Index("finished_at")],
+    indices = [Index("media_item_id"), Index("finished_at")],
 )
 data class MediaEntryEntity(
     @PrimaryKey val id: String,

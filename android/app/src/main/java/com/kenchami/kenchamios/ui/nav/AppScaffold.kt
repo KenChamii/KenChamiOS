@@ -24,6 +24,7 @@ import com.kenchami.kenchamios.ui.projects.ProjectDetailScreen
 import com.kenchami.kenchamios.ui.projects.ProjectsScreen
 import com.kenchami.kenchamios.ui.prompts.PromptsScreen
 import com.kenchami.kenchamios.ui.quickadd.QuickAddSheet
+import com.kenchami.kenchamios.ui.sync.SyncScreen
 import com.kenchami.kenchamios.ui.today.TodayScreen
 
 @Composable
@@ -65,6 +66,7 @@ fun AppScaffold() {
                     onOpenProject = { navController.navigate(Routes.project(it)) },
                     onOpenEntry = { navController.navigate(Routes.entry(it)) },
                     onQuickAdd = openQuickAdd,
+                    onOpenSync = { navController.navigate(Routes.SYNC) },
                 )
             }
             composable(Destination.Projects.route) {
@@ -76,6 +78,7 @@ fun AppScaffold() {
             }
             composable(Routes.PROJECT) { ProjectDetailScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.ENTRY) { EntryDetailScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.SYNC) { SyncScreen(onBack = { navController.popBackStack() }) }
         }
     }
 

@@ -24,6 +24,8 @@ pub enum AppError {
     Keyring(#[from] keyring::Error),
     #[error("app error: {0}")]
     Tauri(#[from] tauri::Error),
+    #[error("sync error: {0}")]
+    Sync(String),
 }
 
 impl AppError {
@@ -38,6 +40,7 @@ impl AppError {
             Self::Tauri(_) => "tauri",
             Self::Provider(_) => "provider",
             Self::Keyring(_) => "keyring",
+            Self::Sync(_) => "sync",
             Self::NotFound(_) => "not_found",
             Self::Invalid(_) => "invalid",
         }

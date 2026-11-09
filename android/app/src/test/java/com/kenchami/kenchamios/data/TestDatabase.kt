@@ -6,14 +6,16 @@ import com.kenchami.kenchamios.TestClock
 import com.kenchami.kenchamios.core.Hlc
 import com.kenchami.kenchamios.core.Uuid7Generator
 import com.kenchami.kenchamios.data.db.AppDatabase
+import com.kenchami.kenchamios.data.db.ChangeLogCallback
 
 /** An in-memory database with the helpers a repository needs, on a clock the test moves. */
 class TestDatabase(val clock: TestClock = TestClock()) {
+    val hlc = Hlc(clock)
     val database: AppDatabase = Room.inMemoryDatabaseBuilder(
         ApplicationProvider.getApplicationContext(),
         AppDatabase::class.java,
-    ).allowMainThreadQueries().build()
-    val stamper = Stamper(clock, Hlc(clock), Uuid7Generator(clock), database.settingDao())
+    ).addCallback(ChangeLogCallback(hlc)).allowMainThreadQueries().build()
+    val stamper = Stamper(clock, hlc, Uuid7Generator(clock), database.settingDao())
     val activity = ActivityRecorder(stamper, database.activityDao())
 
     /** The number a query like `SELECT COUNT(*) ...` returns. */

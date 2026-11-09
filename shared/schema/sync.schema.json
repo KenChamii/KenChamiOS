@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sync.schema.json",
+  "title": "KenChamiOS sync protocol v1",
+  "description": "Bodies of the LAN sync endpoints. A change row is validated against the table of the same name in tables.schema.json; tables with x-synced false are refused.",
+  "$defs": {
+    "device_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]{1,64}$"
+    },
+    "change": {
+      "type": "object",
+      "properties": {
+        "table": {
+          "enum": [
+            "activity",
+            "checklist_items",
+            "media_entries",
+            "media_items",
+            "media_progress_log",
+            "project_docs",
+            "projects",
+            "prompts",
+            "save_points",
+            "tasks",
+            "time_entries"
+          ]
+        },
+        "row": {
+          "type": "object"
+        }
+      },
+      "required": ["table", "row"],
+      "additionalProperties": false
+    },
+    "changes": {
+      "type": "array",
+      "maxItems": 500,
+      "items": { "$ref": "#/$defs/change" }
+    },
+    "pairing_payload": {
+      "description": "Content of the QR code and of the pasted text",
+      "type": "object",
+      "properties": {
+        "v": { "const": 1 },
+        "host": { "type": "string", "maxLength": 64 },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "fp": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "code": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{10}$" }
+      },
+      "required": ["v", "host", "port", "fp", "code"],
+      "additionalProperties": false
+    },
+    "pair_request": {
+      "description": "POST /pair",
+      "type": "object",
+      "properties": {
+        "code": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{10}$" },
+        "device_id": { "$ref": "#/$defs/device_id" },
+        "device_name": { "type": "string", "minLength": 1, "maxLength": 64 }
+      },
+      "required": ["code", "device_id", "device_name"],
+      "additionalProperties": false
+    },
+    "pair_response": {
+      "type": "object",
+      "properties": {
+        "token": { "type": "string", "minLength": 32, "maxLength": 128 },
+        "server_device_id": { "$ref": "#/$defs/device_id" }
+      },
+      "required": ["token", "server_device_id"],
+      "additionalProperties": false
+    },
+    "push_request": {
+      "description": "POST /sync/push",
+      "type": "object",
+      "properties": {
+        "changes": { "$ref": "#/$defs/changes" }
+      },
+      "required": ["changes"],
+      "additionalProperties": false
+    },
+    "push_response": {
+      "type": "object",
+      "properties": {
+        "applied": { "type": "integer", "minimum": 0 },
+        "ignored": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["applied", "ignored"],
+      "additionalProperties": false
+    },
+    "pull_response": {
+      "description": "GET /sync/pull?since=<seq>&limit=<n>",
+      "type": "object",
+      "properties": {
+        "changes": { "$ref": "#/$defs/changes" },
+        "next": { "type": "integer", "minimum": 0 },
+        "has_more": { "type": "boolean" }
+      },
+      "required": ["changes", "next", "has_more"],
+      "additionalProperties": false
+    }
+  }
+}

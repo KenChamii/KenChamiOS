@@ -1,0 +1,89 @@
+[
+  {
+    "name": "incoming doc wins the key, stored doc is displaced",
+    "table": "project_docs",
+    "stored": {
+      "id": "doc-a",
+      "created_at": 1700000000000,
+      "updated_at": 111411200655360000,
+      "device_id": "dev-a",
+      "deleted": 0,
+      "project_id": "p1",
+      "kind": "idea",
+      "title": "Idea",
+      "body_md": "text"
+    },
+    "incoming": {
+      "id": "doc-b",
+      "created_at": 1700000000000,
+      "updated_at": 111411201310720000,
+      "device_id": "dev-b",
+      "deleted": 0,
+      "project_id": "p1",
+      "kind": "idea",
+      "title": "Idea",
+      "body_md": "text"
+    },
+    "live": [
+      "doc-b"
+    ]
+  },
+  {
+    "name": "incoming doc loses the key and is stored as a tombstone",
+    "table": "project_docs",
+    "stored": {
+      "id": "doc-a",
+      "created_at": 1700000000000,
+      "updated_at": 111411201310720000,
+      "device_id": "dev-a",
+      "deleted": 0,
+      "project_id": "p1",
+      "kind": "idea",
+      "title": "Idea",
+      "body_md": "text"
+    },
+    "incoming": {
+      "id": "doc-b",
+      "created_at": 1700000000000,
+      "updated_at": 111411200655360000,
+      "device_id": "dev-b",
+      "deleted": 0,
+      "project_id": "p1",
+      "kind": "idea",
+      "title": "Idea",
+      "body_md": "text"
+    },
+    "live": [
+      "doc-a"
+    ]
+  },
+  {
+    "name": "a deleted doc never blocks the key",
+    "table": "project_docs",
+    "stored": {
+      "id": "doc-a",
+      "created_at": 1700000000000,
+      "updated_at": 111411201310720000,
+      "device_id": "dev-a",
+      "deleted": 1,
+      "project_id": "p1",
+      "kind": "idea",
+      "title": "Idea",
+      "body_md": "text"
+    },
+    "incoming": {
+      "id": "doc-b",
+      "created_at": 1700000000000,
+      "updated_at": 111411200655360000,
+      "device_id": "dev-b",
+      "deleted": 0,
+      "project_id": "p1",
+      "kind": "idea",
+      "title": "Idea",
+      "body_md": "text"
+    },
+    "live": [
+      "doc-b"
+    ]
+  }
+]

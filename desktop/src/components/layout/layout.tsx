@@ -1,8 +1,10 @@
 import { Outlet } from "react-router-dom";
 import { TimerBar } from "@/features/focus/timer-bar";
+import { useRefreshOnSync } from "@/hooks/use-sync";
 import { Sidebar } from "./sidebar";
 
 export function Layout() {
+  useRefreshOnSync();
   return (
     <div className="flex h-screen">
       <Sidebar />

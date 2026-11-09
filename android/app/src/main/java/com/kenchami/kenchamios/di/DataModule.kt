@@ -5,6 +5,8 @@ import androidx.room.Room
 import com.kenchami.kenchamios.core.Hlc
 import com.kenchami.kenchamios.core.Uuid7Generator
 import com.kenchami.kenchamios.data.db.AppDatabase
+import com.kenchami.kenchamios.data.db.ChangeLogCallback
+import com.kenchami.kenchamios.data.db.MIGRATION_1_2
 import com.kenchami.kenchamios.data.db.dao.ActivityDao
 import com.kenchami.kenchamios.data.db.dao.SettingDao
 import dagger.Module
@@ -32,8 +34,11 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun database(@ApplicationContext context: Context): AppDatabase =
-        Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME).build()
+    fun database(@ApplicationContext context: Context, hlc: Hlc): AppDatabase =
+        Room.databaseBuilder(context, AppDatabase::class.java, AppDatabase.NAME)
+            .addMigrations(MIGRATION_1_2)
+            .addCallback(ChangeLogCallback(hlc))
+            .build()
 
     @Provides
     fun settingDao(database: AppDatabase): SettingDao = database.settingDao()

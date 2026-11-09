@@ -18,6 +18,7 @@ enum class Destination(val route: String, val label: String, val icon: ImageVect
 object Routes {
     const val PROJECT = "project/{id}"
     const val ENTRY = "media/{entryId}"
+    const val SYNC = "sync"
 
     fun project(id: String) = "project/$id"
 

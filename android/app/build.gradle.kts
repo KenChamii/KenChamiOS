@@ -36,9 +36,16 @@ android {
         compose = true
     }
 
+    androidResources {
+        ignoreAssetsPatterns += "!README.md"
+    }
+
     testOptions {
         unitTests.isIncludeAndroidResources = true
     }
+
+    // the sync code validates rows against the same schema files as the desktop
+    sourceSets.getByName("main").assets.directories += "$rootDir/../shared/schema"
 
     // the migration test reads the exported schemas as assets of the debug build
     sourceSets.getByName("debug").assets.directories += "$projectDir/schemas"
@@ -64,6 +71,9 @@ dependencies {
     implementation(libs.androidx.glance.appwidget)
     implementation(libs.androidx.glance.material3)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.okhttp)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.gms.code.scanner)
     implementation(libs.hilt.android)
     ksp(libs.androidx.room.compiler)
     ksp(libs.hilt.compiler)
@@ -73,6 +83,9 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.ext.junit)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.okhttp.tls)
+    testImplementation(libs.androidx.work.testing)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.androidx.glance.appwidget.testing)
     testImplementation(platform(libs.androidx.compose.bom))
