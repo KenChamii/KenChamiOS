@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useCreateTask, useDeleteTask, useMoveTask } from "@/hooks/use-tasks";
 import type { Task } from "@/lib/api/tasks";
 import { cn } from "@/lib/cn";
@@ -21,11 +22,11 @@ export function Subtasks({ parent, subtasks }: SubtasksProps) {
           const done = task.status === "done";
           return (
             <li key={task.id} className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
+              <Checkbox
+                aria-label={`Complete ${task.title}`}
                 checked={done}
-                onChange={() =>
-                  move.mutate({ id: task.id, status: done ? "todo" : "done", beforeId: null })
+                onCheckedChange={(checked) =>
+                  move.mutate({ id: task.id, status: checked ? "done" : "todo", beforeId: null })
                 }
               />
               <span className={cn("flex-1", done && "text-muted-foreground line-through")}>

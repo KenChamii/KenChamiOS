@@ -66,39 +66,34 @@ function PickerBody({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
         <Field label="Type">
-          <Select
+          <Select<MediaType | "all">
             value={filter.type}
-            onChange={(e) => changeFilter({ ...filter, type: e.target.value as MediaType | "all" })}
-          >
-            <option value="all">Anything</option>
-            {TYPES.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.label}
-              </option>
-            ))}
-          </Select>
+            options={[
+              { value: "all", label: "Anything" },
+              ...TYPES.map((type) => ({ value: type.id, label: type.label })),
+            ]}
+            onChange={(type) => changeFilter({ ...filter, type })}
+          />
         </Field>
         <Field label="Genre">
           <Select
             value={filter.genre}
-            onChange={(e) => changeFilter({ ...filter, genre: e.target.value })}
-          >
-            <option value="">Any genre</option>
-            {distinctValues(entries, "genres").map((genre) => (
-              <option key={genre}>{genre}</option>
-            ))}
-          </Select>
+            options={[
+              { value: "", label: "Any genre" },
+              ...distinctValues(entries, "genres").map((genre) => ({ value: genre, label: genre })),
+            ]}
+            onChange={(genre) => changeFilter({ ...filter, genre })}
+          />
         </Field>
         <Field label="Mood tag">
           <Select
             value={filter.tag}
-            onChange={(e) => changeFilter({ ...filter, tag: e.target.value })}
-          >
-            <option value="">Any mood</option>
-            {distinctValues(entries, "tags").map((tag) => (
-              <option key={tag}>{tag}</option>
-            ))}
-          </Select>
+            options={[
+              { value: "", label: "Any mood" },
+              ...distinctValues(entries, "tags").map((tag) => ({ value: tag, label: tag })),
+            ]}
+            onChange={(tag) => changeFilter({ ...filter, tag })}
+          />
         </Field>
         <Field label="At most this many left">
           <Input
@@ -125,6 +120,7 @@ function PickerBody({
             title={picked.title}
             path={picked.cover_path}
             url={picked.cover_url}
+            mediaType={picked.media_type}
             className="w-16 shrink-0"
           />
           <span className="flex flex-col gap-1">

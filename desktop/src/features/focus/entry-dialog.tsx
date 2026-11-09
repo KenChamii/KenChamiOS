@@ -74,15 +74,12 @@ function EntryForm({ projectId, tasks, entry, onDone }: EntryFormProps) {
       <Field label="Task">
         <Select
           value={draft.taskId}
-          onChange={(e) => setDraft({ ...draft, taskId: e.target.value })}
-        >
-          <option value="">No task</option>
-          {tasks.map((task) => (
-            <option key={task.id} value={task.id}>
-              {task.title}
-            </option>
-          ))}
-        </Select>
+          options={[
+            { value: "", label: "No task" },
+            ...tasks.map((task) => ({ value: task.id, label: task.title })),
+          ]}
+          onChange={(taskId) => setDraft({ ...draft, taskId })}
+        />
       </Field>
       <Field label="Note">
         <Input value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} />

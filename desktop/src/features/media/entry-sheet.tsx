@@ -38,6 +38,7 @@ function EntryDetail({ entry, onClose }: { entry: LibraryEntry; onClose: () => v
           title={entry.title}
           path={entry.cover_path}
           url={entry.cover_url}
+          mediaType={entry.media_type}
           className="w-28 shrink-0"
         />
         <div className="flex min-w-0 flex-col gap-2">

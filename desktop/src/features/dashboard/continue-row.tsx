@@ -1,43 +1,45 @@
-import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import { Cover } from "@/features/media/cover";
-import { TYPE_LABELS } from "@/features/media/meta";
 import { PlusOneButton } from "@/features/media/plus-one-button";
 import { useMedia } from "@/hooks/use-media";
 import { errorMessage } from "@/lib/errors";
+import { stagger } from "@/lib/motion";
 import { continueItems, nextLabel } from "./continue-items";
 
+/** What is in progress, as a row of covers; hidden when nothing is. */
 export function ContinueRow() {
   const media = useMedia();
   const items = continueItems(media.data ?? []);
+  if (media.error) return <p className="text-sm text-destructive">{errorMessage(media.error)}</p>;
+  if (items.length === 0) return null;
 
   return (
-    <Card className="flex flex-col gap-3">
+    <section className="flex flex-col gap-3">
       <h2 className="font-semibold tracking-tight">Continue</h2>
-      {media.error && <p className="text-sm text-destructive">{errorMessage(media.error)}</p>}
-      {items.length === 0 && !media.error && (
-        <p className="text-sm text-muted-foreground">
-          Nothing in progress. Start something from the Media page.
-        </p>
-      )}
-      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {items.map((entry) => (
-          <li key={entry.id} className="flex items-center gap-3">
-            <Cover
-              title={entry.title}
-              path={entry.cover_path}
-              url={entry.cover_url}
-              className="w-12 shrink-0"
-            />
-            <div className="flex min-w-0 flex-1 flex-col">
-              <span className="truncate text-sm font-medium">{entry.title}</span>
-              <span className="text-xs text-muted-foreground">
-                {TYPE_LABELS[entry.media_type]} · {nextLabel(entry)}
+      <ul className="-mx-2 flex gap-5 overflow-x-auto px-2 pb-3 pt-1">
+        {items.map((entry, index) => (
+          <li
+            key={entry.id}
+            className="stagger-in flex w-36 shrink-0 flex-col gap-2"
+            style={stagger(index)}
+          >
+            <Link to={`/media?open=${entry.id}`} className="lift flex flex-col gap-2 rounded-xl">
+              <Cover
+                title={entry.title}
+                path={entry.cover_path}
+                url={entry.cover_url}
+                mediaType={entry.media_type}
+                className="w-full shadow-soft"
+              />
+              <span className="flex flex-col">
+                <span className="truncate text-sm font-medium">{entry.title}</span>
+                <span className="text-xs text-muted-foreground">{nextLabel(entry)}</span>
               </span>
-            </div>
+            </Link>
             <PlusOneButton entry={entry} />
           </li>
         ))}
       </ul>
-    </Card>
+    </section>
   );
 }

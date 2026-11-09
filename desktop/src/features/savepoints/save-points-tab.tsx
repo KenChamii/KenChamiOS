@@ -1,6 +1,8 @@
 import { save } from "@tauri-apps/plugin-dialog";
+import { Flag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useExportSavePoints, useSavePoints } from "@/hooks/use-save-points";
 import type { ProjectSummary } from "@/lib/api/projects";
 import { errorMessage } from "@/lib/errors";
@@ -40,9 +42,12 @@ export function SavePointsTab({ project }: { project: ProjectSummary }) {
       </div>
       {error && <p className="text-sm text-destructive">{errorMessage(error)}</p>}
       {savePoints.data?.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No save points yet. Create one when you stop working, so you can pick up later.
-        </p>
+        <EmptyState
+          icon={Flag}
+          area="projects"
+          line="No save points yet. Make one when you stop, so you can pick up later."
+          action={<Button onClick={() => setCreating(true)}>Create save point</Button>}
+        />
       )}
       <ol className="flex flex-col gap-2">
         {savePoints.data?.map((savePoint, index) => (

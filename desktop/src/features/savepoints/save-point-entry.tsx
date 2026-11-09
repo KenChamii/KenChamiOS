@@ -1,8 +1,7 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { STAGE_LABELS } from "@/features/projects/meta";
+import { StageBadge } from "@/features/projects/stage-badge";
 import { useDeleteSavePoint } from "@/hooks/use-save-points";
 import type { SavePoint } from "@/lib/api/save-points";
 import { errorMessage } from "@/lib/errors";
@@ -28,7 +27,7 @@ export function SavePointEntry({ savePoint, initiallyOpen }: SavePointEntryProps
       >
         <Chevron size={16} className="shrink-0 text-muted-foreground" />
         <span className="flex-1 font-medium">{savePoint.note}</span>
-        <Badge>{STAGE_LABELS[savePoint.stage]}</Badge>
+        <StageBadge stage={savePoint.stage} />
         <span className="text-xs text-muted-foreground">
           {new Date(savePoint.created_at).toLocaleString()}
         </span>

@@ -97,15 +97,11 @@ function SearchForm({ text, onText, onSubmit, status, onStatus, type }: SearchFo
       </Button>
       <Select
         aria-label="Add as"
+        className="w-40"
         value={status}
-        onChange={(event) => onStatus(event.target.value as MediaStatus)}
-      >
-        {STATUSES.map((value) => (
-          <option key={value} value={value}>
-            {STATUS_LABELS[type][value]}
-          </option>
-        ))}
-      </Select>
+        options={STATUSES.map((value) => ({ value, label: STATUS_LABELS[type][value] }))}
+        onChange={onStatus}
+      />
     </form>
   );
 }
@@ -132,7 +128,7 @@ function Results({ query, type, status, entries, onClose }: ResultsProps) {
       <p className="text-sm text-destructive">
         {errorMessage(search.error)}.{" "}
         {KEYED_TYPES.includes(type) && (
-          <Link to="/settings" onClick={onClose} className="underline">
+          <Link to="/settings/media-sources" onClick={onClose} className="underline">
             Open Settings
           </Link>
         )}
@@ -148,7 +144,13 @@ function Results({ query, type, status, entries, onClose }: ResultsProps) {
       <ul className="flex flex-col divide-y divide-border">
         {search.data.map((hit) => (
           <li key={hit.external_id} className="flex gap-3 py-3">
-            <Cover title={hit.title} path={null} url={hit.cover_url} className="w-14 shrink-0" />
+            <Cover
+              title={hit.title}
+              path={null}
+              url={hit.cover_url}
+              mediaType={type}
+              className="w-14 shrink-0"
+            />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <span className="text-sm font-medium">
                 {hit.title}

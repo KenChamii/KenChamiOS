@@ -6,7 +6,7 @@ import { ProjectForm } from "./project-form";
 
 type DialogProps = { open: boolean; onOpenChange: (open: boolean) => void };
 
-const emptyProject: ProjectInput = {
+export const EMPTY_PROJECT: ProjectInput = {
   name: "",
   description: "",
   repo_path: null,
@@ -26,7 +26,7 @@ export function NewProjectDialog({
       <DialogContent aria-describedby={undefined}>
         <DialogTitle className="mb-4 text-lg font-semibold">New project</DialogTitle>
         <ProjectForm
-          initial={emptyProject}
+          initial={EMPTY_PROJECT}
           submitLabel="Create project"
           pending={create.isPending}
           error={create.error ? errorMessage(create.error) : null}

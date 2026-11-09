@@ -1,5 +1,6 @@
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   useAddChecklistItem,
   useChecklist,
@@ -21,10 +22,10 @@ export function Checklist({ taskId }: { taskId: string }) {
       <ul className="flex flex-col gap-1">
         {items.data?.map((item) => (
           <li key={item.id} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
+            <Checkbox
+              aria-label={item.text}
               checked={item.done}
-              onChange={() => update.mutate({ id: item.id, text: item.text, done: !item.done })}
+              onCheckedChange={(done) => update.mutate({ id: item.id, text: item.text, done })}
             />
             <span className={cn("flex-1", item.done && "text-muted-foreground line-through")}>
               {item.text}

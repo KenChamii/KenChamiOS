@@ -1,6 +1,9 @@
+import { Smartphone } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Switch } from "@/components/ui/switch";
 import { useRevokeDevice, useSetSyncEnabled, useSyncStatus } from "@/hooks/use-sync";
 import { timeAgo } from "@/lib/dates";
 import { errorMessage } from "@/lib/errors";
@@ -28,14 +31,13 @@ export function SyncCard() {
         Keeps this PC and your phone in sync over your home Wi-Fi. Nothing leaves your network. The
         phone starts every sync: every 15 minutes and after each change.
       </p>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
+      <label className="flex items-center justify-between gap-4 text-sm">
+        Allow paired phones to sync with this PC
+        <Switch
           checked={data.enabled}
           disabled={setEnabled.isPending}
-          onChange={(event) => setEnabled.mutate(event.target.checked)}
+          onCheckedChange={(enabled) => setEnabled.mutate(enabled)}
         />
-        Allow paired phones to sync with this PC
       </label>
       {data.running && data.address && (
         <p className="text-sm">
@@ -81,7 +83,7 @@ function Devices({
   onRevoke: (deviceId: string) => void;
 }) {
   if (devices.length === 0) {
-    return <p className="text-sm text-muted-foreground">No phone is paired yet.</p>;
+    return <EmptyState icon={Smartphone} line="No phone is paired yet." />;
   }
   return (
     <ul className="flex flex-col divide-y divide-border text-sm">

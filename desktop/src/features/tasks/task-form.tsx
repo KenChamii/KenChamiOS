@@ -51,13 +51,11 @@ export function TaskForm({ task, pending, error, onSave }: TaskFormProps) {
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Priority">
-          <Select value={priority} onChange={(e) => setPriority(e.target.value as Priority)}>
-            {PRIORITIES.map((value) => (
-              <option key={value} value={value}>
-                {PRIORITY_LABELS[value]}
-              </option>
-            ))}
-          </Select>
+          <Select
+            value={priority}
+            options={PRIORITIES.map((value) => ({ value, label: PRIORITY_LABELS[value] }))}
+            onChange={setPriority}
+          />
         </Field>
         <Field label="Due date">
           <Input type="date" value={due} onChange={(e) => setDue(e.target.value)} />

@@ -7,7 +7,6 @@ import { Progress } from "@/components/ui/progress";
 import { useDeleteProject, useSetStage, useUpdateProject } from "@/hooks/use-projects";
 import type { ProjectSummary } from "@/lib/api/projects";
 import { GitCard } from "@/features/savepoints/git-card";
-import { BriefCard } from "@/features/workflow/brief-card";
 import { ResumePanel } from "@/features/savepoints/resume-panel";
 import { errorMessage } from "@/lib/errors";
 import { EditProjectDialog } from "./project-dialog";
@@ -38,8 +37,6 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
 
       <GitCard projectId={project.id} />
 
-      <BriefCard project={project} />
-
       <Card className="flex flex-col gap-3">
         <h2 className="font-semibold tracking-tight">Details</h2>
         <p className="text-sm">
@@ -56,7 +53,7 @@ export function OverviewTab({ project }: { project: ProjectSummary }) {
           </dd>
           <dt className="text-muted-foreground">Progress</dt>
           <dd className="flex flex-col gap-1">
-            <Progress value={project.tasks_done} max={project.tasks_total} />
+            <Progress value={project.tasks_done} max={project.tasks_total} area="projects" />
             <span className="text-xs text-muted-foreground">
               {project.tasks_done} of {project.tasks_total} tasks done
             </span>

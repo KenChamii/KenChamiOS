@@ -45,20 +45,19 @@ export function ImportPanel() {
       <div className="flex flex-wrap items-center gap-2">
         <Select
           aria-label="File format"
+          className="w-56"
           value={format}
-          onChange={(e) => {
-            setFormat(e.target.value as ImportFormat);
+          options={(Object.keys(FORMATS) as ImportFormat[]).map((id) => ({
+            value: id,
+            label: FORMATS[id].label,
+          }))}
+          onChange={(next) => {
+            setFormat(next);
             setPath(null);
             preview.reset();
             confirm.reset();
           }}
-        >
-          {(Object.keys(FORMATS) as ImportFormat[]).map((id) => (
-            <option key={id} value={id}>
-              {FORMATS[id].label}
-            </option>
-          ))}
-        </Select>
+        />
         <Button variant="outline" disabled={preview.isPending} onClick={chooseFile}>
           Choose file
         </Button>
