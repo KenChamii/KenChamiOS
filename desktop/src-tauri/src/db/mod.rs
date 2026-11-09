@@ -1,4 +1,12 @@
+mod activity;
+pub mod checklist;
+pub mod docs;
+mod handle;
+pub mod projects;
 pub mod settings;
+pub mod tasks;
+
+pub use handle::Db;
 
 use crate::error::AppResult;
 use sqlx::SqlitePool;

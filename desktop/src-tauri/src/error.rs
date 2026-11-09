@@ -10,6 +10,10 @@ pub enum AppError {
     Io(#[from] std::io::Error),
     #[error("invalid stored value: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("{0} not found")]
+    NotFound(&'static str),
+    #[error("{0}")]
+    Invalid(&'static str),
     #[error("app error: {0}")]
     Tauri(#[from] tauri::Error),
 }
@@ -22,6 +26,8 @@ impl AppError {
             Self::Io(_) => "io",
             Self::Json(_) => "json",
             Self::Tauri(_) => "tauri",
+            Self::NotFound(_) => "not_found",
+            Self::Invalid(_) => "invalid",
         }
     }
 }
