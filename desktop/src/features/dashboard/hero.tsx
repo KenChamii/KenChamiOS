@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import { Stat } from "@/components/layout/stat";
 import { formatDuration } from "@/features/focus/format";
 import { useDueTasks, useRecap } from "@/hooks/use-dashboard";
@@ -12,14 +11,15 @@ export function Hero({ now }: { now: number }) {
   const active = (projects.data ?? []).filter((project) => project.stage !== "done");
 
   return (
-    <Card className="flex flex-wrap items-end gap-x-16 gap-y-6 p-8">
+    <section className="flex flex-wrap items-end justify-between gap-x-16 gap-y-8 py-6">
       <Stat hero label="Due today" value={due.data?.length ?? "–"} />
-      <Stat
-        hero
-        label="Focus this week"
-        value={week.data ? formatDuration(week.data.focus_seconds) : "–"}
-      />
-      <Stat label="Active projects" value={projects.data ? active.length : "–"} />
-    </Card>
+      <div className="flex gap-12 pb-3">
+        <Stat
+          label="Focus this week"
+          value={week.data ? formatDuration(week.data.focus_seconds) : "–"}
+        />
+        <Stat label="Active projects" value={projects.data ? active.length : "–"} />
+      </div>
+    </section>
   );
 }
