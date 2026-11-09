@@ -1,14 +1,20 @@
 use crate::error::{AppError, AppResult};
 use std::time::Duration;
 
-const USER_AGENT: &str = concat!("KenChamiOs/", env!("CARGO_PKG_VERSION"));
+// MusicBrainz asks for an app name, version and a contact url; no personal data
+const USER_AGENT: &str = concat!(
+    "KenChamiOS/",
+    env!("CARGO_PKG_VERSION"),
+    " ( https://github.com/KenChamii/KenChamiOS )"
+);
 const TIMEOUT: Duration = Duration::from_secs(15);
 
-/// A GET, or a JSON POST when `body` is set. Query values may hold a key, so this has no `Debug`.
+/// A GET, or a JSON POST when `body` is set. Params and headers may hold a key, so no `Debug`.
 #[derive(Clone)]
 pub struct HttpRequest {
     pub url: String,
     pub params: Vec<(&'static str, String)>,
+    pub headers: Vec<(&'static str, String)>,
     pub body: Option<String>,
     pub max_bytes: usize,
 }
@@ -63,7 +69,7 @@ impl HttpClient for ReqwestClient {
     async fn send(&self, request: HttpRequest) -> AppResult<HttpResponse> {
         let url = reqwest::Url::parse_with_params(&request.url, &request.params)
             .map_err(|_| AppError::Invalid("the request address is not valid"))?;
-        let builder = match request.body {
+        let mut builder = match request.body {
             Some(body) => self
                 .client
                 .post(url)
@@ -71,6 +77,9 @@ impl HttpClient for ReqwestClient {
                 .body(body),
             None => self.client.get(url),
         };
+        for (name, value) in &request.headers {
+            builder = builder.header(*name, value);
+        }
         let mut response = builder.send().await.map_err(network_error)?;
         let status = response.status().as_u16();
         let retry_after_s = response
@@ -109,6 +118,13 @@ mod tests {
             retry_after_s,
             body: b"{}".to_vec(),
         }
+    }
+
+    #[test]
+    fn the_user_agent_names_the_app_and_has_no_personal_data() {
+        assert!(USER_AGENT.starts_with("KenChamiOS/"));
+        assert!(USER_AGENT.contains("https://github.com/KenChamii/KenChamiOS"));
+        assert!(!USER_AGENT.contains('@'));
     }
 
     #[test]

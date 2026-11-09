@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { ArrowDownUp, Dices, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { EntrySheet } from "@/features/media/entry-sheet";
@@ -11,6 +11,8 @@ import {
 import { LibraryToolbar, type ViewMode } from "@/features/media/library-toolbar";
 import { MediaCard } from "@/features/media/media-card";
 import { MediaRow } from "@/features/media/media-row";
+import { PickerDialog } from "@/features/media/picker-dialog";
+import { TransferDialog } from "@/features/media/transfer-dialog";
 import { SearchDialog } from "@/features/media/search-dialog";
 import { useMedia } from "@/hooks/use-media";
 import { errorMessage } from "@/lib/errors";
@@ -20,6 +22,8 @@ export function MediaPage() {
   const [filter, setFilter] = useState(NO_FILTER);
   const [view, setView] = useState<ViewMode>("grid");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const entries = media.data ?? [];
@@ -32,10 +36,20 @@ export function MediaPage() {
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Media</h1>
-        <Button onClick={() => setSearchOpen(true)}>
-          <Plus size={16} />
-          Add
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setTransferOpen(true)}>
+            <ArrowDownUp size={16} />
+            Import / export
+          </Button>
+          <Button variant="outline" onClick={() => setPickerOpen(true)}>
+            <Dices size={16} />
+            What next?
+          </Button>
+          <Button onClick={() => setSearchOpen(true)}>
+            <Plus size={16} />
+            Add
+          </Button>
+        </div>
       </div>
 
       <LibraryToolbar
@@ -73,6 +87,13 @@ export function MediaPage() {
       )}
 
       <SearchDialog entries={entries} open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <TransferDialog open={transferOpen} onClose={() => setTransferOpen(false)} />
+      <PickerDialog
+        entries={entries}
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onOpenEntry={setOpenId}
+      />
       <EntrySheet entry={opened} onClose={() => setOpenId(null)} />
     </div>
   );

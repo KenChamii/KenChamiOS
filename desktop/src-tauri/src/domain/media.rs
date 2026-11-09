@@ -10,6 +10,10 @@ pub enum MediaType {
     Anime,
     Manga,
     Game,
+    Movie,
+    Show,
+    Album,
+    Artist,
 }
 
 impl MediaType {
@@ -18,6 +22,10 @@ impl MediaType {
             Self::Anime => "anime",
             Self::Manga => "manga",
             Self::Game => "game",
+            Self::Movie => "movie",
+            Self::Show => "show",
+            Self::Album => "album",
+            Self::Artist => "artist",
         }
     }
 
@@ -25,6 +33,8 @@ impl MediaType {
         match self {
             Self::Anime | Self::Manga => MediaSource::Anilist,
             Self::Game => MediaSource::Rawg,
+            Self::Movie | Self::Show => MediaSource::Tmdb,
+            Self::Album | Self::Artist => MediaSource::Musicbrainz,
         }
     }
 }
@@ -40,12 +50,26 @@ pub enum MediaStatus {
     Dropped,
 }
 
+impl MediaStatus {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::InProgress => "in_progress",
+            Self::Planned => "planned",
+            Self::Completed => "completed",
+            Self::OnHold => "on_hold",
+            Self::Dropped => "dropped",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[serde(rename_all = "snake_case")]
 #[sqlx(type_name = "TEXT", rename_all = "snake_case")]
 pub enum MediaSource {
     Anilist,
     Rawg,
+    Tmdb,
+    Musicbrainz,
     Manual,
 }
 
@@ -54,6 +78,8 @@ impl MediaSource {
         match self {
             Self::Anilist => "anilist",
             Self::Rawg => "rawg",
+            Self::Tmdb => "tmdb",
+            Self::Musicbrainz => "musicbrainz",
             Self::Manual => "manual",
         }
     }

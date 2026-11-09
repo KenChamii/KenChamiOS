@@ -92,12 +92,22 @@ pub fn run() {
             commands::media::media_update,
             commands::media::media_set_progress,
             commands::media::media_delete,
+            commands::media_transfer::media_import_preview,
+            commands::media_transfer::media_import_confirm,
+            commands::media_transfer::media_export_exists,
+            commands::media_transfer::media_export_csv,
+            commands::dashboard::dashboard_due_tasks,
+            commands::dashboard::dashboard_timeline,
+            commands::dashboard::dashboard_recap,
             commands::metadata::media_search,
             commands::metadata::media_add,
             commands::metadata::media_add_manual,
             commands::metadata::games_key_status,
             commands::metadata::games_key_set,
             commands::metadata::games_key_clear,
+            commands::metadata::tmdb_token_status,
+            commands::metadata::tmdb_token_set,
+            commands::metadata::tmdb_token_clear,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

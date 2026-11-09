@@ -26,6 +26,7 @@ impl<'a, H: HttpClient> AniList<'a, H> {
         let request = HttpRequest {
             url: ENDPOINT.to_string(),
             params: Vec::new(),
+            headers: Vec::new(),
             body: Some(json!({ "query": query, "variables": variables }).to_string()),
             max_bytes: MAX_RESPONSE_BYTES,
         };
@@ -38,7 +39,7 @@ impl<H: HttpClient> MetadataProvider for AniList<'_, H> {
         let kind = match media_type {
             MediaType::Anime => "ANIME",
             MediaType::Manga => "MANGA",
-            MediaType::Game => return Err(AppError::Invalid("AniList has no games")),
+            _ => return Err(AppError::Invalid("AniList only has anime and manga")),
         };
         let graphql = format!(
             "query ($search: String, $type: MediaType) {{

@@ -3,12 +3,15 @@ import {
   addManualMedia,
   addMedia,
   clearGamesKey,
+  clearTmdbToken,
   deleteMedia,
   gamesKeyStatus,
   listMedia,
   searchMedia,
   setGamesKey,
+  setTmdbToken,
   setMediaProgress,
+  tmdbTokenStatus,
   updateMedia,
   type EntryInput,
   type MediaStatus,
@@ -87,5 +90,25 @@ export function useClearGamesKey() {
   return useMutation({
     mutationFn: clearGamesKey,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["games-key"] }),
+  });
+}
+
+export function useTmdbTokenStatus() {
+  return useQuery({ queryKey: ["tmdb-token"], queryFn: tmdbTokenStatus });
+}
+
+export function useSetTmdbToken() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: setTmdbToken,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tmdb-token"] }),
+  });
+}
+
+export function useClearTmdbToken() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: clearTmdbToken,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tmdb-token"] }),
   });
 }

@@ -1,8 +1,8 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export type MediaType = "anime" | "manga" | "game";
+export type MediaType = "anime" | "manga" | "game" | "movie" | "show" | "album" | "artist";
 export type MediaStatus = "in_progress" | "planned" | "completed" | "on_hold" | "dropped";
-export type MediaSource = "anilist" | "rawg" | "manual";
+export type MediaSource = "anilist" | "rawg" | "tmdb" | "musicbrainz" | "manual";
 
 export type LibraryEntry = {
   id: string;
@@ -93,4 +93,16 @@ export function setGamesKey(key: string) {
 
 export function clearGamesKey() {
   return invoke<void>("games_key_clear");
+}
+
+export function tmdbTokenStatus() {
+  return invoke<boolean>("tmdb_token_status");
+}
+
+export function setTmdbToken(token: string) {
+  return invoke<void>("tmdb_token_set", { token });
+}
+
+export function clearTmdbToken() {
+  return invoke<void>("tmdb_token_clear");
 }

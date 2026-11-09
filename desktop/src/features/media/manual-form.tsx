@@ -8,7 +8,7 @@ import type { MediaStatus, MediaType } from "@/lib/api/media";
 import { errorMessage } from "@/lib/errors";
 import { parseTags } from "@/lib/tags";
 import { manualInputOf } from "./manual-input";
-import { STATUS_LABELS, STATUSES, TYPE_LABELS } from "./meta";
+import { STATUS_LABELS, STATUSES, TOTAL_LABELS, TYPE_LABELS } from "./meta";
 
 type ManualFormProps = { initialType: MediaType; onBack: () => void; onDone: () => void };
 
@@ -59,8 +59,8 @@ export function ManualForm({ initialType, onBack, onDone }: ManualFormProps) {
         <Field label="Year">
           <Input type="number" value={year} onChange={(e) => setYear(e.target.value)} />
         </Field>
-        {type !== "game" && (
-          <Field label={type === "anime" ? "Total episodes" : "Total chapters"}>
+        {TOTAL_LABELS[type] && (
+          <Field label={TOTAL_LABELS[type]}>
             <Input
               type="number"
               min={0}

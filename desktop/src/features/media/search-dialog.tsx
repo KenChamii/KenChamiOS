@@ -11,7 +11,7 @@ import type { LibraryEntry, MediaStatus, MediaType } from "@/lib/api/media";
 import { errorMessage } from "@/lib/errors";
 import { Cover } from "./cover";
 import { ManualForm } from "./manual-form";
-import { SOURCE_LINKS, STATUS_LABELS, STATUSES, TYPES } from "./meta";
+import { KEYED_TYPES, SOURCE_LINKS, STATUS_LABELS, STATUSES, TYPES } from "./meta";
 
 type SearchDialogProps = { entries: LibraryEntry[]; open: boolean; onClose: () => void };
 
@@ -131,7 +131,7 @@ function Results({ query, type, status, entries, onClose }: ResultsProps) {
     return (
       <p className="text-sm text-destructive">
         {errorMessage(search.error)}.{" "}
-        {type === "game" && (
+        {KEYED_TYPES.includes(type) && (
           <Link to="/settings" onClick={onClose} className="underline">
             Open Settings
           </Link>

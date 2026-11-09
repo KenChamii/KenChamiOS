@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { GamesKeyCard } from "@/features/media/games-key-card";
+import { SourceCredits } from "@/features/media/source-credits";
+import { TmdbTokenCard } from "@/features/media/tmdb-token-card";
 import { TimerSettingsCard } from "@/features/focus/timer-settings";
 import { TemplateSettings } from "@/features/workflow/template-settings";
 import { getAppInfo } from "@/lib/api/app";
@@ -25,9 +27,11 @@ export function SettingsPage() {
             <dd className="break-all">{data?.db_path}</dd>
           </dl>
         )}
+        <SourceCredits />
       </Card>
       <TimerSettingsCard />
       <GamesKeyCard />
+      <TmdbTokenCard />
       <TemplateSettings />
     </div>
   );

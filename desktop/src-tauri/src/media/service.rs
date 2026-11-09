@@ -1,9 +1,12 @@
 use super::anilist::AniList;
 use super::covers;
 use super::http::HttpClient;
+use super::musicbrainz::MusicBrainz;
+use super::pacing::{Clock, Limiter};
 use super::provider::{Metadata, MetadataProvider};
 use super::rawg::Rawg;
 use super::secrets::SecretStore;
+use super::tmdb::Tmdb;
 use crate::db::metadata_cache::{self, Cached};
 use crate::db::{Db, now_ms};
 use crate::domain::media::MediaType;
@@ -12,21 +15,30 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::future::Future;
 use std::path::Path;
+use std::time::Duration;
 
 const GAMES_KEY: &str = "rawg_api_key";
+const TMDB_TOKEN: &str = "tmdb_read_token";
 const DAY_MS: i64 = 24 * 60 * 60 * 1000;
 const SEARCH_TTL_MS: i64 = DAY_MS;
 const DETAILS_TTL_MS: i64 = 7 * DAY_MS;
+// musicbrainz allows about one request per second per ip, with a little room
+const MUSIC_GAP: Duration = Duration::from_millis(1100);
 
 /// Searches the metadata sources, answering from the local cache when it can.
-pub struct MetadataService<H: HttpClient, S: SecretStore> {
+pub struct MetadataService<H: HttpClient, S: SecretStore, C: Clock> {
     http: H,
     secrets: S,
+    music_limiter: Limiter<C>,
 }
 
-impl<H: HttpClient, S: SecretStore> MetadataService<H, S> {
-    pub fn new(http: H, secrets: S) -> Self {
-        Self { http, secrets }
+impl<H: HttpClient, S: SecretStore, C: Clock> MetadataService<H, S, C> {
+    pub fn new(http: H, secrets: S, clock: C) -> Self {
+        Self {
+            http,
+            secrets,
+            music_limiter: Limiter::new(clock, MUSIC_GAP),
+        }
     }
 
     pub async fn search(
@@ -84,17 +96,33 @@ impl<H: HttpClient, S: SecretStore> MetadataService<H, S> {
     }
 
     pub fn set_games_key(&self, key: &str) -> AppResult<()> {
-        let key = key.trim();
-        if key.is_empty() || key.contains(char::is_whitespace) {
-            return Err(AppError::Invalid(
-                "the API key must not be empty or hold spaces",
-            ));
-        }
-        self.secrets.set(GAMES_KEY, key)
+        self.set_secret(GAMES_KEY, key)
     }
 
     pub fn clear_games_key(&self) -> AppResult<()> {
         self.secrets.clear(GAMES_KEY)
+    }
+
+    pub fn has_tmdb_token(&self) -> AppResult<bool> {
+        Ok(self.secrets.get(TMDB_TOKEN)?.is_some())
+    }
+
+    pub fn set_tmdb_token(&self, token: &str) -> AppResult<()> {
+        self.set_secret(TMDB_TOKEN, token)
+    }
+
+    pub fn clear_tmdb_token(&self) -> AppResult<()> {
+        self.secrets.clear(TMDB_TOKEN)
+    }
+
+    fn set_secret(&self, name: &str, value: &str) -> AppResult<()> {
+        let value = value.trim();
+        if value.is_empty() || value.contains(char::is_whitespace) {
+            return Err(AppError::Invalid(
+                "the API key must not be empty or hold spaces",
+            ));
+        }
+        self.secrets.set(name, value)
     }
 
     async fn fetch_search(&self, query: &str, media_type: MediaType) -> AppResult<Vec<Metadata>> {
@@ -102,6 +130,17 @@ impl<H: HttpClient, S: SecretStore> MetadataService<H, S> {
             MediaType::Game => {
                 let key = self.games_key()?;
                 Rawg::new(&self.http, &key).search(query, media_type).await
+            }
+            MediaType::Movie | MediaType::Show => {
+                let token = self.tmdb_token()?;
+                Tmdb::new(&self.http, &token)
+                    .search(query, media_type)
+                    .await
+            }
+            MediaType::Album | MediaType::Artist => {
+                MusicBrainz::new(&self.http, &self.music_limiter)
+                    .search(query, media_type)
+                    .await
             }
             MediaType::Anime | MediaType::Manga => {
                 AniList::new(&self.http).search(query, media_type).await
@@ -115,10 +154,25 @@ impl<H: HttpClient, S: SecretStore> MetadataService<H, S> {
                 let key = self.games_key()?;
                 Rawg::new(&self.http, &key).details(external_id).await
             }
+            MediaType::Movie | MediaType::Show => {
+                let token = self.tmdb_token()?;
+                Tmdb::new(&self.http, &token).details(external_id).await
+            }
+            MediaType::Album | MediaType::Artist => {
+                MusicBrainz::new(&self.http, &self.music_limiter)
+                    .details(external_id)
+                    .await
+            }
             MediaType::Anime | MediaType::Manga => {
                 AniList::new(&self.http).details(external_id).await
             }
         }
+    }
+
+    fn tmdb_token(&self) -> AppResult<String> {
+        self.secrets.get(TMDB_TOKEN)?.ok_or(AppError::Invalid(
+            "add a TMDB read access token in Settings to search movies and shows",
+        ))
     }
 
     fn games_key(&self) -> AppResult<String> {
@@ -160,13 +214,16 @@ async fn cached<T: Serialize + DeserializeOwned>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::media::pacing::tests::FakeClock;
     use crate::media::test_support::{FakeHttp, MemorySecrets};
 
     const ANILIST: &str = include_str!("fixtures/anilist_search.json");
     const RAWG: &str = include_str!("fixtures/rawg_search.json");
+    const TMDB: &str = include_str!("fixtures/tmdb_search_movie.json");
+    const MUSIC: &str = include_str!("fixtures/musicbrainz_release_groups.json");
 
-    fn service(http: FakeHttp) -> MetadataService<FakeHttp, MemorySecrets> {
-        MetadataService::new(http, MemorySecrets::default())
+    fn service(http: FakeHttp) -> MetadataService<FakeHttp, MemorySecrets, FakeClock> {
+        MetadataService::new(http, MemorySecrets::default(), FakeClock::default())
     }
 
     #[tokio::test]
@@ -290,6 +347,59 @@ mod tests {
         let requests = service.http.requests.borrow();
         assert!(requests[0].url.starts_with("https://api.rawg.io/"));
         assert!(requests[0].params.contains(&("key", "abc123".to_string())));
+    }
+
+    #[tokio::test]
+    async fn music_searches_are_paced_and_cached() {
+        let db = Db::in_memory().await;
+        let http = FakeHttp::answering(200, MUSIC);
+        http.push(200, MUSIC);
+        let service = service(http);
+
+        for query in ["radiohead", "radiohead", "ok computer"] {
+            service
+                .search(&db, query, MediaType::Album)
+                .await
+                .expect("search");
+        }
+
+        assert_eq!(service.http.requests.borrow().len(), 2);
+        assert_eq!(service.music_limiter.clock().sleeps.borrow().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn movies_need_a_token_and_send_it_as_a_bearer_header() {
+        let db = Db::in_memory().await;
+        let service = service(FakeHttp::answering(200, TMDB));
+
+        let missing = service.search(&db, "matrix", MediaType::Movie).await;
+        assert!(matches!(missing, Err(AppError::Invalid(_))));
+        assert!(service.http.requests.borrow().is_empty());
+
+        service.set_tmdb_token(" tok123 ").expect("token");
+        let hits = service
+            .search(&db, "matrix", MediaType::Movie)
+            .await
+            .expect("search");
+
+        assert_eq!(hits.len(), 2);
+        let requests = service.http.requests.borrow();
+        assert_eq!(
+            requests[0].headers,
+            [("authorization", "Bearer tok123".to_string())]
+        );
+    }
+
+    #[test]
+    fn the_tmdb_token_can_be_set_checked_and_cleared() {
+        let service = service(FakeHttp::default());
+        assert!(!service.has_tmdb_token().expect("status"));
+
+        service.set_tmdb_token("tok").expect("set");
+        assert!(service.has_tmdb_token().expect("status"));
+        service.clear_tmdb_token().expect("clear");
+        assert!(!service.has_tmdb_token().expect("status"));
+        assert!(service.set_tmdb_token("a b").is_err());
     }
 
     #[test]

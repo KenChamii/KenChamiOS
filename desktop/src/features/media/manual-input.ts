@@ -1,4 +1,5 @@
 import type { ManualInput, MediaStatus, MediaType } from "@/lib/api/media";
+import { TOTAL_LABELS } from "./meta";
 
 type ManualDraft = {
   type: MediaType;
@@ -19,7 +20,7 @@ function optionalInteger(text: string): number | null | undefined {
 export function manualInputOf(draft: ManualDraft): ManualInput | null {
   const title = draft.title.trim();
   const year = optionalInteger(draft.year);
-  const total = draft.type === "game" ? null : optionalInteger(draft.total);
+  const total = TOTAL_LABELS[draft.type] ? optionalInteger(draft.total) : null;
   if (!title || year === undefined || total === undefined) return null;
   return {
     media_type: draft.type,

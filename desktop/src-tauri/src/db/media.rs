@@ -5,6 +5,7 @@ use crate::domain::media::{
 };
 use crate::domain::tags;
 use crate::error::{AppError, AppResult};
+use sqlx::SqliteConnection;
 use sqlx::types::Json;
 
 macro_rules! select_entry {
@@ -60,59 +61,22 @@ pub async fn add(
     if details.progress_total.is_some_and(|t| t < 0) {
         return Err(AppError::Invalid("the total cannot be negative"));
     }
-    let item_id = new_id();
-    let entry_id = new_id();
     let now = now_ms();
     let mut tx = db.pool.begin().await?;
-    if let Some(external_id) = origin.external_id {
-        let taken: Option<String> = sqlx::query_scalar(
-            "SELECT id FROM media_items WHERE source = ? AND external_id = ? AND deleted = 0",
-        )
-        .bind(origin.source)
-        .bind(external_id)
-        .fetch_optional(&mut *tx)
-        .await?;
-        if taken.is_some() {
-            return Err(AppError::Invalid("this title is already in your library"));
-        }
+    if is_taken(&mut tx, origin.source, origin.external_id).await? {
+        return Err(AppError::Invalid("this title is already in your library"));
     }
-    sqlx::query(
-        "INSERT INTO media_items
-            (id, created_at, updated_at, device_id, type, title, cover_url, year, genres,
-             synopsis, source, external_id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    )
-    .bind(&item_id)
-    .bind(now)
-    .bind(db.stamp())
-    .bind(&db.device_id)
-    .bind(origin.media_type)
-    .bind(&title)
-    .bind(details.cover_url)
-    .bind(details.year)
-    .bind(Json(tags::clean(details.genres)))
-    .bind(details.synopsis.trim())
-    .bind(origin.source)
-    .bind(origin.external_id)
-    .execute(&mut *tx)
-    .await?;
-    sqlx::query(
-        "INSERT INTO media_entries
-            (id, created_at, updated_at, device_id, media_item_id, status, progress_total,
-             started_at, finished_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    )
-    .bind(&entry_id)
-    .bind(now)
-    .bind(db.stamp())
-    .bind(&db.device_id)
-    .bind(&item_id)
-    .bind(status)
-    .bind(details.progress_total)
-    .bind((status == MediaStatus::InProgress).then_some(now))
-    .bind((status == MediaStatus::Completed).then_some(now))
-    .execute(&mut *tx)
-    .await?;
+    let entry = NewEntry {
+        status,
+        progress: 0,
+        rating: None,
+        notes: "",
+        tags: Vec::new(),
+        started_at: (status == MediaStatus::InProgress).then_some(now),
+        finished_at: (status == MediaStatus::Completed).then_some(now),
+        platform: None,
+    };
+    let entry_id = insert(&mut tx, db, &origin, &details, &entry).await?;
     activity::record(
         &mut tx,
         db,
@@ -124,6 +88,93 @@ pub async fn add(
     .await?;
     tx.commit().await?;
     get(db, &entry_id).await
+}
+
+/// Whether a library item already comes from this provider id.
+pub(super) async fn is_taken(
+    conn: &mut SqliteConnection,
+    source: MediaSource,
+    external_id: Option<&str>,
+) -> AppResult<bool> {
+    let Some(external_id) = external_id else {
+        return Ok(false);
+    };
+    let taken: Option<String> = sqlx::query_scalar(
+        "SELECT id FROM media_items WHERE source = ? AND external_id = ? AND deleted = 0",
+    )
+    .bind(source)
+    .bind(external_id)
+    .fetch_optional(conn)
+    .await?;
+    Ok(taken.is_some())
+}
+
+/// The entry fields that a new library entry starts with.
+pub(super) struct NewEntry<'a> {
+    pub status: MediaStatus,
+    pub progress: i64,
+    pub rating: Option<i64>,
+    pub notes: &'a str,
+    pub tags: Vec<String>,
+    pub started_at: Option<i64>,
+    pub finished_at: Option<i64>,
+    pub platform: Option<&'a str>,
+}
+
+/// Inserts an item and its entry inside the caller's transaction; returns the entry id.
+pub(super) async fn insert(
+    conn: &mut SqliteConnection,
+    db: &Db,
+    origin: &ItemOrigin<'_>,
+    details: &ItemDetails,
+    entry: &NewEntry<'_>,
+) -> AppResult<String> {
+    let item_id = new_id();
+    let entry_id = new_id();
+    let now = now_ms();
+    sqlx::query(
+        "INSERT INTO media_items
+            (id, created_at, updated_at, device_id, type, title, cover_url, year, genres,
+             synopsis, source, external_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(&item_id)
+    .bind(now)
+    .bind(db.stamp())
+    .bind(&db.device_id)
+    .bind(origin.media_type)
+    .bind(details.title.trim())
+    .bind(&details.cover_url)
+    .bind(details.year)
+    .bind(Json(tags::clean(details.genres.clone())))
+    .bind(details.synopsis.trim())
+    .bind(origin.source)
+    .bind(origin.external_id)
+    .execute(&mut *conn)
+    .await?;
+    sqlx::query(
+        "INSERT INTO media_entries
+            (id, created_at, updated_at, device_id, media_item_id, status, progress,
+             progress_total, rating, notes, tags, started_at, finished_at, platform)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+    .bind(&entry_id)
+    .bind(now)
+    .bind(db.stamp())
+    .bind(&db.device_id)
+    .bind(&item_id)
+    .bind(entry.status)
+    .bind(entry.progress)
+    .bind(details.progress_total)
+    .bind(entry.rating)
+    .bind(entry.notes)
+    .bind(Json(&entry.tags))
+    .bind(entry.started_at)
+    .bind(entry.finished_at)
+    .bind(entry.platform)
+    .execute(conn)
+    .await?;
+    Ok(entry_id)
 }
 
 /// Remembers the cached cover file of an item; a cache detail, so no activity.
@@ -276,6 +327,9 @@ fn progress_unit(media_type: MediaType) -> &'static str {
         MediaType::Anime => "episode",
         MediaType::Manga => "chapter",
         MediaType::Game => "hours",
+        MediaType::Movie => "watched",
+        MediaType::Show => "episode",
+        MediaType::Album | MediaType::Artist => "listens",
     }
 }
 

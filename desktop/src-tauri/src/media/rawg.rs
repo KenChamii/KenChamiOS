@@ -28,6 +28,7 @@ impl<'a, H: HttpClient> Rawg<'a, H> {
         let request = HttpRequest {
             url,
             params,
+            headers: Vec::new(),
             body: None,
             max_bytes: MAX_RESPONSE_BYTES,
         };

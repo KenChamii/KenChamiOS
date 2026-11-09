@@ -8,13 +8,14 @@ import { useUpdateMedia } from "@/hooks/use-media";
 import type { LibraryEntry } from "@/lib/api/media";
 import { errorMessage } from "@/lib/errors";
 import { draftOf, inputOf } from "./entry-input";
-import { STATUS_LABELS, STATUSES } from "./meta";
+import { STATUS_LABELS, STATUSES, TOTAL_LABELS } from "./meta";
 
 export function EntryForm({ entry }: { entry: LibraryEntry }) {
   const update = useUpdateMedia();
   const [draft, setDraft] = useState(() => draftOf(entry));
   const input = inputOf(draft);
   const isGame = entry.media_type === "game";
+  const totalLabel = TOTAL_LABELS[entry.media_type];
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -45,8 +46,8 @@ export function EntryForm({ entry }: { entry: LibraryEntry }) {
             onChange={(e) => setDraft({ ...draft, rating: e.target.value })}
           />
         </Field>
-        {!isGame && (
-          <Field label={entry.media_type === "anime" ? "Total episodes" : "Total chapters"}>
+        {totalLabel && (
+          <Field label={totalLabel}>
             <Input
               type="number"
               min={0}
