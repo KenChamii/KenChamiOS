@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDays, addMonths, isDay, weekdayOf } from "./days";
+import { addDays, addMonths, isDay, mondayOf, weekdayOf } from "./days";
 
 describe("days", () => {
   it("knows real calendar days", () => {
@@ -23,5 +23,12 @@ describe("days", () => {
   it("names the weekday", () => {
     expect(weekdayOf("2026-11-10")).toBe(2);
     expect(weekdayOf("2026-11-15")).toBe(0);
+  });
+
+  it("finds the monday of the week", () => {
+    expect(mondayOf("2026-11-10")).toBe("2026-11-09");
+    expect(mondayOf("2026-11-09")).toBe("2026-11-09");
+    expect(mondayOf("2026-11-15")).toBe("2026-11-09");
+    expect(mondayOf("2027-01-01")).toBe("2026-12-28");
   });
 });

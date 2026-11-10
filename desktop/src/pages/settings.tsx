@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
+  CalendarDays,
   DatabaseBackup,
   FileText,
   Film,
@@ -20,6 +21,7 @@ import { TimerSettingsCard } from "@/features/focus/timer-settings";
 import { GamesKeyCard } from "@/features/media/games-key-card";
 import { SourceCredits } from "@/features/media/source-credits";
 import { TmdbTokenCard } from "@/features/media/tmdb-token-card";
+import { PlannerSettingsCard } from "@/features/planner/planner-settings";
 import { ReminderSettingsCard } from "@/features/reminders/reminder-settings";
 import { SyncCard } from "@/features/sync/sync-card";
 import { TemplateSettings } from "@/features/workflow/template-settings";
@@ -45,6 +47,7 @@ const SECTIONS: Section[] = [
     ),
   },
   { id: "sync", label: "Sync", icon: Smartphone, content: () => <SyncCard /> },
+  { id: "planner", label: "Planner", icon: CalendarDays, content: () => <PlannerSettingsCard /> },
   { id: "reminders", label: "Reminders", icon: Bell, content: () => <ReminderSettingsCard /> },
   { id: "backups", label: "Backups", icon: DatabaseBackup, content: () => <BackupCard /> },
   { id: "templates", label: "Templates", icon: FileText, content: () => <TemplateSettings /> },
@@ -59,7 +62,7 @@ export function SettingsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Settings"
-        subtitle="Sync, backups, timers, reminders and API keys"
+        subtitle="Sync, backups, timers, planner, reminders and API keys"
         icon={Settings}
       />
       <div className="grid grid-cols-[12rem_1fr] items-start gap-8">

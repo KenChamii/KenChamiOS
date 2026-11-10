@@ -3,13 +3,18 @@ export type KeyPress = {
   ctrlKey: boolean;
   metaKey: boolean;
   altKey: boolean;
+  shiftKey: boolean;
   /** focus is in a text field, so plain letters belong to it */
   typing: boolean;
   at: number;
 };
 
 export type ShortcutAction =
-  { type: "palette" } | { type: "quick-add" } | { type: "help" } | { type: "go"; key: string };
+  | { type: "palette" }
+  | { type: "quick-add" }
+  | { type: "plan-day" }
+  | { type: "help" }
+  | { type: "go"; key: string };
 
 /** When G was pressed, while waiting for the second key. */
 export type ShortcutState = { goAt: number | null };
@@ -28,6 +33,7 @@ export function readShortcut(
   if (withModifier && !press.altKey) {
     if (key === "k") return { action: { type: "palette" }, state: IDLE };
     if (key === "n") return { action: { type: "quick-add" }, state: IDLE };
+    if (key === "p" && press.shiftKey) return { action: { type: "plan-day" }, state: IDLE };
   }
   if (withModifier || press.altKey || press.typing) return { action: null, state: IDLE };
 

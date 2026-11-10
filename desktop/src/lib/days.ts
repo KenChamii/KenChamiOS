@@ -53,3 +53,8 @@ export function addMonths(day: Day, months: number): Day {
 export function weekdayOf(day: Day): number {
   return utcOrThrow(day).getUTCDay();
 }
+
+/** The Monday on or before `day`. */
+export function mondayOf(day: Day): Day {
+  return addDays(day, -((weekdayOf(day) + 6) % 7));
+}

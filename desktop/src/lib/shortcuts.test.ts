@@ -2,7 +2,16 @@ import { describe, expect, it } from "vitest";
 import { IDLE, readShortcut, type KeyPress } from "./shortcuts";
 
 function press(key: string, extra: Partial<KeyPress> = {}): KeyPress {
-  return { key, ctrlKey: false, metaKey: false, altKey: false, typing: false, at: 0, ...extra };
+  return {
+    key,
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+    shiftKey: false,
+    typing: false,
+    at: 0,
+    ...extra,
+  };
 }
 
 describe("readShortcut", () => {
@@ -14,6 +23,13 @@ describe("readShortcut", () => {
     expect(readShortcut(press("n", { ctrlKey: true }), IDLE).action).toEqual({
       type: "quick-add",
     });
+  });
+
+  it("opens plan my day with ctrl+shift+p only", () => {
+    expect(readShortcut(press("P", { ctrlKey: true, shiftKey: true }), IDLE).action).toEqual({
+      type: "plan-day",
+    });
+    expect(readShortcut(press("p", { ctrlKey: true }), IDLE).action).toBeNull();
   });
 
   it("reads G then a letter as a jump", () => {

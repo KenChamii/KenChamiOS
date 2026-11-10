@@ -1,9 +1,11 @@
 import {
+  CalendarDays,
   Film,
   FolderKanban,
   GitBranch,
   Inbox,
   LayoutDashboard,
+  NotebookPen,
   Repeat,
   Settings,
   Trash2,
@@ -23,6 +25,8 @@ export type NavPage = {
 export const NAV_PAGES: NavPage[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, key: "d" },
   { to: "/inbox", label: "Inbox", icon: Inbox, key: "i" },
+  { to: "/planner", label: "Planner", icon: CalendarDays, area: "focus", key: "l" },
+  { to: "/notes", label: "Notes", icon: NotebookPen, area: "focus", key: "n" },
   { to: "/projects", label: "Projects", icon: FolderKanban, area: "projects", key: "p" },
   { to: "/workflow", label: "Workflow", icon: GitBranch, area: "workflow", key: "w" },
   { to: "/media", label: "Media", icon: Film, area: "media", key: "m" },

@@ -26,3 +26,10 @@ export function deleteHabit(id: string) {
 export function toggleHabit(id: string, day: Day) {
   return invoke<boolean>("habits_toggle", { id, day });
 }
+
+export type HabitCheck = { habit_id: string; day: Day };
+
+/** Check-ins from `from` to `to`, both days included. */
+export function listHabitChecks(from: Day, to: Day) {
+  return invoke<HabitCheck[]>("habits_checks", { from, to });
+}

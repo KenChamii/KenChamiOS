@@ -13,6 +13,7 @@ import {
   useStopTimer,
   useTimer,
 } from "@/hooks/use-timer";
+import { toDateInput } from "@/lib/dates";
 import { useOverlays } from "@/stores/overlays";
 import type { Command } from "./filter";
 
@@ -30,7 +31,7 @@ export function useCommands(): Command[] {
   const pause = usePauseTimer();
   const resume = useResumeTimer();
   const stop = useStopTimer();
-  const { openQuickAdd, setShortcuts } = useOverlays();
+  const { openQuickAdd, setShortcuts, openDayFlow } = useOverlays();
 
   const pages: Command[] = [
     ...NAV_PAGES.map((page) => ({
@@ -40,9 +41,37 @@ export function useCommands(): Command[] {
       run: () => navigate(page.to),
     })),
     { id: "page:/recap", label: "Yearly recap", group: "Go to", run: () => navigate("/recap") },
+    {
+      id: "page:/review",
+      label: "Weekly review",
+      group: "Go to",
+      keywords: "week slipped done habits",
+      run: () => navigate("/review"),
+    },
+    {
+      id: "page:/notes/today",
+      label: "Today's note",
+      group: "Go to",
+      keywords: "daily note journal",
+      run: () => navigate(`/notes?day=${toDateInput(Date.now())}`),
+    },
   ];
 
   const actions: Command[] = [
+    {
+      id: "action:plan-day",
+      label: "Plan my day",
+      group: "Plan",
+      keywords: "morning today estimate",
+      run: () => openDayFlow("plan"),
+    },
+    {
+      id: "action:review-day",
+      label: "Review my day",
+      group: "Plan",
+      keywords: "evening done tomorrow",
+      run: () => openDayFlow("review"),
+    },
     {
       id: "action:task",
       label: "Add task",

@@ -22,6 +22,10 @@ export type Task = {
   tags: string[];
   /** e.g. "weekly:2", see lib/recurrence */
   recurrence: string | null;
+  /** local day the task is planned for, see lib/api/planner */
+  planned_on: string | null;
+  scheduled_at: number | null;
+  duration_min: number | null;
 };
 
 export type TaskCreate = {
