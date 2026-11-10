@@ -16,6 +16,13 @@ pub struct HabitView {
     pub recent: Vec<bool>,
 }
 
+/// One check-in: the habit and its local `YYYY-MM-DD` day.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, sqlx::FromRow)]
+pub struct HabitCheck {
+    pub habit_id: String,
+    pub day: String,
+}
+
 // days since the epoch, so consecutive dates differ by one
 fn day_number(day: &str) -> Option<i64> {
     civil_date::parse(day).map(|ms| ms / DAY_MS)

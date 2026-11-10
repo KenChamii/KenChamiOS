@@ -1,5 +1,5 @@
 use crate::db::habits;
-use crate::domain::habit::HabitView;
+use crate::domain::habit::{HabitCheck, HabitView};
 use crate::error::AppResult;
 use crate::state::AppState;
 use tauri::State;
@@ -22,4 +22,14 @@ pub async fn habits_delete(state: State<'_, AppState>, id: String) -> AppResult<
 #[tauri::command]
 pub async fn habits_toggle(state: State<'_, AppState>, id: String, day: String) -> AppResult<bool> {
     habits::toggle(&state.db, &id, &day).await
+}
+
+/// Check-ins from `from` to `to` (local days, both included), for the weekly review.
+#[tauri::command]
+pub async fn habits_checks(
+    state: State<'_, AppState>,
+    from: String,
+    to: String,
+) -> AppResult<Vec<HabitCheck>> {
+    habits::checks_between(&state.db, &from, &to).await
 }

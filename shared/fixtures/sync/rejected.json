@@ -63,6 +63,9 @@
           "order_key": "a0",
           "tags": "[]",
           "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null,
           "extra": 1
         }
       }
@@ -89,7 +92,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -116,7 +122,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -143,7 +152,10 @@
           "due_at": "tomorrow",
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -170,7 +182,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -197,7 +212,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -224,7 +242,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -251,7 +272,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -278,7 +302,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "{\"a\":1}",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -305,7 +332,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]
@@ -332,7 +362,10 @@
           "due_at": null,
           "order_key": "a0",
           "tags": "[]",
-          "recurrence": null
+          "recurrence": null,
+          "planned_on": null,
+          "scheduled_at": null,
+          "duration_min": null
         }
       }
     ]

@@ -6,10 +6,11 @@ const TOMBSTONE_AGE_MS: i64 = 30 * 24 * 60 * 60 * 1000;
 const HLC_COUNTER_BITS: u32 = 16;
 
 // children before parents, so most rows can go in one run
-pub const PURGE_ORDER: [&str; 13] = [
+pub const PURGE_ORDER: [&str; 14] = [
     "activity",
     "habit_checks",
     "habits",
+    "daily_notes",
     "media_progress_log",
     "media_entries",
     "media_items",

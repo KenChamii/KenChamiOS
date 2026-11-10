@@ -2,6 +2,7 @@ mod activity;
 pub mod assets;
 pub mod backups;
 pub mod checklist;
+pub mod daily_notes;
 pub mod dashboard;
 pub mod docs;
 pub mod due_reminders;
@@ -11,6 +12,7 @@ pub mod media;
 pub mod media_import;
 pub mod metadata_cache;
 pub mod paired_devices;
+pub mod planner;
 pub mod projects;
 pub mod prompts;
 pub mod reminders;
@@ -111,5 +113,62 @@ mod tests {
         .execute(&pool)
         .await
         .expect("new types are allowed");
+    }
+
+    #[tokio::test]
+    async fn planner_migration_keeps_tasks_unplanned_and_one_live_note_per_day() {
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(SqliteConnectOptions::new().in_memory(true))
+            .await
+            .expect("connect");
+        let mut old = sqlx::migrate!("./migrations");
+        old.migrations = old
+            .migrations
+            .iter()
+            .filter(|m| m.version < 13)
+            .cloned()
+            .collect();
+        old.run(&pool).await.expect("old schema");
+        for sql in [
+            "INSERT INTO projects (id, created_at, updated_at, device_id, name, slug)
+             VALUES ('p1', 1, 1, 'd', 'P', 'p')",
+            "INSERT INTO tasks (id, created_at, updated_at, device_id, project_id, title, order_key)
+             VALUES ('t1', 1, 1, 'd', 'p1', 'Old', 'a0')",
+        ] {
+            sqlx::query(sql).execute(&pool).await.expect("seed");
+        }
+
+        sqlx::migrate!("./migrations")
+            .run(&pool)
+            .await
+            .expect("upgrade");
+
+        let plan: (Option<String>, Option<i64>, Option<i64>) = sqlx::query_as(
+            "SELECT planned_on, scheduled_at, duration_min FROM tasks WHERE id = 't1'",
+        )
+        .fetch_one(&pool)
+        .await
+        .expect("task");
+        assert_eq!(plan, (None, None, None));
+
+        let note = |id: &str, deleted: i64| {
+            format!(
+                "INSERT INTO daily_notes (id, created_at, updated_at, device_id, deleted, day, body)
+                 VALUES ('{id}', 1, 1, 'd', {deleted}, '2026-11-10', '')"
+            )
+        };
+        for sql in [note("n1", 0), note("n0", 1)] {
+            sqlx::query(sqlx::AssertSqlSafe(sql))
+                .execute(&pool)
+                .await
+                .expect("note");
+        }
+        assert!(
+            sqlx::query(sqlx::AssertSqlSafe(note("n2", 0)))
+                .execute(&pool)
+                .await
+                .is_err()
+        );
     }
 }

@@ -19,7 +19,10 @@
         "due_at": null,
         "order_key": "a0",
         "tags": "[]",
-        "recurrence": null
+        "recurrence": null,
+        "planned_on": null,
+        "scheduled_at": null,
+        "duration_min": null
       }
     },
     {
@@ -41,7 +44,10 @@
         "due_at": null,
         "order_key": "a0",
         "tags": "[]",
-        "recurrence": null
+        "recurrence": null,
+        "planned_on": null,
+        "scheduled_at": null,
+        "duration_min": null
       }
     }
   ],

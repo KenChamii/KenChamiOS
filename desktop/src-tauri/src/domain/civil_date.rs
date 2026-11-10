@@ -1,3 +1,5 @@
+use crate::error::{AppError, AppResult};
+
 const DAY_MS: i64 = 24 * 60 * 60 * 1000;
 
 /// Unix ms of midnight UTC for a `YYYY-MM-DD` date; `None` when it is not a real calendar day.
@@ -13,6 +15,13 @@ pub fn parse(text: &str) -> Option<i64> {
         return None;
     }
     Some(days_from_civil(year, month, day) * DAY_MS)
+}
+
+/// A user or ui supplied day in the canonical `YYYY-MM-DD` form, so unique keys match across devices.
+pub fn clean(day: &str) -> AppResult<String> {
+    parse(day)
+        .map(format)
+        .ok_or(AppError::Invalid("day must be a date like 2026-11-10"))
 }
 
 /// The `YYYY-MM-DD` date (UTC) of a unix ms value.
