@@ -52,7 +52,7 @@ class SyncApiTest {
 
         assertEquals(ApplyOutcome(11, 0), outcome)
         val sent = JSONObject(desktop.requests.single().body?.utf8() ?: "")
-        assertEquals(11, sent.getJSONArray("changes").length())
+        assertEquals(SyncFixtures.changes("push-valid").size, sent.getJSONArray("changes").length())
         assertEquals("POST", desktop.requests.single().method)
     }
 

@@ -8,6 +8,7 @@ import com.kenchami.kenchamios.data.model.MediaStatus
 import com.kenchami.kenchamios.data.model.MediaType
 import com.kenchami.kenchamios.data.model.Priority
 import com.kenchami.kenchamios.data.model.TaskStatus
+import com.kenchami.kenchamios.data.model.TrashKind
 
 /** A project with the numbers the list shows. */
 data class ProjectSummary(
@@ -52,3 +53,12 @@ data class LibraryEntry(
     /** False once the counter is at its total. */
     val canIncrement: Boolean get() = progressTotal == null || progress < progressTotal
 }
+
+/** A deleted row the trash lists; [detail] is the project name or the media type. */
+data class TrashRow(
+    val kind: TrashKind,
+    val id: String,
+    val title: String,
+    val detail: String?,
+    @ColumnInfo(name = "deleted_at") val deletedAt: Long,
+)

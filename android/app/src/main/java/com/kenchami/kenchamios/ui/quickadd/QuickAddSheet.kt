@@ -24,7 +24,12 @@ enum class QuickAddTab { Task, Idea, Prompt, Media }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun QuickAddSheet(initialTab: QuickAddTab, onDismiss: () -> Unit, viewModel: QuickAddViewModel = hiltViewModel()) {
+fun QuickAddSheet(
+    initialTab: QuickAddTab,
+    onDismiss: () -> Unit,
+    initialText: String = "",
+    viewModel: QuickAddViewModel = hiltViewModel(),
+) {
     val projects by viewModel.projectChoices.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(initialTab) }
 
@@ -39,10 +44,8 @@ fun QuickAddSheet(initialTab: QuickAddTab, onDismiss: () -> Unit, viewModel: Qui
                 }
             }
             when (tab) {
-                QuickAddTab.Task -> TaskForm(projects, viewModel.clock, onAddIdea = {
-                    tab = QuickAddTab.Idea
-                }) { projectId, title, priority, dueAt ->
-                    viewModel.addTask(projectId, title, priority, dueAt)
+                QuickAddTab.Task -> TaskForm(projects, viewModel.clock, initialText) { task ->
+                    viewModel.addTask(task)
                     onDismiss()
                 }
                 QuickAddTab.Idea -> IdeaForm { name, description ->

@@ -46,6 +46,11 @@ interface TaskDao {
     @Query("UPDATE tasks SET deleted = 1, updated_at = :stamp, device_id = :deviceId WHERE (id = :id OR parent_id = :id) AND deleted = 0")
     suspend fun softDeleteTree(id: String, stamp: Long, deviceId: String): Int
 
+    @Query(
+        "UPDATE tasks SET project_id = :projectId, updated_at = :stamp, device_id = :deviceId WHERE parent_id = :parentId AND deleted = 0",
+    )
+    suspend fun moveSubtasks(parentId: String, projectId: String, stamp: Long, deviceId: String)
+
     @Query("UPDATE tasks SET deleted = 1, updated_at = :stamp, device_id = :deviceId WHERE project_id = :projectId AND deleted = 0")
     suspend fun softDeleteByProject(projectId: String, stamp: Long, deviceId: String)
 }

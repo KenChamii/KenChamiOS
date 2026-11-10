@@ -17,6 +17,7 @@ function task(id: string, status: TaskStatus, parentId: string | null = null): T
     due_at: null,
     order_key: id,
     tags: [],
+    recurrence: null,
   };
 }
 

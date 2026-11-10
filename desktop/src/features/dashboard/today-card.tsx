@@ -1,4 +1,3 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +10,7 @@ import { useMoveTask } from "@/hooks/use-tasks";
 import type { DueTask } from "@/lib/api/dashboard";
 import { cn } from "@/lib/cn";
 import { errorMessage } from "@/lib/errors";
+import { INBOX_ID } from "@/lib/inbox";
 import { stagger } from "@/lib/motion";
 import { endOfDay, startOfDay } from "./ranges";
 
@@ -36,7 +36,6 @@ export function TodayCard({ now }: { now: number }) {
 type DueRowProps = { task: DueTask; index: number; overdue: boolean };
 
 function DueRow({ task, index, overdue }: DueRowProps) {
-  const queryClient = useQueryClient();
   const move = useMoveTask(task.project_id);
   // ticked right away; the row leaves once the due list refreshes
   const [done, setDone] = useState(false);
@@ -44,20 +43,14 @@ function DueRow({ task, index, overdue }: DueRowProps) {
   function complete() {
     if (done) return;
     setDone(true);
-    move.mutate(
-      { id: task.id, status: "done", beforeId: null },
-      {
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
-        onError: () => setDone(false),
-      },
-    );
+    move.mutate({ task, status: "done", beforeId: null }, { onError: () => setDone(false) });
   }
 
   return (
     <li className="stagger-in flex items-center gap-3 rounded-xl px-1 py-2" style={stagger(index)}>
       <Checkbox aria-label={`Complete ${task.title}`} checked={done} onCheckedChange={complete} />
       <Link
-        to={projectPath(task.project_id, "tasks")}
+        to={task.project_id === INBOX_ID ? "/inbox" : projectPath(task.project_id, "tasks")}
         className="flex min-w-0 flex-1 items-center justify-between gap-2 text-sm"
       >
         <span

@@ -1,8 +1,11 @@
 mod activity;
 pub mod assets;
+pub mod backups;
 pub mod checklist;
 pub mod dashboard;
 pub mod docs;
+pub mod due_reminders;
+pub mod habits;
 mod handle;
 pub mod media;
 pub mod media_import;
@@ -11,15 +14,19 @@ pub mod paired_devices;
 pub mod projects;
 pub mod prompts;
 pub mod reminders;
+pub mod restore;
 pub mod save_points;
 #[cfg(test)]
 mod schema_contract;
+pub mod search;
 pub mod session_notes;
 pub mod settings;
+pub mod snapshot;
 pub mod tasks;
 pub mod templates;
 pub mod time_entries;
 pub mod timer;
+pub mod trash;
 
 pub use handle::{Db, new_id, now_ms};
 

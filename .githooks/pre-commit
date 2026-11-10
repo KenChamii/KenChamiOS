@@ -1,0 +1,30 @@
+#!/bin/sh
+# block commits that add api keys, tokens or private keys; `git commit --no-verify` skips it
+found=0
+
+check() {
+  name="$1"
+  pattern="$2"
+  hits=$(git diff --cached -U0 --no-color --diff-filter=ACMR -- . \
+    | grep '^+' | grep -v '^+++' | grep -oE -e "$pattern")
+  # the generic rule only counts values that mix letters and digits
+  if [ "$name" = "key assignment" ] && [ -n "$hits" ]; then
+    hits=$(printf '%s\n' "$hits" | sed 's/^[^:=]*[:=][^A-Za-z0-9/+_=-]*//' \
+      | grep '[0-9]' | grep '[A-Za-z]')
+  fi
+  if [ -n "$hits" ]; then
+    echo "pre-commit: staged changes contain what looks like a $name" >&2
+    found=1
+  fi
+}
+
+check "Anthropic API key" 'sk-ant-[A-Za-z0-9_-]{20,}'
+check "GitHub token" '(gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{22,})'
+check "AWS access key" 'AKIA[0-9A-Z]{16}'
+check "private key" '-----BEGIN ([A-Z]+ )*PRIVATE KEY-----'
+check "key assignment" '(api[_-]?key|secret|token|passw(or)?d)["'\'']?[[:space:]]*[:=][[:space:]]*["'\'']?[A-Za-z0-9/+_=-]{32,}'
+
+if [ "$found" -ne 0 ]; then
+  echo "pre-commit: remove the secret (or move it to the credential store) and commit again" >&2
+  exit 1
+fi

@@ -1,5 +1,6 @@
 use super::activity;
 use super::handle::{Db, new_id, now_ms, require_changed};
+use crate::domain::project::{INBOX_ID, INBOX_NAME, INBOX_SLUG};
 use crate::domain::{ProjectFilter, ProjectInput, ProjectSummary, Stage, slugify, tags};
 use crate::error::{AppError, AppResult};
 use sqlx::SqliteConnection;
@@ -38,7 +39,7 @@ pub async fn list(db: &Db, filter: &ProjectFilter) -> AppResult<Vec<ProjectSumma
         .filter(|s| !s.is_empty())
         .map(|s| format!("%{s}%"));
     let rows = sqlx::query_as(summary_sql!(
-        "WHERE p.deleted = 0
+        "WHERE p.deleted = 0 AND p.id != ?4
            AND (?1 OR p.archived = 0)
            AND (?2 IS NULL OR p.name LIKE ?2 OR p.description LIKE ?2)
            AND (?3 IS NULL OR EXISTS (SELECT 1 FROM json_each(p.tags) WHERE value = ?3))
@@ -47,6 +48,7 @@ pub async fn list(db: &Db, filter: &ProjectFilter) -> AppResult<Vec<ProjectSumma
     .bind(filter.include_archived)
     .bind(search)
     .bind(filter.tag.as_deref())
+    .bind(INBOX_ID)
     .fetch_all(&db.pool)
     .await?;
     Ok(rows)
@@ -98,6 +100,7 @@ pub async fn create(db: &Db, input: ProjectInput) -> AppResult<ProjectSummary> {
 }
 
 pub async fn update(db: &Db, id: &str, input: ProjectInput) -> AppResult<ProjectSummary> {
+    refuse_inbox(id)?;
     let name = clean_name(&input.name)?;
     let mut tx = db.pool.begin().await?;
     let result = sqlx::query(
@@ -132,6 +135,7 @@ pub async fn update(db: &Db, id: &str, input: ProjectInput) -> AppResult<Project
 }
 
 pub async fn set_stage(db: &Db, id: &str, stage: Stage) -> AppResult<ProjectSummary> {
+    refuse_inbox(id)?;
     let now = now_ms();
     let finished_at = (stage == Stage::Done).then_some(now);
     let mut tx = db.pool.begin().await?;
@@ -162,6 +166,7 @@ pub async fn set_stage(db: &Db, id: &str, stage: Stage) -> AppResult<ProjectSumm
 
 /// Soft deletes the project and everything that belongs to it.
 pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
+    refuse_inbox(id)?;
     let mut tx = db.pool.begin().await?;
     let result = sqlx::query(
         "UPDATE projects SET deleted = 1, updated_at = ?, device_id = ?
@@ -206,6 +211,44 @@ pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
     )
     .await?;
     tx.commit().await?;
+    Ok(())
+}
+
+/// Creates the inbox the first time it is needed, or brings it back if it was deleted.
+pub(super) async fn ensure_inbox(conn: &mut SqliteConnection, db: &Db) -> AppResult<()> {
+    let result = sqlx::query(
+        "INSERT INTO projects (id, created_at, updated_at, device_id, name, slug)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+         ON CONFLICT(id) DO UPDATE SET deleted = 0, updated_at = ?3, device_id = ?4
+          WHERE projects.deleted = 1",
+    )
+    .bind(INBOX_ID)
+    .bind(now_ms())
+    .bind(db.stamp())
+    .bind(&db.device_id)
+    .bind(INBOX_NAME)
+    .bind(INBOX_SLUG)
+    .execute(&mut *conn)
+    .await?;
+    if result.rows_affected() > 0 {
+        activity::record(
+            conn,
+            db,
+            "project.created",
+            "project",
+            INBOX_ID,
+            "Created the inbox",
+        )
+        .await?;
+    }
+    Ok(())
+}
+
+// the inbox is a fixed capture list, not a project the user manages
+fn refuse_inbox(id: &str) -> AppResult<()> {
+    if id == INBOX_ID {
+        return Err(AppError::Invalid("the inbox cannot be changed or deleted"));
+    }
     Ok(())
 }
 

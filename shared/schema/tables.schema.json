@@ -171,6 +171,68 @@
       "required": ["id", "created_at", "updated_at", "device_id", "deleted", "kind", "name", "body", "is_default"],
       "additionalProperties": false
     },
+    "habits": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "name"],
+      "additionalProperties": false
+    },
+    "habit_checks": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "x-unique-live": ["habit_id", "day"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "habit_id": {
+          "type": "string"
+        },
+        "day": {
+          "type": "string",
+          "format": "date",
+          "description": "local calendar day, YYYY-MM-DD"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "habit_id", "day"],
+      "additionalProperties": false
+    },
     "media_entries": {
       "type": "object",
       "x-synced": true,
@@ -663,6 +725,11 @@
         "tags": {
           "type": "string",
           "x-encoding": "json-string-array"
+        },
+        "recurrence": {
+          "type": ["string", "null"],
+          "pattern": "^(daily|weekly|monthly|weekdays):[1-9][0-9]{0,2}$",
+          "description": "unit:interval, e.g. weekly:2; weekdays only takes 1"
         }
       },
       "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "title", "body_md", "acceptance_md", "related_files", "status", "priority", "order_key", "tags"],

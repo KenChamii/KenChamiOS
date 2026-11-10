@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import com.kenchami.kenchamios.TestClock
+import com.kenchami.kenchamios.data.model.Inbox
 import com.kenchami.kenchamios.data.model.MediaStatus
 import com.kenchami.kenchamios.data.model.MediaType
 import com.kenchami.kenchamios.data.model.Priority
@@ -20,6 +21,7 @@ import com.kenchami.kenchamios.projectSummary
 import com.kenchami.kenchamios.ui.media.EntryForm
 import com.kenchami.kenchamios.ui.quickadd.IdeaForm
 import com.kenchami.kenchamios.ui.quickadd.MediaForm
+import com.kenchami.kenchamios.ui.quickadd.NewTask
 import com.kenchami.kenchamios.ui.quickadd.PromptForm
 import com.kenchami.kenchamios.ui.quickadd.TaskForm
 import org.junit.Assert.assertEquals
@@ -35,49 +37,63 @@ class FormsTest {
     val compose = createComposeRule()
 
     @Test
-    fun taskFormNeedsATitleThenSubmitsWithProjectAndPriority() {
-        var submitted: List<Any?>? = null
-        val clock = TestClock()
+    fun taskFormNeedsATitleThenSubmitsWithProjectPriorityAndRepeat() {
+        var submitted: NewTask? = null
         compose.setContent {
-            TaskForm(listOf(projectSummary("p1", "Alpha"), projectSummary("p2", "Beta")), clock, onAddIdea = {
-            }) { project, title, priority, due ->
-                submitted = listOf(project, title, priority, due)
-            }
+            TaskForm(listOf(projectSummary("p1", "Alpha"), projectSummary("p2", "Beta")), TestClock(), "") { submitted = it }
         }
 
-        compose.onNodeWithText("Add task").assertIsNotEnabled()
+        compose.onNodeWithText("Add task").performScrollTo().assertIsNotEnabled()
         compose.onNodeWithText("Task").performTextInput("Ship it")
-        compose.onNodeWithText("Beta").performClick()
-        compose.onNodeWithText("High").performClick()
-        compose.onNodeWithText("Add task").assertIsEnabled().performClick()
+        compose.onNodeWithText("Beta").performScrollTo().performClick()
+        compose.onNodeWithText("High").performScrollTo().performClick()
+        compose.onNodeWithText("Every week").performScrollTo().performClick()
+        compose.onNodeWithText("Add task").performScrollTo().assertIsEnabled().performClick()
 
-        assertEquals(listOf("p2", "Ship it", Priority.High, null), submitted)
+        assertEquals(NewTask("p2", "Ship it", Priority.High, null, "weekly:1"), submitted)
     }
 
     @Test
     fun taskFormTodayDueIsLocalMidnight() {
-        var due: Long? = null
-        val clock = TestClock(ms = 1_700_000_000_000)
-        compose.setContent {
-            TaskForm(listOf(projectSummary()), clock, onAddIdea = {}) { _, _, _, dueAt -> due = dueAt }
-        }
+        var submitted: NewTask? = null
+        compose.setContent { TaskForm(listOf(projectSummary()), TestClock(ms = 1_700_000_000_000), "") { submitted = it } }
 
         compose.onNodeWithText("Task").performTextInput("A")
-        compose.onNodeWithText("Today").performClick()
-        compose.onNodeWithText("Add task").performClick()
+        compose.onNodeWithText("Today").performScrollTo().performClick()
+        compose.onNodeWithText("Add task").performScrollTo().performClick()
 
-        assertEquals(1_699_920_000_000, due)
+        assertEquals(1_699_920_000_000, submitted?.dueAt)
     }
 
     @Test
-    fun taskFormAsksForAnIdeaFirstWithoutProjects() {
-        var wantsIdea = false
-        compose.setContent { TaskForm(emptyList(), TestClock(), onAddIdea = { wantsIdea = true }) { _, _, _, _ -> } }
+    fun taskFormFilesIntoTheInboxWithoutAProject() {
+        var submitted: NewTask? = null
+        compose.setContent { TaskForm(emptyList(), TestClock(), "Shared link") { submitted = it } }
 
-        compose.onNodeWithText("A task needs a project first.").assertIsDisplayed()
-        compose.onNodeWithText("Add an idea").performClick()
+        compose.onNodeWithText("Add task").performScrollTo().performClick()
 
-        assertEquals(true, wantsIdea)
+        assertEquals(NewTask(Inbox.ID, "Shared link", Priority.Medium, null, null), submitted)
+    }
+
+    @Test
+    fun taskFormReadsTheLineAndPreviewsWhatItFound() {
+        var submitted: NewTask? = null
+        compose.setContent { TaskForm(listOf(projectSummary("p1", "Home")), TestClock(ms = 1_700_000_000_000), "") { submitted = it } }
+
+        compose.onNodeWithText("Task").performTextInput("Pay rent friday !high #home every month")
+
+        compose.onNodeWithText("Due", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("High priority - Every month - Home", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Add task").performScrollTo().performClick()
+        // the test clock is Tuesday 2023-11-14 in UTC, friday is the 17th
+        assertEquals(NewTask("p1", "Pay rent", Priority.High, 1_700_179_200_000, "monthly:1"), submitted)
+    }
+
+    @Test
+    fun taskFormFlagsAnUnknownProjectTag() {
+        compose.setContent { TaskForm(listOf(projectSummary("p1", "Home")), TestClock(), "Call #nowhere") {} }
+
+        compose.onNodeWithText("No project named #nowhere").assertIsDisplayed()
     }
 
     @Test

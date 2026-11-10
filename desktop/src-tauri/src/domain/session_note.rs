@@ -254,6 +254,7 @@ mod tests {
             due_at: None,
             order_key: "a".into(),
             tags: Json(vec![]),
+            recurrence: None,
         }
     }
 

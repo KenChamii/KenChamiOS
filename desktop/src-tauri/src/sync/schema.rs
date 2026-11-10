@@ -188,7 +188,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn lists_the_eleven_synced_tables() {
+    fn lists_the_thirteen_synced_tables() {
         let schema = SyncSchema::parse().expect("schema");
         let mut names: Vec<&str> = schema.tables().iter().map(|t| t.name.as_str()).collect();
         names.sort_unstable();
@@ -197,6 +197,8 @@ mod tests {
             [
                 "activity",
                 "checklist_items",
+                "habit_checks",
+                "habits",
                 "media_entries",
                 "media_items",
                 "media_progress_log",
@@ -229,6 +231,7 @@ mod tests {
         );
         assert_eq!(column("deleted").allowed_int, Some(vec![0, 1]));
         assert!(column("due_at").nullable);
+        assert!(column("recurrence").nullable);
         assert!(column("tags").string_array);
     }
 }

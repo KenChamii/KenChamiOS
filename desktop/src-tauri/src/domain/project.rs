@@ -2,6 +2,11 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use sqlx::types::Json;
 
+/// Every device creates the inbox with this id, so sync merges it; see `shared/schema/well-known.json`.
+pub const INBOX_ID: &str = "00000000-0000-4000-8000-000000000001";
+pub const INBOX_NAME: &str = "Inbox";
+pub const INBOX_SLUG: &str = "inbox";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
 #[serde(rename_all = "snake_case")]
 #[sqlx(type_name = "TEXT", rename_all = "snake_case")]
@@ -92,6 +97,20 @@ mod tests {
     #[test]
     fn slugify_joins_words() {
         assert_eq!(slugify("  My App!  v2 "), "my-app-v2");
+    }
+
+    #[test]
+    fn inbox_matches_the_shared_well_known_ids() {
+        let path = format!(
+            "{}/../../shared/schema/well-known.json",
+            env!("CARGO_MANIFEST_DIR")
+        );
+        let text = std::fs::read_to_string(path).expect("read");
+        let known: serde_json::Value = serde_json::from_str(&text).expect("parse");
+        let inbox = &known["inbox_project"];
+        assert_eq!(inbox["id"], INBOX_ID);
+        assert_eq!(inbox["name"], INBOX_NAME);
+        assert_eq!(inbox["slug"], INBOX_SLUG);
     }
 
     #[test]

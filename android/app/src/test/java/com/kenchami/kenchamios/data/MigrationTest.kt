@@ -9,7 +9,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.kenchami.kenchamios.data.db.AppDatabase
 import com.kenchami.kenchamios.data.db.AppDatabase_Impl
 import com.kenchami.kenchamios.data.db.MIGRATION_1_2
+import com.kenchami.kenchamios.data.db.MIGRATION_2_3
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -71,5 +73,40 @@ class MigrationTest {
 
         assertEquals(Triple("projects", "p1", 77L), logged)
         assertEquals(99L, hlcAfterEdit)
+    }
+
+    @Test
+    fun versionThreeAddsRepeatsAndLoggedHabitsWithOneLiveCheckADay() {
+        helper.createDatabase(2).apply {
+            execSQL(
+                "INSERT INTO projects (id, created_at, updated_at, device_id, deleted, name, slug, stage, " +
+                    "description, tags, archived) VALUES ('p1', 1, 1, 'd', 0, 'Old', 'old', 'idea', '', '[]', 0)",
+            )
+            execSQL(
+                "INSERT INTO tasks (id, created_at, updated_at, device_id, deleted, project_id, title, body_md, acceptance_md, " +
+                    "related_files, status, priority, order_key, tags) VALUES ('t1', 1, 1, 'd', 0, 'p1', 'Old', '', '', '[]', " +
+                    "'todo', 'medium', 'a0', '[]')",
+            )
+            close()
+        }
+
+        val upgraded = helper.runMigrationsAndValidate(3, listOf(MIGRATION_2_3))
+        val recurrence = upgraded.prepare("SELECT recurrence FROM tasks WHERE id = 't1'").use { statement ->
+            statement.step()
+            statement.isNull(0)
+        }
+        upgraded.execSQL("INSERT INTO habits (id, created_at, updated_at, device_id, deleted, name) VALUES ('h1', 1, 60, 'd', 0, 'Read')")
+        val check = "INSERT INTO habit_checks (id, created_at, updated_at, device_id, deleted, habit_id, day) VALUES "
+        upgraded.execSQL("$check ('c1', 1, 61, 'd', 0, 'h1', '2026-11-10')")
+        val duplicate = runCatching { upgraded.execSQL("$check ('c2', 1, 62, 'd', 0, 'h1', '2026-11-10')") }
+        upgraded.execSQL("$check ('c3', 1, 63, 'd', 1, 'h1', '2026-11-10')")
+        val logged = upgraded.prepare("SELECT table_name || ':' || hlc FROM change_log ORDER BY hlc").use { statement ->
+            generateSequence { if (statement.step()) statement.getText(0) else null }.toList()
+        }
+        upgraded.close()
+
+        assertEquals(true, recurrence)
+        assertTrue("a second live check for the same day is refused", duplicate.isFailure)
+        assertEquals(listOf("habits:60", "habit_checks:61", "habit_checks:63"), logged)
     }
 }

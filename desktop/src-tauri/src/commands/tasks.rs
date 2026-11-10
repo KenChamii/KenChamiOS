@@ -1,4 +1,5 @@
 use crate::db::tasks;
+use crate::domain::task::TaskMoved;
 use crate::domain::{Task, TaskCreate, TaskStatus, TaskUpdate};
 use crate::error::AppResult;
 use crate::state::AppState;
@@ -34,6 +35,16 @@ pub async fn tasks_move(
     id: String,
     status: TaskStatus,
     before_id: Option<String>,
+    next_due_at: Option<i64>,
+) -> AppResult<TaskMoved> {
+    tasks::move_to(&state.db, &id, status, before_id.as_deref(), next_due_at).await
+}
+
+#[tauri::command]
+pub async fn tasks_move_to_project(
+    state: State<'_, AppState>,
+    id: String,
+    project_id: String,
 ) -> AppResult<Task> {
-    tasks::move_to(&state.db, &id, status, before_id.as_deref()).await
+    tasks::move_to_project(&state.db, &id, &project_id).await
 }

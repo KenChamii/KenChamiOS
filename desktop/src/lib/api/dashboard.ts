@@ -10,6 +10,7 @@ export type DueTask = {
   due_at: number;
   priority: Priority;
   status: TaskStatus;
+  recurrence: string | null;
 };
 
 export type TimelineGroup = "projects" | "focus" | "media";

@@ -5,6 +5,7 @@ import { useShortcuts } from "@/hooks/use-shortcuts";
 import { useRefreshOnSync } from "@/hooks/use-sync";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { Sidebar } from "./sidebar";
+import { Toaster } from "./toaster";
 
 export function Layout() {
   useRefreshOnSync();
@@ -24,6 +25,7 @@ export function Layout() {
       <CommandPalette />
       <QuickAddDialog />
       <ShortcutsDialog />
+      <Toaster />
     </div>
   );
 }

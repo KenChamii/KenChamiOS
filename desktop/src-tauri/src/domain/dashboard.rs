@@ -16,6 +16,7 @@ pub struct DueTask {
     pub due_at: i64,
     pub priority: Priority,
     pub status: TaskStatus,
+    pub recurrence: Option<String>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

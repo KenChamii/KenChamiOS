@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.kenchami.kenchamios.data.db.ProjectSummary
 import com.kenchami.kenchamios.data.model.MediaStatus
 import com.kenchami.kenchamios.data.model.MediaType
-import com.kenchami.kenchamios.data.model.Priority
 import com.kenchami.kenchamios.data.repo.MediaRepository
 import com.kenchami.kenchamios.data.repo.ProjectRepository
 import com.kenchami.kenchamios.data.repo.PromptRepository
@@ -29,8 +28,8 @@ class QuickAddViewModel @Inject constructor(
     val projectChoices: StateFlow<List<ProjectSummary>> = projects.observeSummaries(null)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), emptyList())
 
-    fun addTask(projectId: String, title: String, priority: Priority, dueAt: Long?) {
-        viewModelScope.launch { tasks.create(projectId, title, priority, dueAt) }
+    fun addTask(task: NewTask) {
+        viewModelScope.launch { tasks.create(task) }
     }
 
     fun addIdea(name: String, description: String) {

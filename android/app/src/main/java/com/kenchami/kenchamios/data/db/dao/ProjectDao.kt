@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.kenchami.kenchamios.data.db.ProjectSummary
 import com.kenchami.kenchamios.data.db.entity.ProjectEntity
+import com.kenchami.kenchamios.data.model.Inbox
 import kotlinx.coroutines.flow.Flow
 
 // activity on a project's tasks, docs and save points counts as activity on the project
@@ -35,9 +36,15 @@ interface ProjectDao {
     @Query("SELECT * FROM projects WHERE id = :id AND deleted = 0")
     suspend fun get(id: String): ProjectEntity?
 
+    /** Also a deleted one, so the inbox can be brought back under its fixed id. */
+    @Query("SELECT * FROM projects WHERE id = :id")
+    suspend fun getAny(id: String): ProjectEntity?
+
+    // the inbox has its own screen
     @Query(
         SUMMARY + """WHERE p.deleted = 0
            AND p.archived = 0
+           AND p.id != '${Inbox.ID}'
            AND (:search IS NULL OR p.name LIKE :search OR p.description LIKE :search)
          ORDER BY last_activity_at DESC""",
     )

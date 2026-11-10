@@ -9,11 +9,15 @@ import com.kenchami.kenchamios.data.db.entity.SavePointEntity
 import com.kenchami.kenchamios.data.db.entity.TaskEntity
 import com.kenchami.kenchamios.data.model.Stage
 import com.kenchami.kenchamios.data.model.TaskStatus
+import com.kenchami.kenchamios.data.model.TrashKind
 import com.kenchami.kenchamios.data.repo.ProjectRepository
 import com.kenchami.kenchamios.data.repo.SavePointRepository
 import com.kenchami.kenchamios.data.repo.TaskRepository
+import com.kenchami.kenchamios.data.repo.TrashRepository
 import com.kenchami.kenchamios.timer.TimerController
 import com.kenchami.kenchamios.timer.TimerService
+import com.kenchami.kenchamios.ui.common.UndoBus
+import com.kenchami.kenchamios.ui.common.UndoableTasks
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
@@ -36,6 +40,9 @@ class ProjectDetailViewModel @Inject constructor(
     savedState: SavedStateHandle,
     private val projects: ProjectRepository,
     private val tasks: TaskRepository,
+    private val taskActions: UndoableTasks,
+    private val trash: TrashRepository,
+    private val undo: UndoBus,
     private val savePoints: SavePointRepository,
     private val timer: TimerController,
     @param:ApplicationContext private val context: Context,
@@ -57,17 +64,23 @@ class ProjectDetailViewModel @Inject constructor(
         TimerService.start(context)
     }
 
-    fun deleteProject() = launch { projects.delete(projectId) }
+    fun deleteProject() = launch {
+        projects.delete(projectId)
+        undo.offer("Project deleted") { trash.restore(TrashKind.Project, projectId) }
+    }
 
     fun addTask(title: String) = launch { tasks.create(projectId, title) }
 
-    fun setTaskStatus(taskId: String, status: TaskStatus) = launch { tasks.setStatus(taskId, status) }
+    fun setTaskStatus(taskId: String, status: TaskStatus) = launch { taskActions.setStatus(taskId, status) }
 
-    fun deleteTask(taskId: String) = launch { tasks.delete(taskId) }
+    fun deleteTask(taskId: String) = launch { taskActions.delete(taskId) }
 
     fun addSavePoint(note: String, done: String, next: String) = launch { savePoints.create(projectId, note, done, next) }
 
-    fun deleteSavePoint(id: String) = launch { savePoints.delete(id) }
+    fun deleteSavePoint(id: String) = launch {
+        savePoints.delete(id)
+        undo.offer("Save point deleted") { trash.restore(TrashKind.SavePoint, id) }
+    }
 
     private fun launch(block: suspend () -> Unit) {
         viewModelScope.launch { block() }

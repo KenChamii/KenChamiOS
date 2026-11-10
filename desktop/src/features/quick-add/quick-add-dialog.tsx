@@ -16,7 +16,7 @@ const MODES: { id: QuickAddMode; label: string }[] = [
 const ACTIVE_PROJECTS = { search: null, tag: null, include_archived: false };
 
 export function QuickAddDialog() {
-  const { quickAdd, openQuickAdd, closeQuickAdd } = useOverlays();
+  const { quickAdd, quickAddText, openQuickAdd, closeQuickAdd } = useOverlays();
   const projects = useProjects(ACTIVE_PROJECTS);
   // inside a project, new tasks and prompts go there by default
   const projectId = useMatch("/projects/:id/*")?.params.id ?? null;
@@ -34,7 +34,7 @@ export function QuickAddDialog() {
               <QuickTaskForm
                 projects={list}
                 defaultProjectId={current}
-                onAddIdea={() => openQuickAdd("idea")}
+                initialText={quickAddText}
                 onDone={closeQuickAdd}
               />
             )}

@@ -1,6 +1,7 @@
 package com.kenchami.kenchamios.data.repo
 
 import com.kenchami.kenchamios.data.TestDatabase
+import com.kenchami.kenchamios.data.model.Inbox
 import com.kenchami.kenchamios.data.model.Stage
 import com.kenchami.kenchamios.data.model.TaskStatus
 import kotlinx.coroutines.flow.first
@@ -25,7 +26,7 @@ class ProjectRepositoryTest {
     fun setUp() {
         env = TestDatabase()
         projects = ProjectRepository(env.database, env.stamper, env.activity)
-        tasks = TaskRepository(env.database, env.stamper, env.activity)
+        tasks = TaskRepository(env.database, env.stamper, env.activity, env.clock)
     }
 
     @After
@@ -42,6 +43,16 @@ class ProjectRepositoryTest {
         assertEquals("about", summary.project.description)
         assertEquals(env.stamper.deviceId(), summary.project.deviceId)
         assertEquals(listOf("project.created"), env.database.activityDao().kindsFor(id))
+    }
+
+    @Test
+    fun theInboxIsHiddenFromTheListAndCannotBeChanged() = runBlocking<Unit> {
+        projects.create("Alpha")
+        tasks.create(Inbox.ID, "Captured")
+
+        assertEquals(listOf("Alpha"), projects.observeSummaries(null).first().map { it.project.name })
+        assertThrows(IllegalArgumentException::class.java) { runBlocking { projects.delete(Inbox.ID) } }
+        assertThrows(IllegalArgumentException::class.java) { runBlocking { projects.setStage(Inbox.ID, Stage.Done) } }
     }
 
     @Test

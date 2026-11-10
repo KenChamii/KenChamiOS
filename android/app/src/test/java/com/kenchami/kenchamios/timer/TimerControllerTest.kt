@@ -26,7 +26,7 @@ class TimerControllerTest {
     @Before
     fun setUp() = runBlocking {
         env = TestDatabase()
-        val tasks = TaskRepository(env.database, env.stamper, env.activity)
+        val tasks = TaskRepository(env.database, env.stamper, env.activity, env.clock)
         projectId = ProjectRepository(env.database, env.stamper, env.activity).create("Demo")
         taskId = tasks.create(projectId, "Do it")
         timer = newController()
@@ -37,7 +37,7 @@ class TimerControllerTest {
 
     private fun newController() = TimerController(
         TimerRepository(env.database, env.stamper, env.activity),
-        TaskRepository(env.database, env.stamper, env.activity),
+        TaskRepository(env.database, env.stamper, env.activity, env.clock),
         env.clock,
     )
 

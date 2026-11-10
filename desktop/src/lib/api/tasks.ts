@@ -20,6 +20,8 @@ export type Task = {
   due_at: number | null;
   order_key: string;
   tags: string[];
+  /** e.g. "weekly:2", see lib/recurrence */
+  recurrence: string | null;
 };
 
 export type TaskCreate = {
@@ -32,6 +34,7 @@ export type TaskCreate = {
   priority: Priority;
   due_at: number | null;
   tags: string[];
+  recurrence: string | null;
 };
 
 export type TaskUpdate = Omit<TaskCreate, "project_id" | "parent_id">;
@@ -52,6 +55,18 @@ export function deleteTask(id: string) {
   return invoke<void>("tasks_delete", { id });
 }
 
-export function moveTask(id: string, status: TaskStatus, beforeId: string | null) {
-  return invoke<Task>("tasks_move", { id, status, beforeId });
+/** The moved task, and the next occurrence when completing a repeating task added one. */
+export type TaskMoved = { task: Task; next: Task | null };
+
+export function moveTask(
+  id: string,
+  status: TaskStatus,
+  beforeId: string | null,
+  nextDueAt: number | null,
+) {
+  return invoke<TaskMoved>("tasks_move", { id, status, beforeId, nextDueAt });
+}
+
+export function moveTaskToProject(id: string, projectId: string) {
+  return invoke<Task>("tasks_move_to_project", { id, projectId });
 }

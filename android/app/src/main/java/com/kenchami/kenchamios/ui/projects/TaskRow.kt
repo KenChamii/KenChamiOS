@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import com.kenchami.kenchamios.core.RepeatRule
 import com.kenchami.kenchamios.data.db.entity.TaskEntity
 import com.kenchami.kenchamios.data.model.TaskStatus
 import com.kenchami.kenchamios.ui.common.TaskTitle
@@ -31,9 +32,14 @@ fun TaskRow(
     onStatus: (TaskStatus) -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    onMove: (() -> Unit)? = null,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
-    val details = listOfNotNull(task.priority.label, task.dueAt?.let { "due ${formatDate(it, zone)}" })
+    val details = listOfNotNull(
+        task.priority.label,
+        task.dueAt?.let { "due ${formatDate(it, zone)}" },
+        task.recurrence?.let { RepeatRule.parse(it)?.label },
+    )
     ListItem(
         modifier = modifier,
         headlineContent = { TaskTitle(task.title, task.status == TaskStatus.Done) },
@@ -64,6 +70,15 @@ fun TaskRow(
                         onClick = {
                             menuOpen = false
                             onStatus(status)
+                        },
+                    )
+                }
+                onMove?.let { move ->
+                    DropdownMenuItem(
+                        text = { Text("Move to project") },
+                        onClick = {
+                            menuOpen = false
+                            move()
                         },
                     )
                 }

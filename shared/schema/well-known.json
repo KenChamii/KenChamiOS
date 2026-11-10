@@ -1,0 +1,8 @@
+{
+  "description": "Rows every device creates with the same id, so sync merges them instead of duplicating them.",
+  "inbox_project": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "name": "Inbox",
+    "slug": "inbox"
+  }
+}

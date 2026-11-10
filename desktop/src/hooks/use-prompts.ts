@@ -10,6 +10,8 @@ import {
   updatePrompt,
   type PromptInput,
 } from "@/lib/api/prompts";
+import { restoreFromTrash } from "@/lib/api/trash";
+import { useToasts } from "@/stores/toasts";
 
 export function usePrompts() {
   return useQuery({ queryKey: ["prompts"], queryFn: listPrompts });
@@ -44,7 +46,13 @@ export function useSetPromptFavorite() {
 
 export function useDeletePrompt() {
   const invalidate = useInvalidatePrompts();
-  return useMutation({ mutationFn: deletePrompt, onSuccess: invalidate });
+  return useMutation({
+    mutationFn: deletePrompt,
+    onSuccess: (_, id) => {
+      useToasts.getState().show("Prompt deleted", () => restoreFromTrash("prompt", id));
+      return invalidate();
+    },
+  });
 }
 
 export function usePromptVariables() {

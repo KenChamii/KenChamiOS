@@ -11,5 +11,6 @@ export function newTask(projectId: string, title: string, parentId: string | nul
     priority: "medium",
     due_at: null,
     tags: [],
+    recurrence: null,
   };
 }

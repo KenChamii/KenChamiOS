@@ -30,7 +30,7 @@ export function TaskList({ projectId, tasks, onSelect }: TaskListProps) {
               aria-label={`Complete ${task.title}`}
               checked={done}
               onCheckedChange={(checked) =>
-                move.mutate({ id: task.id, status: checked ? "done" : "todo", beforeId: null })
+                move.mutate({ task, status: checked ? "done" : "todo", beforeId: null })
               }
             />
             <button

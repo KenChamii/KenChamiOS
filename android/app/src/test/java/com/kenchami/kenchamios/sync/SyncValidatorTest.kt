@@ -66,11 +66,11 @@ class SyncValidatorTest {
     }
 
     @Test
-    fun theSchemaListsTheElevenSyncedTables() {
+    fun theSchemaListsTheThirteenSyncedTables() {
         assertEquals(
             listOf(
-                "activity", "checklist_items", "media_entries", "media_items", "media_progress_log", "project_docs",
-                "projects", "prompts", "save_points", "tasks", "time_entries",
+                "activity", "checklist_items", "habit_checks", "habits", "media_entries", "media_items", "media_progress_log",
+                "project_docs", "projects", "prompts", "save_points", "tasks", "time_entries",
             ),
             SyncFixtures.schema.all.map { it.name }.sorted(),
         )

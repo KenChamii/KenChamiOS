@@ -61,7 +61,7 @@ class ChangeLogTest {
     @Test
     fun repositoryWritesLeaveACurrentEntryForEveryRow() = runBlocking {
         val projects = ProjectRepository(env.database, env.stamper, env.activity)
-        val tasks = TaskRepository(env.database, env.stamper, env.activity)
+        val tasks = TaskRepository(env.database, env.stamper, env.activity, env.clock)
         val project = projects.create("Alpha")
         tasks.create(project, "Write")
         projects.delete(project)
