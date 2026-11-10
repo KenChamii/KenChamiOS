@@ -14,7 +14,7 @@ import com.kenchami.kenchamios.data.model.TaskStatus
         ForeignKey(ProjectEntity::class, parentColumns = ["id"], childColumns = ["project_id"]),
         ForeignKey(TaskEntity::class, parentColumns = ["id"], childColumns = ["parent_id"]),
     ],
-    indices = [Index("project_id", "status", "order_key"), Index("parent_id"), Index("due_at")],
+    indices = [Index("project_id", "status", "order_key"), Index("parent_id"), Index("due_at"), Index("planned_on")],
 )
 data class TaskEntity(
     @PrimaryKey val id: String,
@@ -35,6 +35,12 @@ data class TaskEntity(
     val tags: List<String>,
     /** `unit:interval` like `weekly:2`; null for a one-off task */
     val recurrence: String?,
+    /** local day the task is planned for, `YYYY-MM-DD` */
+    @ColumnInfo(name = "planned_on") val plannedOn: String?,
+    /** start of the time block in unix ms, only set together with [plannedOn] */
+    @ColumnInfo(name = "scheduled_at") val scheduledAt: Long?,
+    /** estimate or block length, 1 to 1440 minutes */
+    @ColumnInfo(name = "duration_min") val durationMin: Int?,
 )
 
 @Entity(

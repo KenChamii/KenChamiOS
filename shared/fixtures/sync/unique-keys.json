@@ -110,5 +110,30 @@
     "live": [
       "check-b"
     ]
+  },
+  {
+    "name": "notes written for the same day on both devices keep the newer one",
+    "table": "daily_notes",
+    "stored": {
+      "id": "note-a",
+      "created_at": 1700000000000,
+      "updated_at": 111411201310720000,
+      "device_id": "dev-a",
+      "deleted": 0,
+      "day": "2023-11-14",
+      "body": "from the desktop"
+    },
+    "incoming": {
+      "id": "note-b",
+      "created_at": 1700000000000,
+      "updated_at": 111411200655360000,
+      "device_id": "dev-b",
+      "deleted": 0,
+      "day": "2023-11-14",
+      "body": "from the phone"
+    },
+    "live": [
+      "note-a"
+    ]
   }
 ]

@@ -233,6 +233,41 @@
       "required": ["id", "created_at", "updated_at", "device_id", "deleted", "habit_id", "day"],
       "additionalProperties": false
     },
+    "daily_notes": {
+      "type": "object",
+      "x-synced": true,
+      "x-android": true,
+      "x-unique-live": ["day"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "device_id": {
+          "type": "string"
+        },
+        "deleted": {
+          "type": "integer",
+          "enum": [0, 1]
+        },
+        "day": {
+          "type": "string",
+          "format": "date",
+          "description": "local calendar day, YYYY-MM-DD"
+        },
+        "body": {
+          "type": "string",
+          "description": "markdown"
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "day", "body"],
+      "additionalProperties": false
+    },
     "media_entries": {
       "type": "object",
       "x-synced": true,
@@ -730,6 +765,21 @@
           "type": ["string", "null"],
           "pattern": "^(daily|weekly|monthly|weekdays):[1-9][0-9]{0,2}$",
           "description": "unit:interval, e.g. weekly:2; weekdays only takes 1"
+        },
+        "planned_on": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "local calendar day the task is planned for, YYYY-MM-DD"
+        },
+        "scheduled_at": {
+          "type": ["integer", "null"],
+          "description": "start of the time block, unix ms; set only together with planned_on"
+        },
+        "duration_min": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "maximum": 1440,
+          "description": "estimate or time block length in minutes"
         }
       },
       "required": ["id", "created_at", "updated_at", "device_id", "deleted", "project_id", "title", "body_md", "acceptance_md", "related_files", "status", "priority", "order_key", "tags"],

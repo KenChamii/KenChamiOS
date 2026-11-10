@@ -19,7 +19,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -38,7 +41,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": true,
     "title": "new"
@@ -63,7 +69,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -82,7 +91,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": false,
     "title": "kept"
@@ -107,7 +119,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -126,7 +141,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": true,
     "title": "b"
@@ -151,7 +169,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -170,7 +191,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": false,
     "title": "b"
@@ -195,7 +219,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -214,7 +241,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": false,
     "title": "same"
@@ -239,7 +269,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -258,7 +291,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": true,
     "title": "edited",
@@ -284,7 +320,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -303,7 +342,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": true,
     "title": "back",
@@ -329,7 +371,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "incoming": {
       "id": "t1",
@@ -348,7 +393,10 @@
       "due_at": null,
       "order_key": "a0",
       "tags": "[]",
-      "recurrence": null
+      "recurrence": null,
+      "planned_on": null,
+      "scheduled_at": null,
+      "duration_min": null
     },
     "applied": false,
     "title": "gone",

@@ -1,13 +1,13 @@
 use super::activity;
 use super::handle::{Db, new_id, now_ms, require_changed};
 use crate::domain::civil_date;
-use crate::domain::habit::{HabitView, summarize};
+use crate::domain::habit::{HabitCheck, HabitView, summarize};
 use crate::error::{AppError, AppResult};
 use std::collections::HashMap;
 
 /// Live habits in the order they were added, summarized for `today` (`YYYY-MM-DD`, local).
 pub async fn list(db: &Db, today: &str) -> AppResult<Vec<HabitView>> {
-    let today = clean_day(today)?;
+    let today = civil_date::clean(today)?;
     let habits: Vec<(String, String)> =
         sqlx::query_as("SELECT id, name FROM habits WHERE deleted = 0 ORDER BY created_at, id")
             .fetch_all(&db.pool)
@@ -27,6 +27,21 @@ pub async fn list(db: &Db, today: &str) -> AppResult<Vec<HabitView>> {
             summarize(id, name, &checked, &today)
         })
         .collect())
+}
+
+/// Live check-ins of live habits from `from` to `to`, both included.
+pub async fn checks_between(db: &Db, from: &str, to: &str) -> AppResult<Vec<HabitCheck>> {
+    let (from, to) = (civil_date::clean(from)?, civil_date::clean(to)?);
+    let rows = sqlx::query_as(
+        "SELECT c.habit_id, c.day FROM habit_checks c JOIN habits h ON h.id = c.habit_id
+          WHERE c.deleted = 0 AND h.deleted = 0 AND c.day >= ? AND c.day <= ?
+          ORDER BY c.day, c.habit_id",
+    )
+    .bind(from)
+    .bind(to)
+    .fetch_all(&db.pool)
+    .await?;
+    Ok(rows)
 }
 
 pub async fn create(db: &Db, name: &str) -> AppResult<String> {
@@ -87,7 +102,7 @@ pub async fn delete(db: &Db, id: &str) -> AppResult<()> {
 
 /// Checks the habit for `day`, or clears the check when it is already there; returns the new state.
 pub async fn toggle(db: &Db, habit_id: &str, day: &str) -> AppResult<bool> {
-    let day = clean_day(day)?;
+    let day = civil_date::clean(day)?;
     let mut tx = db.pool.begin().await?;
     let name: String = sqlx::query_scalar("SELECT name FROM habits WHERE id = ? AND deleted = 0")
         .bind(habit_id)
@@ -130,13 +145,6 @@ pub async fn toggle(db: &Db, habit_id: &str, day: &str) -> AppResult<bool> {
     Ok(!cleared)
 }
 
-// stored as the canonical YYYY-MM-DD so the unique key matches across devices
-fn clean_day(day: &str) -> AppResult<String> {
-    civil_date::parse(day)
-        .map(civil_date::format)
-        .ok_or(AppError::Invalid("day must be a date like 2026-11-10"))
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -170,6 +178,34 @@ mod tests {
                 "habit.unchecked"
             ]
         );
+    }
+
+    #[tokio::test]
+    async fn checks_between_keeps_to_the_range_and_live_habits() {
+        let db = Db::in_memory().await;
+        let read = create(&db, "Read").await.expect("read");
+        let run = create(&db, "Run").await.expect("run");
+        for day in ["2026-11-08", "2026-11-09", "2026-11-16"] {
+            toggle(&db, &read, day).await.expect("check");
+        }
+        toggle(&db, &run, "2026-11-10").await.expect("check");
+        delete(&db, &run).await.expect("delete");
+
+        let checks = checks_between(&db, "2026-11-09", "2026-11-15")
+            .await
+            .expect("checks");
+
+        assert_eq!(
+            checks,
+            [HabitCheck {
+                habit_id: read,
+                day: "2026-11-09".into()
+            }]
+        );
+        assert!(matches!(
+            checks_between(&db, "bad", "2026-11-15").await,
+            Err(AppError::Invalid(_))
+        ));
     }
 
     #[tokio::test]

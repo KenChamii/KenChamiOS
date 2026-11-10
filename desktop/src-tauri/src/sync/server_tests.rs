@@ -109,7 +109,7 @@ async fn pairing_then_pushing_and_pulling_works() {
 
     let push = h.push(&bearer, &fixture("push-valid")).await;
     assert_eq!(push.status, 200, "{}", push.body);
-    assert_eq!(parse(&push)["applied"], 13);
+    assert_eq!(parse(&push)["applied"], 14);
 
     let pull = h.pull(&bearer, "?since=0").await;
     assert_eq!(pull.status, 200);

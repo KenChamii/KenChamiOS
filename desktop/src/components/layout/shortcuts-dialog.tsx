@@ -5,6 +5,7 @@ import { NAV_PAGES } from "./nav-pages";
 const SHORTCUTS: { keys: string[]; label: string }[] = [
   { keys: ["Ctrl", "K"], label: "Command palette" },
   { keys: ["Ctrl", "N"], label: "Quick add" },
+  { keys: ["Ctrl", "Shift", "P"], label: "Plan my day" },
   ...NAV_PAGES.map((page) => ({ keys: ["G", page.key.toUpperCase()], label: page.label })),
   { keys: ["?"], label: "This list" },
 ];

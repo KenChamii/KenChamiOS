@@ -19,7 +19,7 @@ export function useTasks(projectId: string) {
   return useQuery({ queryKey: ["tasks", projectId], queryFn: () => listTasks(projectId) });
 }
 
-// tasks feed the project progress, last activity and the dashboard too
+// tasks feed the project progress, last activity, the dashboard and the planner too
 function useInvalidateTasks(projectId: string) {
   const queryClient = useQueryClient();
   return () =>
@@ -27,6 +27,7 @@ function useInvalidateTasks(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] }),
       queryClient.invalidateQueries({ queryKey: ["projects"] }),
       queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
+      queryClient.invalidateQueries({ queryKey: ["planner"] }),
     ]);
 }
 

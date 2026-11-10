@@ -40,6 +40,9 @@ import com.kenchami.kenchamios.ui.habits.HabitsScreen
 import com.kenchami.kenchamios.ui.inbox.InboxScreen
 import com.kenchami.kenchamios.ui.media.EntryDetailScreen
 import com.kenchami.kenchamios.ui.media.MediaScreen
+import com.kenchami.kenchamios.ui.notes.DailyNotesScreen
+import com.kenchami.kenchamios.ui.planner.PlanDayScreen
+import com.kenchami.kenchamios.ui.planner.ReviewDaySheet
 import com.kenchami.kenchamios.ui.projects.ProjectDetailScreen
 import com.kenchami.kenchamios.ui.projects.ProjectsScreen
 import com.kenchami.kenchamios.ui.prompts.PromptsScreen
@@ -65,6 +68,7 @@ fun AppScaffold(undo: UndoBus, sharedText: String?, onSharedTextUsed: () -> Unit
     val current = backStack?.destination?.route
     var quickAdd by rememberSaveable { mutableStateOf<QuickAddTab?>(null) }
     var quickAddText by rememberSaveable { mutableStateOf("") }
+    var review by rememberSaveable { mutableStateOf(false) }
     val openQuickAdd = { tab: QuickAddTab -> quickAdd = tab }
     val openProject = { id: String -> navController.navigate(if (id == Inbox.ID) Routes.INBOX else Routes.project(id)) }
     val snackbar = remember { SnackbarHostState() }
@@ -137,6 +141,9 @@ fun AppScaffold(undo: UndoBus, sharedText: String?, onSharedTextUsed: () -> Unit
                         openInbox = { navController.navigate(Routes.INBOX) },
                         openHabits = { navController.navigate(Routes.HABITS) },
                         openTrash = { navController.navigate(Routes.TRASH) },
+                        openPlan = { navController.navigate(Routes.PLAN) },
+                        openReview = { review = true },
+                        openNotes = { navController.navigate(Routes.NOTES) },
                     ),
                     onOpenRules = { navController.navigate(Routes.RULES) },
                 )
@@ -166,6 +173,8 @@ fun AppScaffold(undo: UndoBus, sharedText: String?, onSharedTextUsed: () -> Unit
             composable(Routes.INBOX) { InboxScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.HABITS) { HabitsScreen(onBack = { navController.popBackStack() }) }
             composable(Routes.TRASH) { TrashScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.PLAN) { PlanDayScreen(onBack = { navController.popBackStack() }) }
+            composable(Routes.NOTES) { DailyNotesScreen(onBack = { navController.popBackStack() }) }
         }
     }
 
@@ -174,5 +183,8 @@ fun AppScaffold(undo: UndoBus, sharedText: String?, onSharedTextUsed: () -> Unit
             quickAdd = null
             quickAddText = ""
         }, initialText = quickAddText)
+    }
+    if (review) {
+        ReviewDaySheet(onDismiss = { review = false }, onOpenNote = { navController.navigate(Routes.NOTES) })
     }
 }

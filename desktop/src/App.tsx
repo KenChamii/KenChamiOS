@@ -5,11 +5,14 @@ import { DashboardPage } from "@/pages/dashboard";
 import { HabitsPage } from "@/pages/habits";
 import { InboxPage } from "@/pages/inbox";
 import { MediaPage } from "@/pages/media";
+import { NotesPage } from "@/pages/notes";
+import { PlannerPage } from "@/pages/planner";
 import { ProjectPage } from "@/pages/project";
 import { ProjectsPage } from "@/pages/projects";
 import { RecapPage } from "@/pages/recap";
 import { SettingsPage } from "@/pages/settings";
 import { TrashPage } from "@/pages/trash";
+import { WeeklyReviewPage } from "@/pages/weekly-review";
 import { WorkflowPage } from "@/pages/workflow";
 
 const queryClient = new QueryClient();
@@ -20,6 +23,9 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <DashboardPage /> },
       { path: "/inbox", element: <InboxPage /> },
+      { path: "/planner", element: <PlannerPage /> },
+      { path: "/notes", element: <NotesPage /> },
+      { path: "/review", element: <WeeklyReviewPage /> },
       { path: "/habits", element: <HabitsPage /> },
       { path: "/trash", element: <TrashPage /> },
       { path: "/projects", element: <ProjectsPage /> },

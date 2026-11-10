@@ -26,6 +26,8 @@ object Routes {
     const val INBOX = "inbox"
     const val HABITS = "habits"
     const val TRASH = "trash"
+    const val PLAN = "plan"
+    const val NOTES = "notes"
 
     fun project(id: String) = "project/$id"
 

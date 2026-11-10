@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { CommandPalette } from "@/features/palette/command-palette";
+import { DayFlowDialog } from "@/features/planner/day-flow-dialog";
 import { QuickAddDialog } from "@/features/quick-add/quick-add-dialog";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { useRefreshOnSync } from "@/hooks/use-sync";
@@ -25,6 +26,7 @@ export function Layout() {
       <CommandPalette />
       <QuickAddDialog />
       <ShortcutsDialog />
+      <DayFlowDialog />
       <Toaster />
     </div>
   );

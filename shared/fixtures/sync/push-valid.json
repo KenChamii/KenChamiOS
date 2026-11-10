@@ -52,7 +52,10 @@
         "due_at": null,
         "order_key": "a0",
         "tags": "[]",
-        "recurrence": "weekly:1"
+        "recurrence": "weekly:1",
+        "planned_on": "2023-11-14",
+        "scheduled_at": 1699952400000,
+        "duration_min": 45
       }
     },
     {
@@ -196,6 +199,18 @@
         "deleted": 0,
         "habit_id": "h1",
         "day": "2023-11-14"
+      }
+    },
+    {
+      "table": "daily_notes",
+      "row": {
+        "id": "dn1",
+        "created_at": 1700000000000,
+        "updated_at": 111411200131072000,
+        "device_id": "dev-phone",
+        "deleted": 0,
+        "day": "2023-11-14",
+        "body": "Shipped the planner."
       }
     },
     {

@@ -3,6 +3,7 @@ package com.kenchami.kenchamios
 import com.kenchami.kenchamios.core.DayBounds
 import com.kenchami.kenchamios.data.db.DueTask
 import com.kenchami.kenchamios.data.db.LibraryEntry
+import com.kenchami.kenchamios.data.db.PlannedTask
 import com.kenchami.kenchamios.data.db.ProjectSummary
 import com.kenchami.kenchamios.data.db.entity.ProjectEntity
 import com.kenchami.kenchamios.data.db.entity.PromptEntity
@@ -16,6 +17,14 @@ import com.kenchami.kenchamios.ui.today.SetupStep
 import com.kenchami.kenchamios.ui.today.TodayState
 
 fun dueTask(title: String, dueAt: Long) = DueTask("t-$title", title, "p1", "Demo", dueAt, Priority.Medium, TaskStatus.Todo)
+
+fun plannedTask(
+    title: String,
+    minutes: Int? = 30,
+    status: TaskStatus = TaskStatus.Todo,
+    dueAt: Long? = null,
+    plannedOn: String? = "2026-11-10",
+) = PlannedTask("t-$title", title, "p1", "Demo", status, dueAt, plannedOn, null, minutes)
 
 fun libraryEntry(
     id: String = "e1",
@@ -62,6 +71,7 @@ fun prompt(id: String = "pr1", title: String = "Review", favorite: Boolean = fal
 
 fun todayState(
     due: List<DueTask> = emptyList(),
+    planned: List<PlannedTask> = emptyList(),
     entries: List<LibraryEntry> = emptyList(),
     projects: List<ProjectSummary> = listOf(projectSummary()),
     setup: List<SetupStep> = emptyList(),
@@ -69,6 +79,7 @@ fun todayState(
     bounds = DayBounds(start = 10_000, end = 20_000),
     now = 15_000,
     due = due,
+    planned = planned,
     continueItems = entries,
     projects = projects,
     activity = emptyList(),

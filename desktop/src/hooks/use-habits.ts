@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createHabit, deleteHabit, listHabits, toggleHabit } from "@/lib/api/habits";
+import {
+  createHabit,
+  deleteHabit,
+  listHabitChecks,
+  listHabits,
+  toggleHabit,
+} from "@/lib/api/habits";
 import { restoreFromTrash } from "@/lib/api/trash";
 import type { Day } from "@/lib/days";
 import { useToasts } from "@/stores/toasts";
@@ -34,5 +40,12 @@ export function useToggleHabit() {
   return useMutation({
     mutationFn: ({ id, day }: { id: string; day: Day }) => toggleHabit(id, day),
     onSuccess: invalidate,
+  });
+}
+
+export function useHabitChecks(from: Day, to: Day) {
+  return useQuery({
+    queryKey: ["habits", "checks", from, to],
+    queryFn: () => listHabitChecks(from, to),
   });
 }

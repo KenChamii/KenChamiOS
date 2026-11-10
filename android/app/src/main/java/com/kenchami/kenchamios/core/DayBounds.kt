@@ -1,5 +1,9 @@
 package com.kenchami.kenchamios.core
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -14,3 +18,12 @@ fun dayBounds(now: Long, zone: ZoneId): DayBounds {
 
 /** Local midnight of [date], the value the desktop stores as a due date. */
 fun startOfDay(date: LocalDate, zone: ZoneId): Long = date.atStartOfDay(zone).toInstant().toEpochMilli()
+
+/** Today's local date, again at each midnight while it is collected. */
+fun localDates(clock: Clock): Flow<LocalDate> = flow {
+    while (true) {
+        val today = LocalDate.now(clock)
+        emit(today)
+        delay(startOfDay(today.plusDays(1), clock.zone) - clock.millis())
+    }
+}

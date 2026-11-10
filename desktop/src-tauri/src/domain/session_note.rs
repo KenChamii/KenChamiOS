@@ -255,6 +255,9 @@ mod tests {
             order_key: "a".into(),
             tags: Json(vec![]),
             recurrence: None,
+            planned_on: None,
+            scheduled_at: None,
+            duration_min: None,
         }
     }
 

@@ -1,7 +1,10 @@
 package com.kenchami.kenchamios.ui.today
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,7 +29,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.context.ChecklistRun
+import com.kenchami.kenchamios.core.formatMinutes
 import com.kenchami.kenchamios.data.db.DueTask
+import com.kenchami.kenchamios.data.db.PlannedTask
 import com.kenchami.kenchamios.data.repo.nextLabel
 import com.kenchami.kenchamios.ui.common.AppScreen
 import com.kenchami.kenchamios.ui.common.EmptyState
@@ -56,6 +62,9 @@ class TodayNav(
     val openInbox: () -> Unit,
     val openHabits: () -> Unit,
     val openTrash: () -> Unit,
+    val openPlan: () -> Unit,
+    val openReview: () -> Unit,
+    val openNotes: () -> Unit,
 )
 
 @Composable
@@ -102,13 +111,19 @@ fun TodayContent(
         }
         items(checklists, key = { "checklist-" + it.ruleId }) { ChecklistCard(it, checklistActions) }
         if (!firstRun) {
+            item { DayActions(nav) }
+            if (state.planned.isNotEmpty()) item { SectionTitle("Planned") }
+            items(state.planned, key = { "planned-" + it.id }) { task -> PlannedTaskRow(task, onFinishTask, nav.openProject) }
+            // a planned task shows once, in the plan
+            val plannedIds = state.planned.map { it.id }.toSet()
+            val due = state.due.filter { it.id !in plannedIds }
             item { SectionTitle("Tasks due") }
-            if (state.due.isEmpty()) {
+            if (due.isEmpty() && state.planned.isEmpty()) {
                 item(key = "due-empty") {
                     EmptyState(Icons.Filled.CheckCircle, "Nothing due today.", "Add a task", { nav.quickAdd(QuickAddTab.Task) })
                 }
             }
-            items(state.due, key = { it.id }) { task -> DueTaskRow(task, state, onFinishTask, nav.openProject) }
+            items(due, key = { it.id }) { task -> DueTaskRow(task, state, onFinishTask, nav.openProject) }
         }
 
         if (state.continueItems.isNotEmpty()) item { SectionTitle("Continue") }
@@ -166,6 +181,32 @@ private fun LazyItemScope.DueTaskRow(task: DueTask, state: TodayState, onFinishT
         },
         modifier = Modifier.listMotion(this).clickable { onOpenProject(task.projectId) },
     )
+}
+
+@Composable
+private fun LazyItemScope.PlannedTaskRow(task: PlannedTask, onFinishTask: (String) -> Unit, onOpenProject: (String) -> Unit) {
+    var ticked by rememberSaveable(task.id) { mutableStateOf(false) }
+    ListItem(
+        headlineContent = { TaskTitle(task.title, ticked) },
+        supportingContent = { Text(listOfNotNull(task.projectName, task.durationMin?.let(::formatMinutes)).joinToString(" - ")) },
+        leadingContent = {
+            Checkbox(checked = ticked, enabled = !ticked, onCheckedChange = {
+                ticked = true
+                onFinishTask(task.id)
+            })
+        },
+        modifier = Modifier.listMotion(this).clickable { onOpenProject(task.projectId) },
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun DayActions(nav: TodayNav) {
+    FlowRow(Modifier.padding(horizontal = 20.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilledTonalButton(onClick = nav.openPlan) { Text("Plan my day") }
+        FilledTonalButton(onClick = nav.openReview) { Text("Review my day") }
+        FilledTonalButton(onClick = nav.openNotes) { Text("Today's note") }
+    }
 }
 
 @Composable

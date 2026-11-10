@@ -11,7 +11,7 @@ function isTyping(target: EventTarget | null): boolean {
   );
 }
 
-/** The app-wide keys: Ctrl+K, Ctrl+N, ? and G then a page letter. */
+/** The app-wide keys: Ctrl+K, Ctrl+N, Ctrl+Shift+P, ? and G then a page letter. */
 export function useShortcuts() {
   const navigate = useNavigate();
 
@@ -24,6 +24,7 @@ export function useShortcuts() {
           ctrlKey: event.ctrlKey,
           metaKey: event.metaKey,
           altKey: event.altKey,
+          shiftKey: event.shiftKey,
           typing: isTyping(event.target),
           at: event.timeStamp,
         },
@@ -42,6 +43,8 @@ export function useShortcuts() {
         overlays.openPalette();
       } else if (action.type === "quick-add") {
         overlays.openQuickAdd("task");
+      } else if (action.type === "plan-day") {
+        overlays.openDayFlow("plan");
       } else {
         overlays.setShortcuts(true);
       }

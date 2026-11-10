@@ -29,6 +29,19 @@ data class DueTask(
     val status: TaskStatus,
 )
 
+/** A task with its project and plan, as the planner shows it. */
+data class PlannedTask(
+    val id: String,
+    val title: String,
+    @ColumnInfo(name = "project_id") val projectId: String,
+    @ColumnInfo(name = "project_name") val projectName: String,
+    val status: TaskStatus,
+    @ColumnInfo(name = "due_at") val dueAt: Long?,
+    @ColumnInfo(name = "planned_on") val plannedOn: String?,
+    @ColumnInfo(name = "scheduled_at") val scheduledAt: Long?,
+    @ColumnInfo(name = "duration_min") val durationMin: Int?,
+)
+
 /** A library entry together with the item it tracks. */
 data class LibraryEntry(
     val id: String,

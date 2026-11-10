@@ -58,6 +58,9 @@ pub struct Task {
     pub order_key: String,
     pub tags: Json<Vec<String>>,
     pub recurrence: Option<String>,
+    pub planned_on: Option<String>,
+    pub scheduled_at: Option<i64>,
+    pub duration_min: Option<i64>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
