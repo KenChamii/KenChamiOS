@@ -8,12 +8,14 @@ import com.kenchami.kenchamios.core.DayBounds
 import com.kenchami.kenchamios.core.dayBounds
 import com.kenchami.kenchamios.data.db.DueTask
 import com.kenchami.kenchamios.data.db.LibraryEntry
+import com.kenchami.kenchamios.data.db.PlannedTask
 import com.kenchami.kenchamios.data.db.ProjectSummary
 import com.kenchami.kenchamios.data.db.entity.ActivityEntity
 import com.kenchami.kenchamios.data.model.Stage
 import com.kenchami.kenchamios.data.model.TaskStatus
 import com.kenchami.kenchamios.data.repo.ActivityRepository
 import com.kenchami.kenchamios.data.repo.MediaRepository
+import com.kenchami.kenchamios.data.repo.PlannerRepository
 import com.kenchami.kenchamios.data.repo.ProjectRepository
 import com.kenchami.kenchamios.data.repo.TaskRepository
 import com.kenchami.kenchamios.data.repo.continueItems
@@ -43,6 +45,8 @@ data class TodayState(
     val bounds: DayBounds,
     val now: Long,
     val due: List<DueTask>,
+    /** open tasks planned for today */
+    val planned: List<PlannedTask>,
     val continueItems: List<LibraryEntry>,
     val projects: List<ProjectSummary>,
     val activity: List<ActivityEntity>,
@@ -54,6 +58,7 @@ data class TodayState(
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     private val tasks: TaskRepository,
+    planner: PlannerRepository,
     private val taskActions: UndoableTasks,
     private val media: MediaRepository,
     projects: ProjectRepository,
@@ -67,16 +72,19 @@ class TodayViewModel @Inject constructor(
     val state: StateFlow<TodayState?> = days()
         .flatMapLatest { bounds ->
             combine(
-                tasks.observeDue(bounds.end),
+                combine(tasks.observeDue(bounds.end), planner.observePlanned(LocalDate.now(clock))) { due, planned ->
+                    due to planned.filter { it.status != TaskStatus.Done }
+                },
                 media.observeLibrary(),
                 projects.observeSummaries(null),
                 activity.observeRecent(ACTIVITY_LIMIT),
                 sync.observe(),
-            ) { due, library, summaries, recent, snapshot ->
+            ) { (due, planned), library, summaries, recent, snapshot ->
                 TodayState(
                     bounds = bounds,
                     now = clock.millis(),
                     due = due,
+                    planned = planned,
                     continueItems = continueItems(library),
                     projects = summaries.filter { it.project.stage != Stage.Done },
                     activity = recent,

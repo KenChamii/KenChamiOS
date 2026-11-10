@@ -17,6 +17,7 @@ private const val HLC_COUNTER_BITS = 16
 // children before parents, so most rows can go in one run
 private val PURGE_ORDER = listOf(
     "activity",
+    "daily_notes",
     "habit_checks",
     "habits",
     "media_progress_log",

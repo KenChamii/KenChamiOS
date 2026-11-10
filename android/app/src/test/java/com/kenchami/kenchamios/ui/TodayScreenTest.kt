@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.kenchami.kenchamios.data.model.TimerStatus
 import com.kenchami.kenchamios.dueTask
 import com.kenchami.kenchamios.libraryEntry
+import com.kenchami.kenchamios.plannedTask
 import com.kenchami.kenchamios.timer.TimerConfig
 import com.kenchami.kenchamios.timer.TimerState
 import com.kenchami.kenchamios.todayState
@@ -41,7 +42,19 @@ class TodayScreenTest {
     private val noTimer = TimerActions({}, {}, {})
     private val quickAdds = mutableListOf<QuickAddTab>()
     private var syncOpened = false
-    private val nav = TodayNav({}, {}, { quickAdds += it }, { syncOpened = true }, {}, {}, {})
+    private val opened = mutableListOf<String>()
+    private val nav = TodayNav(
+        {},
+        {},
+        { quickAdds += it },
+        { syncOpened = true },
+        {},
+        {},
+        {},
+        { opened += "plan" },
+        { opened += "review" },
+        { opened += "notes" },
+    )
 
     // the hero pushes the lists below the first screenful
     private fun scrollTo(text: String) = compose.onNodeWithTag("today").performScrollToNode(hasText(text))
@@ -156,5 +169,29 @@ class TodayScreenTest {
         compose.onNodeWithText("Resume").performClick()
 
         assertEquals(true, resumed)
+    }
+
+    @Test
+    fun plannedTasksComeFirstAndLeaveTheDueList() {
+        val due = listOf(dueTask("Write docs", 12_000), dueTask("Old task", 5_000))
+        show(todayState(due = due, planned = listOf(plannedTask("Write docs", 45))))
+
+        scrollTo("Demo - 45m")
+        compose.onNodeWithText("Planned").assertIsDisplayed()
+        compose.onAllNodesWithText("Write docs").assertCountEquals(1)
+        scrollTo("Old task")
+        compose.onNodeWithText("Old task").assertIsDisplayed()
+    }
+
+    @Test
+    fun dayActionsOpenThePlanTheReviewAndTodaysNote() {
+        show(todayState())
+
+        scrollTo("Plan my day")
+        compose.onNodeWithText("Plan my day").performClick()
+        compose.onNodeWithText("Review my day").performClick()
+        compose.onNodeWithText("Today's note").performClick()
+
+        assertEquals(listOf("plan", "review", "notes"), opened)
     }
 }

@@ -32,6 +32,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kenchami.kenchamios.ui.common.AppScreen
 import com.kenchami.kenchamios.ui.common.SectionTitle
+import com.kenchami.kenchamios.ui.planner.AvailableHoursSetting
+import com.kenchami.kenchamios.ui.planner.AvailableHoursViewModel
 
 /** Which permission steps this Android version has. */
 data class PermissionSteps(val background: Boolean, val notifications: Boolean) {
@@ -44,8 +46,13 @@ data class PermissionSteps(val background: Boolean, val notifications: Boolean) 
 }
 
 @Composable
-fun ContextSettingsScreen(onBack: () -> Unit, viewModel: ContextSettingsViewModel = hiltViewModel()) {
+fun ContextSettingsScreen(
+    onBack: () -> Unit,
+    viewModel: ContextSettingsViewModel = hiltViewModel(),
+    hoursViewModel: AvailableHoursViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val availableMinutes by hoursViewModel.minutes.collectAsStateWithLifecycle()
     val context = LocalContext.current
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { viewModel.reload() }
     val foreground = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { viewModel.reload() }
@@ -66,6 +73,7 @@ fun ContextSettingsScreen(onBack: () -> Unit, viewModel: ContextSettingsViewMode
                 )
             },
             padding = padding,
+            plannerSettings = { availableMinutes?.let { AvailableHoursSetting(it, hoursViewModel::save) } },
         )
     }
 }
@@ -80,6 +88,7 @@ fun ContextSettingsContent(
     onAllowNotifications: () -> Unit,
     onOpenSystemSettings: () -> Unit,
     padding: PaddingValues,
+    plannerSettings: @Composable () -> Unit = {},
 ) {
     Column(
         Modifier.padding(padding).verticalScroll(rememberScrollState()).testTag("context-settings"),
@@ -127,6 +136,9 @@ fun ContextSettingsContent(
         FilledTonalButton(onClick = onOpenSystemSettings, modifier = Modifier.padding(horizontal = 16.dp)) {
             Text("Open system settings")
         }
+
+        SectionTitle("Planner")
+        plannerSettings()
     }
 }
 

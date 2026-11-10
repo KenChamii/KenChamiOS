@@ -68,6 +68,9 @@ class TaskRepository @Inject constructor(
                     orderKey = keyAfterLast(projectId, null, TaskStatus.Todo),
                     tags = emptyList(),
                     recurrence = recurrence,
+                    plannedOn = null,
+                    scheduledAt = null,
+                    durationMin = null,
                 ),
             )
             activity.record("task.created", "task", id, "Added task $cleanTitle")
@@ -106,6 +109,10 @@ class TaskRepository @Inject constructor(
                 status = TaskStatus.Todo,
                 dueAt = nextDueAt(task.recurrence, task.dueAt, clock.millis(), clock.zone),
                 orderKey = keyAfterLast(task.projectId, task.parentId, TaskStatus.Todo),
+                // the plan belongs to the finished occurrence, the next one is planned on its own
+                plannedOn = null,
+                scheduledAt = null,
+                durationMin = null,
             ),
         )
         activity.record("task.created", "task", id, "Added task ${task.title}")

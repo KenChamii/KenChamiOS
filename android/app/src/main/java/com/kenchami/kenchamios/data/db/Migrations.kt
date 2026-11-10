@@ -4,9 +4,10 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 private val HABIT_TABLES = listOf("habit_checks", "habits")
+private val PLANNER_TABLES = listOf("daily_notes")
 
 // a migration only touches the tables that exist at its version
-private val TABLES_OF_VERSION_2 = SYNCED_TABLES - HABIT_TABLES
+private val TABLES_OF_VERSION_2 = SYNCED_TABLES - HABIT_TABLES - PLANNER_TABLES
 
 /** Adds the change log for LAN sync, and lets a library item have more than one entry row (a deleted one and a live one). */
 val MIGRATION_1_2 = object : Migration(1, 2) {
@@ -40,6 +41,24 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         )
         db.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_checks_habit_id_day` ON `habit_checks` (`habit_id`, `day`)")
         ChangeLogSql.createTriggers(db, HABIT_TABLES)
-        ChangeLogSql.createUniqueLiveTriggers(db)
+        ChangeLogSql.createUniqueLiveTriggers(db, listOf("habit_checks"))
+    }
+}
+
+/** Day plans on tasks and daily notes, the same schema as desktop migration 0013. */
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `planned_on` TEXT")
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `scheduled_at` INTEGER")
+        db.execSQL("ALTER TABLE `tasks` ADD COLUMN `duration_min` INTEGER")
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_tasks_planned_on` ON `tasks` (`planned_on`)")
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `daily_notes` (`id` TEXT NOT NULL, `created_at` INTEGER NOT NULL, " +
+                "`updated_at` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `deleted` INTEGER NOT NULL, " +
+                "`day` TEXT NOT NULL, `body` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_notes_day` ON `daily_notes` (`day`)")
+        ChangeLogSql.createTriggers(db, PLANNER_TABLES)
+        ChangeLogSql.createUniqueLiveTriggers(db, PLANNER_TABLES)
     }
 }
