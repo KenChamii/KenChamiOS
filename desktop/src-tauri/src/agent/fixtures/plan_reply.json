@@ -1,0 +1,51 @@
+{
+ "type": "result",
+ "subtype": "success",
+ "is_error": false,
+ "num_turns": 2,
+ "result": "{\"phases\":[{\"title\":\"Phase 1: Notes storage and add command\",\"tasks\":[{\"title\":\"Create the notes table\",\"body\":\"Define a `notes` table with columns: `id` (primary key, auto-increment), `body` (text, not null), `created_at` (timestamp, defaults to now). Add it as a migration or schema setup script that can be run against a fresh database.\",\"acceptance\":\"Running the migration or setup on an empty database creates the `notes` table with the listed columns. Running it a second time doesn't fail or create a duplicate table.\"},{\"title\":\"Implement the add command\",\"body\":\"Add a command (for example `notes add \\\"text\\\"`) that inserts a new row into `notes` with the given body. Reject empty or whitespace-only input with a clear error message and a non-zero exit code.\",\"acceptance\":\"`notes add \\\"hello\\\"` inserts one row with body 'hello' and a created_at timestamp, and prints a confirmation that includes the new id. `notes add \\\"\\\"` inserts nothing and exits with an error.\"},{\"title\":\"Test the add command\",\"body\":\"Write automated tests for the add command against a temporary or in-memory database. Cover a valid insert, empty input, and multiple inserts in a row.\",\"acceptance\":\"The tests pass locally. They check the row count and stored body after each insert, and check that empty input is rejected.\"}]},{\"title\":\"Phase 2: List page\",\"tasks\":[{\"title\":\"Add a query for listing notes\",\"body\":\"Write a function that returns all notes, newest first (ordered by created_at descending, then by id descending as a tiebreaker).\",\"acceptance\":\"With 3 notes inserted, the function returns all 3 in newest-first order. With no notes, it returns an empty list.\"},{\"title\":\"Build the list page\",\"body\":\"Create a page (route `/notes`) that uses the list query to show each note's body and created_at. Show a friendly message such as 'No notes yet' when there are no notes. Escape note text so HTML in a note isn't rendered as markup.\",\"acceptance\":\"Visiting `/notes` shows every stored note, newest first. An empty database shows the empty-state message. A note containing `<b>x</b>` appears as literal text.\"},{\"title\":\"Test the list page\",\"body\":\"Write a test that seeds a few notes, requests `/notes`, and checks the response. Include an empty-state test.\",\"acceptance\":\"The tests pass. They confirm a 200 status, that every seeded note body appears in newest-first order, and that the empty-state message appears when there are no notes.\"}]}]}",
+ "structured_output": {
+  "phases": [
+   {
+    "title": "Phase 1: Notes storage and add command",
+    "tasks": [
+     {
+      "title": "Create the notes table",
+      "body": "Define a `notes` table with columns: `id` (primary key, auto-increment), `body` (text, not null), `created_at` (timestamp, defaults to now). Add it as a migration or schema setup script that can be run against a fresh database.",
+      "acceptance": "Running the migration or setup on an empty database creates the `notes` table with the listed columns. Running it a second time doesn't fail or create a duplicate table."
+     },
+     {
+      "title": "Implement the add command",
+      "body": "Add a command (for example `notes add \"text\"`) that inserts a new row into `notes` with the given body. Reject empty or whitespace-only input with a clear error message and a non-zero exit code.",
+      "acceptance": "`notes add \"hello\"` inserts one row with body 'hello' and a created_at timestamp, and prints a confirmation that includes the new id. `notes add \"\"` inserts nothing and exits with an error."
+     },
+     {
+      "title": "Test the add command",
+      "body": "Write automated tests for the add command against a temporary or in-memory database. Cover a valid insert, empty input, and multiple inserts in a row.",
+      "acceptance": "The tests pass locally. They check the row count and stored body after each insert, and check that empty input is rejected."
+     }
+    ]
+   },
+   {
+    "title": "Phase 2: List page",
+    "tasks": [
+     {
+      "title": "Add a query for listing notes",
+      "body": "Write a function that returns all notes, newest first (ordered by created_at descending, then by id descending as a tiebreaker).",
+      "acceptance": "With 3 notes inserted, the function returns all 3 in newest-first order. With no notes, it returns an empty list."
+     },
+     {
+      "title": "Build the list page",
+      "body": "Create a page (route `/notes`) that uses the list query to show each note's body and created_at. Show a friendly message such as 'No notes yet' when there are no notes. Escape note text so HTML in a note isn't rendered as markup.",
+      "acceptance": "Visiting `/notes` shows every stored note, newest first. An empty database shows the empty-state message. A note containing `<b>x</b>` appears as literal text."
+     },
+     {
+      "title": "Test the list page",
+      "body": "Write a test that seeds a few notes, requests `/notes`, and checks the response. Include an empty-state test.",
+      "acceptance": "The tests pass. They confirm a 200 status, that every seeded note body appears in newest-first order, and that the empty-state message appears when there are no notes."
+     }
+    ]
+   }
+  ]
+ }
+}
