@@ -1,3 +1,4 @@
+mod agent;
 mod commands;
 mod db;
 mod domain;
@@ -38,6 +39,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::app_info::app_info,
+            commands::agent::agent_plan_preview,
+            commands::agent::agent_plan_create,
             commands::projects::projects_list,
             commands::projects::projects_get,
             commands::projects::projects_create,

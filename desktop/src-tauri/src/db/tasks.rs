@@ -34,6 +34,21 @@ pub async fn create(db: &Db, input: TaskCreate) -> AppResult<Task> {
     get(db, &id).await
 }
 
+/// Creates all the tasks or none of them.
+pub async fn create_many(db: &Db, inputs: &[TaskCreate]) -> AppResult<Vec<Task>> {
+    let mut tx = db.pool.begin().await?;
+    let mut ids = Vec::with_capacity(inputs.len());
+    for input in inputs {
+        ids.push(insert(&mut tx, db, input).await?);
+    }
+    tx.commit().await?;
+    let mut created = Vec::with_capacity(ids.len());
+    for id in &ids {
+        created.push(get(db, id).await?);
+    }
+    Ok(created)
+}
+
 // takes a connection so callers can add a task inside their own transaction
 pub(super) async fn insert(
     conn: &mut SqliteConnection,
@@ -394,6 +409,36 @@ mod tests {
         assert_eq!(a.status, TaskStatus::Todo);
         assert_eq!(titles(&db, &project.id, TaskStatus::Todo).await, ["A", "B"]);
         assert_eq!(kinds_for(&db, &a.id).await, ["task.created"]);
+    }
+
+    #[tokio::test]
+    async fn create_many_keeps_the_order_given() {
+        let db = Db::in_memory().await;
+        let project = create_for_test(&db, "P").await;
+        let inputs = ["A", "B", "C"].map(|title| create_input(&project.id, title));
+
+        let created = create_many(&db, &inputs).await.expect("create");
+
+        assert_eq!(created.len(), 3);
+        assert_eq!(
+            titles(&db, &project.id, TaskStatus::Todo).await,
+            ["A", "B", "C"]
+        );
+    }
+
+    #[tokio::test]
+    async fn create_many_creates_none_when_one_is_invalid() {
+        let db = Db::in_memory().await;
+        let project = create_for_test(&db, "P").await;
+        let inputs = [
+            create_input(&project.id, "A"),
+            create_input(&project.id, " "),
+        ];
+
+        let result = create_many(&db, &inputs).await;
+
+        assert!(matches!(result, Err(AppError::Invalid(_))));
+        assert!(list(&db, &project.id).await.expect("list").is_empty());
     }
 
     #[tokio::test]

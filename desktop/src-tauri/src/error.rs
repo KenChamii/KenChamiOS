@@ -26,6 +26,8 @@ pub enum AppError {
     Tauri(#[from] tauri::Error),
     #[error("sync error: {0}")]
     Sync(String),
+    #[error("{0}")]
+    Agent(String),
 }
 
 impl AppError {
@@ -41,6 +43,7 @@ impl AppError {
             Self::Provider(_) => "provider",
             Self::Keyring(_) => "keyring",
             Self::Sync(_) => "sync",
+            Self::Agent(_) => "agent",
             Self::NotFound(_) => "not_found",
             Self::Invalid(_) => "invalid",
         }

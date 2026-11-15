@@ -1,3 +1,4 @@
+pub mod agent_plan;
 mod app_info;
 pub mod asset;
 pub mod backup;
