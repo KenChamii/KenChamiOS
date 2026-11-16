@@ -9,7 +9,6 @@ use crate::domain::{TaskStatus, TemplateKind};
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
 use crate::workflow::context::task_context;
-use serde::Serialize;
 use std::fs::{self, File, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -69,12 +68,6 @@ impl Runner {
             _ => false,
         }
     }
-}
-
-#[derive(Serialize, Clone)]
-struct RunEvent<'a> {
-    run_id: &'a str,
-    event: &'a StreamEvent,
 }
 
 /// Starts the queued runs, one after the other, in the background.
@@ -170,8 +163,6 @@ async fn run_agent(app: &AppHandle, run: &AgentRun, stop: &Arc<AtomicBool>) -> A
     )?;
 
     let job = AgentJob {
-        app: app.clone(),
-        run_id: run.id.clone(),
         log_path: PathBuf::from(&run.log_path),
         cwd: cwd.clone(),
         settings: settings.clone(),
@@ -194,8 +185,6 @@ async fn run_agent(app: &AppHandle, run: &AgentRun, stop: &Arc<AtomicBool>) -> A
 }
 
 struct AgentJob {
-    app: AppHandle,
-    run_id: String,
     log_path: PathBuf,
     cwd: PathBuf,
     settings: AgentSettings,
@@ -295,13 +284,6 @@ fn stream_agent(job: &AgentJob) -> AppResult<Outcome> {
                 if let StreamEvent::Result { is_error, text, .. } = &event {
                     result = Some((*is_error, text.clone()));
                 }
-                let _ = job.app.emit(
-                    "agent-event",
-                    RunEvent {
-                        run_id: &job.run_id,
-                        event: &event,
-                    },
-                );
             }
             over_limit = turns > limit;
             !over_limit

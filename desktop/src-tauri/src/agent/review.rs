@@ -315,12 +315,7 @@ mod tests {
         let wt = fx.run("run-1", "Leak");
         fs::write(
             wt.path.join("env.txt"),
-            [
-                "key = sk-ant-",
-                "abcdefghijklmnopqrstuvwx
-",
-            ]
-            .concat(),
+            ["key = sk-ant-", "abcdefghijklmnopqrstuvwx\n"].concat(),
         )
         .expect("write");
 

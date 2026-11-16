@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { ChipGroup } from "@/components/ui/chips";
 import { Tabs } from "@/components/ui/tabs";
+import { AgentTab } from "@/features/agent/agent-tab";
 import { PlanBreakdown } from "@/features/agent/plan-breakdown";
 import { DocTab } from "@/features/docs/doc-tab";
 import { TimeTab } from "@/features/focus/time-tab";
@@ -74,6 +75,7 @@ export function ProjectPage() {
         </>
       )}
       {tab === "tasks" && <TasksTab projectId={id} />}
+      {tab === "agent" && <AgentTab projectId={id} />}
       {tab === "time" && <TimeTab projectId={id} />}
       {tab === "prompts" && <ProjectPromptsTab project={project.data} />}
       {tab === "save-points" && <SavePointsTab project={project.data} />}

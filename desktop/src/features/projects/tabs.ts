@@ -3,6 +3,7 @@ export const PROJECT_TABS = [
   "idea",
   "plan",
   "tasks",
+  "agent",
   "time",
   "prompts",
   "save-points",
@@ -28,6 +29,7 @@ export const TAB_GROUPS: TabGroup[] = [
     label: "Work",
     tabs: [
       { id: "tasks", label: "Tasks" },
+      { id: "agent", label: "Agent" },
       { id: "time", label: "Time" },
       { id: "prompts", label: "Prompts" },
     ],
