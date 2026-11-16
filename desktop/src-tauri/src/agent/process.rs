@@ -1,7 +1,9 @@
 use crate::error::{AppError, AppResult};
-use std::io::{ErrorKind, Read, Write};
+use std::io::{BufRead, BufReader, ErrorKind, Read, Write};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{self, RecvTimeoutError};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -48,6 +50,26 @@ pub struct Captured {
     pub stdout: String,
     pub stderr: String,
     pub success: bool,
+    pub code: Option<i32>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Ended {
+    Finished,
+    TimedOut,
+    /// the stop flag was raised
+    Stopped,
+    /// `on_line` asked to stop, for example at the turn limit
+    Cancelled,
+}
+
+#[derive(Debug)]
+pub struct Streamed {
+    pub ended: Ended,
+    /// the process exited with status 0; false for every other ending
+    pub success: bool,
+    pub code: Option<i32>,
+    pub stderr: String,
 }
 
 /// A command with an empty environment plus the allowlist, no console window, run in `cwd`.
@@ -65,7 +87,37 @@ pub fn command(program: &str, cwd: &Path) -> Command {
 }
 
 /// Runs `cmd` with `input` on stdin and waits for it, killing the whole process tree on timeout.
-pub fn run(mut cmd: Command, input: &str, timeout: Duration) -> AppResult<Captured> {
+pub fn run(cmd: Command, input: &str, timeout: Duration) -> AppResult<Captured> {
+    let mut stdout = String::new();
+    let never = AtomicBool::new(false);
+    let streamed = run_streaming(cmd, input, timeout, &never, |line| {
+        stdout.push_str(line);
+        stdout.push('\n');
+        true
+    })?;
+    match streamed.ended {
+        Ended::Finished => Ok(Captured {
+            stdout,
+            stderr: streamed.stderr,
+            success: streamed.success,
+            code: streamed.code,
+        }),
+        _ => Err(AppError::Agent(format!(
+            "Claude Code took longer than {} seconds and was stopped",
+            timeout.as_secs()
+        ))),
+    }
+}
+
+/// Like `run`, but hands each stdout line to `on_line` as it arrives. `on_line` returns false to
+/// kill the process. The process tree is also killed on timeout and when `stop` is raised.
+pub fn run_streaming(
+    mut cmd: Command,
+    input: &str,
+    timeout: Duration,
+    stop: &AtomicBool,
+    mut on_line: impl FnMut(&str) -> bool,
+) -> AppResult<Streamed> {
     let mut child = cmd
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -83,35 +135,59 @@ pub fn run(mut cmd: Command, input: &str, timeout: Duration) -> AppResult<Captur
             let _ = stdin.write_all(input.as_bytes());
         }
     });
-    let out = thread::spawn(move || drain(stdout));
+    let (lines, incoming) = mpsc::channel();
+    let reader = thread::spawn(move || read_lines(stdout, &lines));
     let err = thread::spawn(move || drain(stderr));
 
     let deadline = Instant::now() + timeout;
-    let status = loop {
-        if let Some(status) = child.try_wait()? {
-            break Some(status);
+    let mut stdout_closed = false;
+    let mut exit = None;
+    let ended = loop {
+        if stdout_closed {
+            thread::sleep(POLL);
+            if let Some(status) = child.try_wait()? {
+                exit = Some(status);
+                break Ended::Finished;
+            }
+        } else {
+            match incoming.recv_timeout(POLL) {
+                Ok(line) if !on_line(&line) => break Ended::Cancelled,
+                Ok(_) | Err(RecvTimeoutError::Timeout) => {}
+                Err(RecvTimeoutError::Disconnected) => stdout_closed = true,
+            }
+        }
+        if stop.load(Ordering::SeqCst) {
+            break Ended::Stopped;
         }
         if Instant::now() >= deadline {
-            kill_tree(&mut child);
-            let _ = child.wait();
-            break None;
+            break Ended::TimedOut;
         }
-        thread::sleep(POLL);
     };
+    if exit.is_none() {
+        kill_tree(&mut child);
+        let _ = child.wait();
+    }
 
     let _ = writer.join();
-    let stdout = out.join().unwrap_or_default();
-    let stderr = err.join().unwrap_or_default();
-    match status {
-        Some(status) => Ok(Captured {
-            stdout,
-            stderr,
-            success: status.success(),
-        }),
-        None => Err(AppError::Agent(format!(
-            "Claude Code took longer than {} seconds and was stopped",
-            timeout.as_secs()
-        ))),
+    let _ = reader.join();
+    Ok(Streamed {
+        ended,
+        success: exit.is_some_and(|status| status.success()),
+        code: exit.and_then(|status| status.code()),
+        stderr: err.join().unwrap_or_default(),
+    })
+}
+
+fn read_lines(pipe: Option<impl Read>, lines: &mpsc::Sender<String>) {
+    let Some(pipe) = pipe else { return };
+    let mut pipe = BufReader::new(pipe);
+    let mut raw = Vec::new();
+    while matches!(pipe.read_until(b'\n', &mut raw), Ok(n) if n > 0) {
+        let line = String::from_utf8_lossy(&raw).trim_end().to_string();
+        raw.clear();
+        if lines.send(line).is_err() {
+            return;
+        }
     }
 }
 
@@ -149,6 +225,7 @@ fn kill_tree(child: &mut Child) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
 
     fn shell(script: &str) -> Command {
         let mut cmd = command(
@@ -157,6 +234,14 @@ mod tests {
         );
         cmd.args([if cfg!(windows) { "/C" } else { "-c" }, script]);
         cmd
+    }
+
+    fn sleeper() -> &'static str {
+        if cfg!(windows) {
+            "echo first& ping -n 30 127.0.0.1 > nul"
+        } else {
+            "echo first; sleep 30"
+        }
     }
 
     #[test]
@@ -186,13 +271,8 @@ mod tests {
 
     #[test]
     fn a_slow_command_is_stopped_at_the_timeout() {
-        let script = if cfg!(windows) {
-            "ping -n 30 127.0.0.1 > nul"
-        } else {
-            "sleep 30"
-        };
         let started = Instant::now();
-        let err = run(shell(script), "", Duration::from_millis(400)).expect_err("timeout");
+        let err = run(shell(sleeper()), "", Duration::from_millis(400)).expect_err("timeout");
         assert!(started.elapsed() < Duration::from_secs(10));
         assert!(err.to_string().contains("was stopped"));
     }
@@ -202,5 +282,75 @@ mod tests {
         let cmd = command("kenchamios-no-such-program", &std::env::temp_dir());
         let err = run(cmd, "", Duration::from_secs(5)).expect_err("missing");
         assert!(err.to_string().contains("not found"));
+    }
+
+    #[test]
+    fn lines_arrive_one_by_one_and_the_exit_is_reported() {
+        let script = if cfg!(windows) {
+            "echo one& echo two"
+        } else {
+            "echo one; echo two"
+        };
+        let mut seen = Vec::new();
+        let never = AtomicBool::new(false);
+        let streamed = run_streaming(shell(script), "", Duration::from_secs(20), &never, |l| {
+            seen.push(l.to_string());
+            true
+        })
+        .expect("run");
+
+        assert_eq!(streamed.ended, Ended::Finished);
+        assert!(streamed.success);
+        assert_eq!(seen, ["one", "two"]);
+    }
+
+    #[test]
+    fn on_line_can_cancel_the_run() {
+        let never = AtomicBool::new(false);
+        let started = Instant::now();
+        let streamed = run_streaming(
+            shell(sleeper()),
+            "",
+            Duration::from_secs(60),
+            &never,
+            |_| false,
+        )
+        .expect("run");
+
+        assert_eq!(streamed.ended, Ended::Cancelled);
+        assert!(!streamed.success);
+        assert!(started.elapsed() < Duration::from_secs(10));
+    }
+
+    #[test]
+    fn the_stop_flag_ends_a_running_process() {
+        let stop = Arc::new(AtomicBool::new(false));
+        let raiser = stop.clone();
+        thread::spawn(move || {
+            thread::sleep(Duration::from_millis(300));
+            raiser.store(true, Ordering::SeqCst);
+        });
+        let started = Instant::now();
+        let streamed = run_streaming(shell(sleeper()), "", Duration::from_secs(60), &stop, |_| {
+            true
+        })
+        .expect("run");
+
+        assert_eq!(streamed.ended, Ended::Stopped);
+        assert!(started.elapsed() < Duration::from_secs(10));
+    }
+
+    #[test]
+    fn a_timeout_is_reported_as_timed_out() {
+        let never = AtomicBool::new(false);
+        let streamed = run_streaming(
+            shell(sleeper()),
+            "",
+            Duration::from_millis(400),
+            &never,
+            |_| true,
+        )
+        .expect("run");
+        assert_eq!(streamed.ended, Ended::TimedOut);
     }
 }

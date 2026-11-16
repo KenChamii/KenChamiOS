@@ -1,4 +1,5 @@
 mod activity;
+pub mod agent_runs;
 pub mod assets;
 pub mod backups;
 pub mod checklist;

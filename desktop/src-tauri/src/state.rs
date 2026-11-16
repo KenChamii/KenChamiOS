@@ -1,5 +1,6 @@
+use crate::agent::run::Runner;
 use crate::db::settings::ensure_device_id;
-use crate::db::{self, Db, restore, templates};
+use crate::db::{self, Db, agent_runs, restore, templates};
 use crate::error::AppResult;
 use crate::media::http::ReqwestClient;
 use crate::media::pacing::SystemClock;
@@ -27,6 +28,7 @@ pub struct AppState {
     pub timer: TimerService,
     pub metadata: MetadataService<ReqwestClient, KeyringStore, SystemClock>,
     pub sync: SyncService,
+    pub agent: Runner,
 }
 
 impl AppState {
@@ -39,6 +41,7 @@ impl AppState {
         let device_id = ensure_device_id(&pool, &hlc).await?;
         let db = Arc::new(Db::new(pool, hlc, device_id));
         templates::ensure_defaults(&db).await?;
+        agent_runs::fail_interrupted(&db).await?;
         let timer = TimerService::recover(&db).await?;
         let assets_dir = data_dir.join(ASSETS_DIR);
         let covers_dir = data_dir.join(COVERS_DIR);
@@ -56,6 +59,7 @@ impl AppState {
             timer,
             metadata,
             sync,
+            agent: Runner::default(),
         })
     }
 }
