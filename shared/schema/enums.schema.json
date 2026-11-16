@@ -3,6 +3,10 @@
   "$id": "enums.schema.json",
   "title": "KenChamiOS shared enums",
   "$defs": {
+    "agent_run_status": {
+      "type": "string",
+      "enum": ["queued", "running", "review", "done", "failed", "discarded"]
+    },
     "asset_kind": {
       "type": "string",
       "enum": ["screenshot", "link"]

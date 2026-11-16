@@ -113,6 +113,7 @@ mod tests {
             stdout: stdout.into(),
             stderr: String::new(),
             success: true,
+            code: Some(0),
         }
     }
 
@@ -187,6 +188,7 @@ mod tests {
             stdout: "boom".into(),
             stderr: "line one\nline two".into(),
             success: false,
+            code: Some(1),
         };
         let Err(e) = read_answer(&out) else {
             panic!("expected an error");

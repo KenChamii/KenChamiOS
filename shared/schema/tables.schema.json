@@ -4,6 +4,70 @@
   "title": "KenChamiOS table rows",
   "description": "One row per table as stored by the desktop migrations. Sync columns: id, created_at, updated_at, device_id, deleted.",
   "$defs": {
+    "agent_runs": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "desktop only: a coding agent run points at local worktrees, log files and a process",
+      "x-android": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "integer"
+        },
+        "updated_at": {
+          "type": "integer"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "enums.schema.json#/$defs/agent_run_status"
+        },
+        "branch": {
+          "type": ["string", "null"]
+        },
+        "worktree_path": {
+          "type": ["string", "null"]
+        },
+        "base_branch": {
+          "type": ["string", "null"]
+        },
+        "base_commit": {
+          "type": ["string", "null"]
+        },
+        "commit_sha": {
+          "type": ["string", "null"]
+        },
+        "feedback": {
+          "type": "string"
+        },
+        "error": {
+          "type": ["string", "null"]
+        },
+        "turns": {
+          "type": "integer"
+        },
+        "test_exit_code": {
+          "type": ["integer", "null"]
+        },
+        "log_path": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": ["integer", "null"]
+        },
+        "finished_at": {
+          "type": ["integer", "null"]
+        }
+      },
+      "required": ["id", "created_at", "updated_at", "project_id", "task_id", "status", "feedback", "turns", "log_path"],
+      "additionalProperties": false
+    },
     "activity": {
       "type": "object",
       "x-synced": true,
