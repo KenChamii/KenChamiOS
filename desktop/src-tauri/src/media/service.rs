@@ -3,7 +3,7 @@ use super::covers;
 use super::http::HttpClient;
 use super::musicbrainz::MusicBrainz;
 use super::pacing::{Clock, Limiter};
-use super::provider::{Metadata, MetadataProvider};
+use super::provider::{Airing, Metadata, MetadataProvider};
 use super::rawg::Rawg;
 use super::secrets::SecretStore;
 use super::tmdb::Tmdb;
@@ -21,6 +21,8 @@ const GAMES_KEY: &str = "rawg_api_key";
 const TMDB_TOKEN: &str = "tmdb_read_token";
 const DAY_MS: i64 = 24 * 60 * 60 * 1000;
 const SEARCH_TTL_MS: i64 = DAY_MS;
+// air dates move rarely, but a delay should show up the same day
+const AIRING_TTL_MS: i64 = 6 * 60 * 60 * 1000;
 const DETAILS_TTL_MS: i64 = 7 * DAY_MS;
 // musicbrainz allows about one request per second per ip, with a little room
 const MUSIC_GAP: Duration = Duration::from_millis(1100);
@@ -80,6 +82,35 @@ impl<H: HttpClient, S: SecretStore, C: Clock> MetadataService<H, S, C> {
             self.fetch_details(media_type, external_id),
         )
         .await
+    }
+
+    /// Next episodes of the given AniList anime and TMDB shows. Shows are skipped without a TMDB
+    /// token, and a show that cannot be read does not hide the others.
+    pub async fn upcoming(
+        &self,
+        db: &Db,
+        anilist_ids: &[String],
+        tv_ids: &[String],
+    ) -> AppResult<Vec<Airing>> {
+        let mut found = Vec::new();
+        if !anilist_ids.is_empty() {
+            let key = format!("airing:anilist:{}", anilist_ids.join(","));
+            let anilist = AniList::new(&self.http);
+            let fetch = anilist.airing(anilist_ids);
+            found.extend(cached(db, &key, AIRING_TTL_MS, fetch).await?);
+        }
+        let Ok(token) = self.tmdb_token() else {
+            return Ok(found);
+        };
+        for id in tv_ids {
+            let key = format!("airing:tmdb:{id}");
+            let tmdb = Tmdb::new(&self.http, &token);
+            let fetch = tmdb.next_episode(id);
+            if let Ok(Some(next)) = cached(db, &key, AIRING_TTL_MS, fetch).await {
+                found.push(next);
+            }
+        }
+        Ok(found)
     }
 
     pub async fn download_cover(
@@ -224,6 +255,26 @@ mod tests {
 
     fn service(http: FakeHttp) -> MetadataService<FakeHttp, MemorySecrets, FakeClock> {
         MetadataService::new(http, MemorySecrets::default(), FakeClock::default())
+    }
+
+    #[tokio::test]
+    async fn upcoming_is_cached_and_skips_shows_without_a_token() {
+        let db = Db::in_memory().await;
+        let service = service(FakeHttp::answering(
+            200,
+            r#"{"data":{"Page":{"media":[{"id":7,"nextAiringEpisode":{"airingAt":1795000000,"episode":3}}]}}}"#,
+        ));
+        let anime = ["7".to_string()];
+        let shows = ["tv/1399".to_string()];
+
+        let first = service.upcoming(&db, &anime, &shows).await.expect("first");
+        let second = service.upcoming(&db, &anime, &shows).await.expect("second");
+
+        assert_eq!(first, second);
+        assert_eq!(first.len(), 1);
+        assert_eq!(first[0].episode, 3);
+        // one AniList call, and no TMDB call because there is no token
+        assert_eq!(service.http.requests.borrow().len(), 1);
     }
 
     #[tokio::test]

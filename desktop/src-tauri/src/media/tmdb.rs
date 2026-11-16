@@ -1,5 +1,5 @@
 use super::http::{HttpClient, HttpRequest};
-use super::provider::{Metadata, MetadataProvider};
+use super::provider::{Airing, Metadata, MetadataProvider};
 use crate::domain::media::{ItemDetails, MediaType};
 use crate::error::{AppError, AppResult};
 use serde::Deserialize;
@@ -154,6 +154,56 @@ fn year_of(date: &str) -> Option<i64> {
     date.get(..4)?.parse().ok()
 }
 
+impl<H: HttpClient> Tmdb<'_, H> {
+    /// The next episode of a show, or `None` when no new episode is announced.
+    pub async fn next_episode(&self, external_id: &str) -> AppResult<Option<Airing>> {
+        let (kind, id) = Kind::parse(external_id)?;
+        if !matches!(kind, Kind::Tv) {
+            return Err(AppError::Invalid("only shows have episodes"));
+        }
+        let show: NextEpisodeShow = self.get(format!("tv/{id}"), Vec::new()).await?;
+        let Some(next) = show.next_episode_to_air else {
+            return Ok(None);
+        };
+        let (Some(date), Some(episode)) = (next.air_date, next.episode_number) else {
+            return Ok(None);
+        };
+        Ok(date_to_ms(&date).map(|air_at_ms| Airing {
+            external_id: external_id.to_string(),
+            episode,
+            air_at_ms,
+        }))
+    }
+}
+
+#[derive(Deserialize)]
+struct NextEpisodeShow {
+    next_episode_to_air: Option<NextEpisode>,
+}
+
+#[derive(Deserialize)]
+struct NextEpisode {
+    air_date: Option<String>,
+    episode_number: Option<i64>,
+}
+
+// TMDB only gives a day, so the episode is placed at the start of that day in UTC
+fn date_to_ms(date: &str) -> Option<i64> {
+    let mut parts = date.split('-').map(|part| part.parse::<i64>().ok());
+    let (year, month, day) = (parts.next()??, parts.next()??, parts.next()??);
+    if parts.next().is_some() || !(1..=12).contains(&month) || !(1..=31).contains(&day) {
+        return None;
+    }
+    // days since 1970-01-01 for a civil date
+    let year = if month <= 2 { year - 1 } else { year };
+    let era = year.div_euclid(400);
+    let year_of_era = year.rem_euclid(400);
+    let day_of_year = (153 * ((month + 9) % 12) + 2) / 5 + day - 1;
+    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
+    let days = era * 146_097 + day_of_era - 719_468;
+    Some(days * 86_400_000)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -296,5 +346,45 @@ mod tests {
         assert_eq!(year_of("1999-03-30"), Some(1999));
         assert_eq!(year_of(""), None);
         assert_eq!(year_of("tba"), None);
+    }
+
+    #[tokio::test]
+    async fn next_episode_reads_the_announced_air_date() {
+        let http = FakeHttp::answering(
+            200,
+            r#"{"id":1399,"next_episode_to_air":{"air_date":"2026-11-20","episode_number":4}}"#,
+        );
+
+        let next = Tmdb::new(&http, "token")
+            .next_episode("tv/1399")
+            .await
+            .expect("next");
+
+        assert_eq!(
+            next,
+            Some(Airing {
+                external_id: "tv/1399".into(),
+                episode: 4,
+                // 2026-11-20 00:00 UTC
+                air_at_ms: 1_795_132_800_000,
+            })
+        );
+    }
+
+    #[tokio::test]
+    async fn a_show_with_nothing_announced_has_no_next_episode() {
+        let http = FakeHttp::answering(200, r#"{"id":1399,"next_episode_to_air":null}"#);
+        let next = Tmdb::new(&http, "token").next_episode("tv/1399").await;
+        assert_eq!(next.expect("next"), None);
+        let movie = Tmdb::new(&http, "token").next_episode("movie/603").await;
+        assert!(matches!(movie, Err(AppError::Invalid(_))));
+    }
+
+    #[test]
+    fn dates_become_utc_midnight() {
+        assert_eq!(date_to_ms("1970-01-01"), Some(0));
+        assert_eq!(date_to_ms("2000-03-01"), Some(951_868_800_000));
+        assert_eq!(date_to_ms("not a date"), None);
+        assert_eq!(date_to_ms("2026-13-01"), None);
     }
 }

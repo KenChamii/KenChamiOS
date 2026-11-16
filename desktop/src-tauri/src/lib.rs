@@ -146,6 +146,7 @@ pub fn run() {
             commands::media::media_set_progress,
             commands::media::media_delete,
             commands::media::media_recommendations,
+            commands::media::media_upcoming,
             commands::reminders::reminders_idle_projects,
             commands::reminders::reminders_snooze,
             commands::reminders::reminders_idle_days_get,

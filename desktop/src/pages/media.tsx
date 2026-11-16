@@ -1,6 +1,6 @@
-import { ArrowDownUp, Dices, Film, Plus } from "lucide-react";
+import { ArrowDownUp, CalendarRange, Dices, Film, Plus } from "lucide-react";
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -14,6 +14,8 @@ import {
 import { LibraryToolbar, type ViewMode } from "@/features/media/library-toolbar";
 import { MediaCard } from "@/features/media/media-card";
 import { MediaRow } from "@/features/media/media-row";
+import { QueuesPanel } from "@/features/media/queues-panel";
+import { UpcomingPanel } from "@/features/media/upcoming-panel";
 import { PickerDialog } from "@/features/media/picker-dialog";
 import { TransferDialog } from "@/features/media/transfer-dialog";
 import { SearchDialog } from "@/features/media/search-dialog";
@@ -46,6 +48,12 @@ export function MediaPage() {
         icon={Film}
         area="media"
       >
+        <Button variant="outline" asChild>
+          <Link to="/media/year">
+            <CalendarRange size={16} />
+            Year in review
+          </Link>
+        </Button>
         <Button variant="outline" onClick={() => setTransferOpen(true)}>
           <ArrowDownUp size={16} />
           Import / export
@@ -59,6 +67,9 @@ export function MediaPage() {
           Add
         </Button>
       </PageHeader>
+
+      <UpcomingPanel onOpen={setOpenId} />
+      <QueuesPanel entries={entries} onOpen={setOpenId} />
 
       <LibraryToolbar
         filter={filter}

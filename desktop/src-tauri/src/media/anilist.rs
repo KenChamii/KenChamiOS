@@ -1,5 +1,5 @@
 use super::http::{HttpClient, HttpRequest};
-use super::provider::{Metadata, MetadataProvider};
+use super::provider::{Airing, Metadata, MetadataProvider};
 use super::text::plain_text;
 use crate::domain::media::{ItemDetails, MediaType};
 use crate::error::{AppError, AppResult};
@@ -9,6 +9,7 @@ use serde_json::json;
 const ENDPOINT: &str = "https://graphql.anilist.co";
 const MAX_RESPONSE_BYTES: usize = 1024 * 1024;
 const PER_PAGE: u32 = 20;
+const MAX_AIRING: usize = 50;
 
 const MEDIA_FIELDS: &str = "id title { romaji english } coverImage { large } episodes chapters \
      genres description(asHtml: false) startDate { year }";
@@ -170,6 +171,71 @@ impl Media {
     }
 }
 
+impl<H: HttpClient> AniList<'_, H> {
+    /// The next episode of each title that is still airing; finished titles are left out.
+    pub async fn airing(&self, ids: &[String]) -> AppResult<Vec<Airing>> {
+        let ids = ids
+            .iter()
+            .map(|id| {
+                id.parse::<u64>()
+                    .map_err(|_| AppError::Invalid("the AniList id must be a number"))
+            })
+            .collect::<AppResult<Vec<_>>>()?;
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let graphql = format!(
+            "query ($ids: [Int]) {{
+               Page(page: 1, perPage: {MAX_AIRING}) {{
+                 media(id_in: $ids, type: ANIME) {{ id nextAiringEpisode {{ airingAt episode }} }}
+               }}
+             }}"
+        );
+        let body = self.query(graphql, json!({ "ids": ids })).await?;
+        let reply: Reply<AiringPage> = parse(&body)?;
+        Ok(reply
+            .into_data()?
+            .page
+            .media
+            .into_iter()
+            .filter_map(|media| {
+                let next = media.next_airing_episode?;
+                Some(Airing {
+                    external_id: media.id?.to_string(),
+                    episode: next.episode?,
+                    air_at_ms: next.airing_at? * 1000,
+                })
+            })
+            .collect())
+    }
+}
+
+#[derive(Deserialize)]
+struct AiringPage {
+    #[serde(rename = "Page")]
+    page: AiringMedia,
+}
+
+#[derive(Deserialize)]
+struct AiringMedia {
+    #[serde(default)]
+    media: Vec<AiringEntry>,
+}
+
+#[derive(Deserialize)]
+struct AiringEntry {
+    id: Option<u64>,
+    #[serde(rename = "nextAiringEpisode")]
+    next_airing_episode: Option<NextAiring>,
+}
+
+#[derive(Deserialize)]
+struct NextAiring {
+    #[serde(rename = "airingAt")]
+    airing_at: Option<i64>,
+    episode: Option<i64>,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -224,6 +290,50 @@ mod tests {
                 .as_str()
                 .is_some_and(|q| q.contains("Page(page: 1"))
         );
+    }
+
+    #[tokio::test]
+    async fn airing_returns_the_next_episode_of_running_titles() {
+        let http = FakeHttp::answering(
+            200,
+            r#"{"data":{"Page":{"media":[
+                {"id":154587,"nextAiringEpisode":{"airingAt":1795000000,"episode":9}},
+                {"id":30013,"nextAiringEpisode":null}
+            ]}}}"#,
+        );
+
+        let found = AniList::new(&http)
+            .airing(&["154587".into(), "30013".into()])
+            .await
+            .expect("airing");
+
+        assert_eq!(
+            found,
+            [Airing {
+                external_id: "154587".into(),
+                episode: 9,
+                air_at_ms: 1_795_000_000_000,
+            }]
+        );
+        let body: serde_json::Value =
+            serde_json::from_str(http.requests.borrow()[0].body.as_deref().expect("body"))
+                .expect("json");
+        assert_eq!(body["variables"]["ids"], json!([154_587, 30_013]));
+    }
+
+    #[tokio::test]
+    async fn airing_without_ids_asks_nothing() {
+        let http = FakeHttp::default();
+        assert!(
+            AniList::new(&http)
+                .airing(&[])
+                .await
+                .expect("airing")
+                .is_empty()
+        );
+        assert!(http.requests.borrow().is_empty());
+        let bad = AniList::new(&http).airing(&["x".into()]).await;
+        assert!(matches!(bad, Err(AppError::Invalid(_))));
     }
 
     #[tokio::test]
