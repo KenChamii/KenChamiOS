@@ -10,6 +10,7 @@ pub mod docs;
 pub mod git;
 pub mod habits;
 pub mod jobs;
+pub mod mcp;
 pub mod media;
 pub mod media_transfer;
 pub mod metadata;

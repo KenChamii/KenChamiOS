@@ -4,6 +4,23 @@
   "title": "KenChamiOS table rows",
   "description": "One row per table as stored by the desktop migrations. Sync columns: id, created_at, updated_at, device_id, deleted.",
   "$defs": {
+    "mcp_calls": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "desktop only: a log of what outside agents did through the local MCP server",
+      "x-android": false,
+      "properties": {
+        "id": { "type": "integer" },
+        "at": { "type": "integer" },
+        "tool": { "type": "string" },
+        "args": { "type": "string" },
+        "ok": { "type": "integer" },
+        "summary": { "type": "string" },
+        "undo": { "type": ["string", "null"] },
+        "undone": { "type": "integer" }
+      },
+      "required": ["id", "at", "tool", "args", "ok", "summary", "undone"]
+    },
     "job_applications": {
       "type": "object",
       "x-synced": false,

@@ -2,6 +2,7 @@ use crate::agent::run::Runner;
 use crate::db::settings::ensure_device_id;
 use crate::db::{self, Db, agent_runs, restore, templates};
 use crate::error::AppResult;
+use crate::mcp::server::McpService;
 use crate::media::http::ReqwestClient;
 use crate::media::pacing::SystemClock;
 use crate::media::secrets::KeyringStore;
@@ -29,6 +30,7 @@ pub struct AppState {
     pub metadata: MetadataService<ReqwestClient, KeyringStore, SystemClock>,
     pub sync: SyncService,
     pub agent: Runner,
+    pub mcp: McpService,
 }
 
 impl AppState {
@@ -60,6 +62,7 @@ impl AppState {
             metadata,
             sync,
             agent: Runner::default(),
+            mcp: McpService::default(),
         })
     }
 }

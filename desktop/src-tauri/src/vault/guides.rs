@@ -20,11 +20,17 @@ Put the answer in the note region of today's daily file.\n";
 const CAPTURE: &str = "Take the text I give you and add it to `KenChamiOS/Inbox.md` as one list item per idea.\n\
 Do not change any line that is already there.\n";
 
-const FILES: [(&str, &str); 4] = [
+const JOBS: &str = "Read every file in `KenChamiOS/Jobs/` and `KenChamiOS/Dashboard.md`.
+List each application by stage, say who needs a follow-up, and suggest the next three actions.
+Do not edit the Details blocks; they are written by the app.
+";
+
+const FILES: [(&str, &str); 5] = [
     ("CLAUDE.md", VAULT_GUIDE),
     (".claude/commands/morning.md", MORNING),
     (".claude/commands/review.md", REVIEW),
     (".claude/commands/capture.md", CAPTURE),
+    (".claude/commands/jobs.md", JOBS),
 ];
 
 /// Writes the guide files the vault lacks; a file the user already has is never touched.
@@ -55,7 +61,7 @@ mod tests {
         fs::create_dir_all(&dir).expect("dir");
         let root = dir.to_str().expect("utf-8");
 
-        assert_eq!(write_missing(root).expect("first"), 4);
+        assert_eq!(write_missing(root).expect("first"), 5);
         fs::write(dir.join("CLAUDE.md"), "mine").expect("edit");
         assert_eq!(write_missing(root).expect("second"), 0);
 

@@ -11,6 +11,7 @@ pub mod graph;
 pub mod habits;
 mod handle;
 pub mod jobs;
+pub mod mcp_calls;
 pub mod media;
 pub mod media_import;
 pub mod metadata_cache;

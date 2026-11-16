@@ -5,6 +5,7 @@ mod domain;
 mod error;
 mod git;
 mod jobs;
+mod mcp;
 mod media;
 mod state;
 pub mod sync;
@@ -34,6 +35,10 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 handle.state::<AppState>().sync.resume().await;
             });
+            let handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                commands::mcp::resume(&handle.state::<AppState>()).await;
+            });
             timer::shell::setup(app.handle())?;
             jobs::start(app.handle());
             Ok(())
@@ -56,6 +61,13 @@ pub fn run() {
             commands::jobs::jobs_delete,
             commands::jobs::jobs_stats,
             commands::jobs::jobs_attention,
+            commands::mcp::mcp_status,
+            commands::mcp::mcp_set_enabled,
+            commands::mcp::mcp_new_token,
+            commands::mcp::mcp_undo,
+            commands::mcp::briefs_status,
+            commands::mcp::briefs_set_enabled,
+            commands::mcp::briefs_run,
             commands::agent::agent_settings_get,
             commands::agent::agent_settings_set,
             commands::agent::agent_runs_list,

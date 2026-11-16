@@ -1,3 +1,4 @@
+use crate::agent::brief;
 use crate::commands;
 use crate::db::due_reminders::{self, DueReminder};
 use crate::db::jobs::{self, DueStep};
@@ -61,8 +62,25 @@ async fn run_once(app: &AppHandle) {
         Ok(steps) => notify_steps(app, &steps),
         Err(error) => eprintln!("could not read job follow-ups: {error}"),
     }
+    write_due_briefs(app).await;
     if let Err(error) = backups::run_if_due(&state.db, &state.default_backups_dir).await {
         eprintln!("daily backup failed: {error}");
+    }
+}
+
+// a brief takes a minute or two, so it runs one at a time and a failure waits for the next tick
+async fn write_due_briefs(app: &AppHandle) {
+    let state = app.state::<AppState>();
+    let now = now_ms();
+    let Ok(due) = brief::due(&state.db, now).await else {
+        return;
+    };
+    for kind in due {
+        if let Err(error) = brief::run(&state.db, &state.data_dir, kind, now).await {
+            eprintln!("could not write the {} brief: {error}", kind.as_str());
+            // trying again every minute would run Claude over and over
+            return;
+        }
     }
 }
 
