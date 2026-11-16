@@ -5,6 +5,7 @@ import { DashboardPage } from "@/pages/dashboard";
 import { HabitsPage } from "@/pages/habits";
 import { InboxPage } from "@/pages/inbox";
 import { MediaPage } from "@/pages/media";
+import { MediaYearPage } from "@/pages/media-year";
 import { NotesPage } from "@/pages/notes";
 import { PlannerPage } from "@/pages/planner";
 import { ProjectPage } from "@/pages/project";
@@ -32,6 +33,7 @@ const router = createBrowserRouter([
       { path: "/projects/:id/:tab?", element: <ProjectPage /> },
       { path: "/workflow", element: <WorkflowPage /> },
       { path: "/media", element: <MediaPage /> },
+      { path: "/media/year", element: <MediaYearPage /> },
       { path: "/recap", element: <RecapPage /> },
       { path: "/settings/:section?", element: <SettingsPage /> },
     ],

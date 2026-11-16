@@ -18,6 +18,7 @@ import { cn } from "@/lib/cn";
 import { fromDateInput } from "@/lib/dates";
 import type { Day } from "@/lib/days";
 import { errorMessage } from "@/lib/errors";
+import { AutoScheduleButton } from "./auto-schedule-button";
 import { DEFAULT_ESTIMATE_MIN, formatMinutes } from "./capacity";
 import {
   FIRST_HOUR,
@@ -115,6 +116,7 @@ export function WeekBoard({ week, today }: WeekBoardProps) {
       onDragCancel={() => setDragging(null)}
     >
       {error && <p className="text-sm text-destructive">{errorMessage(error)}</p>}
+      <AutoScheduleButton planned={plannedTasks} focus={focus.data ?? []} />
       <div className="grid grid-cols-[14rem_1fr] items-start gap-4">
         <LooseList tasks={loose} today={today} />
         <div className="grid grid-cols-[2.5rem_repeat(7,minmax(0,1fr))] gap-x-1 rounded-2xl bg-card p-3 shadow-soft">

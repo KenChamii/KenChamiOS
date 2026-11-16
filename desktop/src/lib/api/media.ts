@@ -118,3 +118,10 @@ export type Recommendation = {
 export function listRecommendations(mediaType: MediaType | null) {
   return invoke<Recommendation[]>("media_recommendations", { mediaType });
 }
+
+export type UpcomingRelease = { entry: LibraryEntry; episode: number; air_at_ms: number };
+
+/** Next episodes of followed anime (AniList) and shows (TMDB), soonest first. */
+export function listUpcoming() {
+  return invoke<UpcomingRelease[]>("media_upcoming");
+}

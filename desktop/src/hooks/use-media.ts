@@ -8,6 +8,7 @@ import {
   gamesKeyStatus,
   listMedia,
   listRecommendations,
+  listUpcoming,
   searchMedia,
   setGamesKey,
   setTmdbToken,
@@ -126,5 +127,14 @@ export function useClearTmdbToken() {
   return useMutation({
     mutationFn: clearTmdbToken,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tmdb-token"] }),
+  });
+}
+
+export function useUpcoming() {
+  return useQuery({
+    queryKey: ["media", "upcoming"],
+    queryFn: listUpcoming,
+    // the core caches for hours, so asking again soon costs nothing
+    staleTime: 5 * 60_000,
   });
 }
