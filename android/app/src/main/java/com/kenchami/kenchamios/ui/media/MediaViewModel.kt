@@ -17,7 +17,11 @@ import javax.inject.Inject
 
 data class MediaFilters(val type: MediaType? = null, val status: MediaStatus? = null)
 
-data class MediaState(val filters: MediaFilters, val entries: List<LibraryEntry>)
+data class MediaState(
+    val filters: MediaFilters,
+    val entries: List<LibraryEntry>,
+    val queues: MediaQueues = MediaQueues(),
+)
 
 @HiltViewModel
 class MediaViewModel @Inject constructor(private val repository: MediaRepository) : ViewModel() {
@@ -30,6 +34,7 @@ class MediaViewModel @Inject constructor(private val repository: MediaRepository
                 (current.type == null || it.mediaType == current.type) &&
                     (current.status == null || it.status == current.status)
             },
+            mediaQueues(library, current.type),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MediaState(MediaFilters(), emptyList()))
 
