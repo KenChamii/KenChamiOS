@@ -4,6 +4,21 @@
   "title": "KenChamiOS table rows",
   "description": "One row per table as stored by the desktop migrations. Sync columns: id, created_at, updated_at, device_id, deleted.",
   "$defs": {
+    "vault_files": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "desktop only: describes files in this device's own Obsidian vault",
+      "x-android": false,
+      "properties": {
+        "path": { "type": "string" },
+        "kco_id": { "type": "string" },
+        "hash": { "type": "string" },
+        "app_hash": { "type": "string" },
+        "mtime": { "type": "integer" },
+        "synced_at": { "type": "integer" }
+      },
+      "required": ["path", "kco_id", "hash", "app_hash", "mtime", "synced_at"]
+    },
     "agent_runs": {
       "type": "object",
       "x-synced": false,

@@ -2,7 +2,7 @@ mod apply;
 mod backup;
 #[cfg(test)]
 mod change_log_tests;
-mod codes;
+pub mod codes;
 #[cfg(test)]
 mod convergence_tests;
 mod export;

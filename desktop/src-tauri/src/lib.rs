@@ -9,6 +9,7 @@ mod media;
 mod state;
 pub mod sync;
 mod timer;
+mod vault;
 mod workflow;
 
 use state::AppState;
@@ -41,6 +42,12 @@ pub fn run() {
             commands::app_info::app_info,
             commands::agent::agent_plan_preview,
             commands::agent::agent_plan_create,
+            commands::vault::vault_status,
+            commands::vault::vault_set_path,
+            commands::vault::vault_set_enabled,
+            commands::vault::vault_set_excluded,
+            commands::vault::vault_preview,
+            commands::vault::vault_sync_now,
             commands::agent::agent_settings_get,
             commands::agent::agent_settings_set,
             commands::agent::agent_runs_list,

@@ -5,6 +5,7 @@ import {
   DatabaseBackup,
   FileText,
   Film,
+  Gem,
   Info,
   Settings,
   SlidersHorizontal,
@@ -23,6 +24,7 @@ import { SourceCredits } from "@/features/media/source-credits";
 import { TmdbTokenCard } from "@/features/media/tmdb-token-card";
 import { PlannerSettingsCard } from "@/features/planner/planner-settings";
 import { ReminderSettingsCard } from "@/features/reminders/reminder-settings";
+import { VaultCard } from "@/features/vault/vault-card";
 import { SyncCard } from "@/features/sync/sync-card";
 import { TemplateSettings } from "@/features/workflow/template-settings";
 import { getAppInfo } from "@/lib/api/app";
@@ -46,6 +48,7 @@ const SECTIONS: Section[] = [
       </>
     ),
   },
+  { id: "obsidian", label: "Obsidian", icon: Gem, content: () => <VaultCard /> },
   { id: "sync", label: "Sync", icon: Smartphone, content: () => <SyncCard /> },
   { id: "planner", label: "Planner", icon: CalendarDays, content: () => <PlannerSettingsCard /> },
   { id: "reminders", label: "Reminders", icon: Bell, content: () => <ReminderSettingsCard /> },

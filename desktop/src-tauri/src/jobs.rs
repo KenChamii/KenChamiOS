@@ -1,17 +1,21 @@
+use crate::commands;
 use crate::db::due_reminders::{self, DueReminder};
-use crate::db::{backups, now_ms};
+use crate::db::{backups, now_ms, vault};
 use crate::state::AppState;
 use std::time::Duration;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_notification::NotificationExt;
 
 const APP_NAME: &str = "KenChamiOs";
 const EVERY: Duration = Duration::from_secs(60);
 // more due tasks than this become one summary notification
 const MAX_SEPARATE: usize = 3;
+// edits in either place reach the other within about this long
+const VAULT_EVERY: Duration = Duration::from_secs(30);
 
-/// Background work once a minute: due task reminders and the daily backup.
+/// Background work: due task reminders and the daily backup once a minute, the vault sync more often.
 pub fn start(app: &AppHandle) {
+    start_vault(app);
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
         loop {
@@ -19,6 +23,31 @@ pub fn start(app: &AppHandle) {
             tokio::time::sleep(EVERY).await;
         }
     });
+}
+
+fn start_vault(app: &AppHandle) {
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        loop {
+            sync_vault(&app).await;
+            tokio::time::sleep(VAULT_EVERY).await;
+        }
+    });
+}
+
+// only when the user turned it on and the folder is there
+async fn sync_vault(app: &AppHandle) {
+    let state = app.state::<AppState>();
+    if !matches!(vault::enabled(&state.db).await, Ok(true)) {
+        return;
+    }
+    match commands::vault::sync_once(&state).await {
+        Ok(report) if !report.changes.is_empty() => {
+            let _ = app.emit("vault-synced", report);
+        }
+        Ok(_) => {}
+        Err(error) => eprintln!("vault sync failed: {error}"),
+    }
 }
 
 async fn run_once(app: &AppHandle) {

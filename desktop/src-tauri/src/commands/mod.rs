@@ -26,3 +26,4 @@ pub mod templates;
 pub mod time_entries;
 pub mod timer;
 pub mod trash;
+pub mod vault;

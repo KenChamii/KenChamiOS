@@ -4,12 +4,14 @@ import { DayFlowDialog } from "@/features/planner/day-flow-dialog";
 import { QuickAddDialog } from "@/features/quick-add/quick-add-dialog";
 import { useShortcuts } from "@/hooks/use-shortcuts";
 import { useRefreshOnSync } from "@/hooks/use-sync";
+import { useVaultEvents } from "@/hooks/use-vault";
 import { ShortcutsDialog } from "./shortcuts-dialog";
 import { Sidebar } from "./sidebar";
 import { Toaster } from "./toaster";
 
 export function Layout() {
   useRefreshOnSync();
+  useVaultEvents();
   useShortcuts();
   // animate between pages, not between the tabs of one project
   const page = useLocation().pathname.split("/").slice(0, 3).join("/");
