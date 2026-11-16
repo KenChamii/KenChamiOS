@@ -60,6 +60,7 @@ export function GraphPage() {
 
   function open(node: GraphNode) {
     if (node.kind === "project") navigate(`/projects/${node.id.slice("project:".length)}`);
+    else if (node.kind === "job") navigate("/jobs");
     else if (node.kind === "daily") navigate(`/notes?day=${node.label}`);
     else if (node.kind === "note" && node.path && vault.data) {
       void openUrl(obsidianUrl(vault.data.path, node.path));

@@ -6,7 +6,7 @@ use crate::error::{AppError, AppResult};
 
 const MAX_ITEMS: i64 = 200;
 
-/// Deleted projects, tasks, prompts, save points, media and habits, newest first.
+/// Deleted projects, tasks, prompts, save points, media, habits and applications, newest first.
 pub async fn list(db: &Db) -> AppResult<Vec<TrashItem>> {
     // updated_at is an hlc, its upper bits are the wall clock in ms
     let rows = sqlx::query_as(
@@ -37,6 +37,10 @@ pub async fn list(db: &Db) -> AppResult<Vec<TrashItem>> {
          SELECT 'habit', h.id, h.name, NULL, h.updated_at >> 16
            FROM habits h
           WHERE h.deleted = 1
+         UNION ALL
+         SELECT 'job', j.id, j.role, j.company, j.updated_at >> 16
+           FROM job_applications j
+          WHERE j.deleted = 1
          ORDER BY deleted_at DESC, id
          LIMIT ?2",
     )
@@ -129,6 +133,16 @@ fn plan(kind: TrashKind) -> Plan {
                   WHERE id = (SELECT media_item_id FROM media_entries WHERE id = ?3)
                     AND deleted = 1 AND updated_at >= ?4",
                 "UPDATE media_entries SET deleted = 0, updated_at = ?1, device_id = ?2
+                  WHERE id = ?3 AND deleted = 1 AND updated_at >= ?4",
+            ],
+        },
+        TrashKind::Job => Plan {
+            what: "deleted application",
+            entity_type: "job",
+            activity_kind: "job.restored",
+            stamp_sql: "SELECT updated_at FROM job_applications WHERE id = ? AND deleted = 1",
+            updates: &[
+                "UPDATE job_applications SET deleted = 0, updated_at = ?1, device_id = ?2
                   WHERE id = ?3 AND deleted = 1 AND updated_at >= ?4",
             ],
         },

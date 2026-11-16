@@ -7,6 +7,14 @@
       "type": "string",
       "enum": ["queued", "running", "review", "done", "failed", "discarded"]
     },
+    "job_source": {
+      "type": "string",
+      "enum": ["linkedin", "company_site", "job_board", "referral", "recruiter", "other"]
+    },
+    "job_stage": {
+      "type": "string",
+      "enum": ["saved", "applied", "screening", "interview", "offer", "accepted", "rejected", "withdrawn"]
+    },
     "asset_kind": {
       "type": "string",
       "enum": ["screenshot", "link"]

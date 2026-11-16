@@ -5,6 +5,8 @@ export const KINDS: { id: GraphKind; label: string }[] = [
   { id: "project", label: "Projects" },
   { id: "daily", label: "Days" },
   { id: "tag", label: "Tags" },
+  { id: "job", label: "Applications" },
+  { id: "company", label: "Companies" },
 ];
 
 export type ViewOptions = {

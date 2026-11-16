@@ -1,4 +1,4 @@
-use super::{Db, projects};
+use super::{Db, jobs, now_ms, projects};
 use crate::domain::project::{INBOX_ID, ProjectFilter};
 use crate::error::AppResult;
 use serde::Serialize;
@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct GraphNode {
     pub id: String,
-    /// `note`, `project`, `daily` or `tag`
+    /// `note`, `project`, `daily`, `tag`, `job` or `company`
     pub kind: &'static str,
     pub label: String,
     /// the note's path inside the vault, for opening it in Obsidian
@@ -32,6 +32,8 @@ fn kind_of(id: &str) -> &'static str {
         Some("project") => "project",
         Some("daily") => "daily",
         Some("tag") => "tag",
+        Some("job") => "job",
+        Some("company") => "company",
         _ => "note",
     }
 }
@@ -70,13 +72,25 @@ pub async fn data(db: &Db) -> AppResult<GraphData> {
             },
         );
     }
+    for view in jobs::list(db, now_ms()).await? {
+        let id = format!("job:{}", view.job.id);
+        nodes.insert(
+            id.clone(),
+            GraphNode {
+                id,
+                kind: "job",
+                label: format!("{} - {}", view.job.company, view.job.role),
+                path: None,
+            },
+        );
+    }
     let edges: Vec<GraphEdge> =
         sqlx::query_as("SELECT source_id AS source, target_id AS target, kind FROM links")
             .fetch_all(&db.pool)
             .await?;
     // only days and tags are made up by a link; a note or project must exist already
     for id in edges.iter().flat_map(|e| [&e.source, &e.target]) {
-        if matches!(kind_of(id), "note" | "project") {
+        if matches!(kind_of(id), "note" | "project" | "job") {
             continue;
         }
         nodes.entry(id.clone()).or_insert_with(|| GraphNode {

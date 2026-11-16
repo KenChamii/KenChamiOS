@@ -1,7 +1,7 @@
 use super::dates::{day_string, days_of, parse_day};
 use super::notes::{self, ParsedNote};
 use super::specs::APP_DIR;
-use crate::db::{Db, planner, projects};
+use crate::db::{Db, jobs, planner, projects};
 use crate::domain::project::{INBOX_ID, ProjectFilter};
 use crate::error::AppResult;
 use serde::Serialize;
@@ -107,7 +107,21 @@ pub async fn refresh(db: &Db, root: &str, now: i64) -> AppResult<IndexStats> {
         .map(|p| (p.name.to_lowercase(), p.id.as_str()))
         .collect();
 
+    let applications = jobs::list(db, now).await?;
+    let by_company: HashMap<String, String> = applications
+        .iter()
+        .map(|view| {
+            let name = view.job.company.to_lowercase();
+            (name.clone(), format!("company:{name}"))
+        })
+        .collect();
+
     let mut links: Vec<Link> = Vec::new();
+    for view in &applications {
+        let id = format!("job:{}", view.job.id);
+        let company = format!("company:{}", view.job.company.to_lowercase());
+        links.push((id, "job", company, "company", "company"));
+    }
     for note in &found {
         for name in &note.parsed.links {
             let key = name.to_lowercase();
@@ -119,6 +133,14 @@ pub async fn refresh(db: &Db, root: &str, now: i64) -> AppResult<IndexStats> {
                     "note",
                     target.id.clone(),
                     "note",
+                    "wikilink",
+                ));
+            } else if let Some(company) = by_company.get(&key) {
+                links.push((
+                    note.id.clone(),
+                    "note",
+                    company.clone(),
+                    "company",
                     "wikilink",
                 ));
             } else if let Some(id) = by_project.get(&key) {
@@ -342,5 +364,37 @@ mod tests {
 
         assert_eq!(stats, IndexStats { notes: 1, links: 0 });
         assert!(all_links(&db).await.is_empty());
+    }
+}
+
+#[cfg(test)]
+mod job_tests {
+    use super::*;
+    use crate::vault::sync::job_from_file;
+
+    #[tokio::test]
+    async fn applications_link_to_their_company_and_notes_can_link_to_it() {
+        let db = Db::in_memory().await;
+        let job = jobs::create(&db, job_from_file("Acme - Engineer", ""))
+            .await
+            .expect("job");
+        let dir =
+            std::env::temp_dir().join(format!("kenchamios-index-jobs-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).expect("dir");
+        fs::write(dir.join("Idea.md"), "worth a call to [[Acme]]").expect("write");
+
+        refresh(&db, dir.to_str().expect("utf-8"), 0)
+            .await
+            .expect("refresh");
+
+        let links: Vec<(String, String)> =
+            sqlx::query_as("SELECT source_id, target_id FROM links ORDER BY source_id")
+                .fetch_all(&db.pool)
+                .await
+                .expect("links");
+        assert!(links.contains(&(format!("job:{}", job.id), "company:acme".to_string())));
+        assert!(links.contains(&("note:Idea.md".to_string(), "company:acme".to_string())));
+        let _ = fs::remove_dir_all(&dir);
     }
 }

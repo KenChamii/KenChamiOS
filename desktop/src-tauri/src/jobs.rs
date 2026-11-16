@@ -1,5 +1,6 @@
 use crate::commands;
 use crate::db::due_reminders::{self, DueReminder};
+use crate::db::jobs::{self, DueStep};
 use crate::db::{backups, now_ms, vault};
 use crate::state::AppState;
 use std::time::Duration;
@@ -56,6 +57,10 @@ async fn run_once(app: &AppHandle) {
         Ok(due) => notify_due(app, &due),
         Err(error) => eprintln!("could not read due tasks: {error}"),
     }
+    match jobs::take_due_steps(&state.db, now_ms()).await {
+        Ok(steps) => notify_steps(app, &steps),
+        Err(error) => eprintln!("could not read job follow-ups: {error}"),
+    }
     if let Err(error) = backups::run_if_due(&state.db, &state.default_backups_dir).await {
         eprintln!("daily backup failed: {error}");
     }
@@ -69,6 +74,29 @@ fn notify_due(app: &AppHandle, due: &[DueReminder]) {
             .map(|task| format!("Due today: {} ({})", task.title, task.project_name))
             .collect()
     };
+    show_all(app, bodies);
+}
+
+fn notify_steps(app: &AppHandle, steps: &[DueStep]) {
+    let bodies: Vec<String> = if steps.len() > MAX_SEPARATE {
+        vec![format!("{} job follow-ups are due", steps.len())]
+    } else {
+        steps
+            .iter()
+            .map(|step| {
+                let what = if step.next_step.is_empty() {
+                    "Follow up"
+                } else {
+                    step.next_step.as_str()
+                };
+                format!("{what}: {} at {}", step.role, step.company)
+            })
+            .collect()
+    };
+    show_all(app, bodies);
+}
+
+fn show_all(app: &AppHandle, bodies: Vec<String>) {
     for body in bodies {
         let result = app
             .notification()

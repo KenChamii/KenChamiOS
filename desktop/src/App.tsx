@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "@/components/layout/layout";
 import { DashboardPage } from "@/pages/dashboard";
 import { GraphPage } from "@/pages/graph";
+import { JobsPage } from "@/pages/jobs";
 import { HabitsPage } from "@/pages/habits";
 import { InboxPage } from "@/pages/inbox";
 import { MediaPage } from "@/pages/media";
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "/planner", element: <PlannerPage /> },
       { path: "/notes", element: <NotesPage /> },
       { path: "/graph", element: <GraphPage /> },
+      { path: "/jobs", element: <JobsPage /> },
       { path: "/review", element: <WeeklyReviewPage /> },
       { path: "/habits", element: <HabitsPage /> },
       { path: "/trash", element: <TrashPage /> },

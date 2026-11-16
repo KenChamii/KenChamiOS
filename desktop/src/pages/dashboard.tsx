@@ -10,6 +10,7 @@ import { RecommendationsCard } from "@/features/dashboard/recommendations-card";
 import { ThisWeekCard } from "@/features/dashboard/this-week-card";
 import { TimelineCard } from "@/features/dashboard/timeline-card";
 import { TodayCard } from "@/features/dashboard/today-card";
+import { JobFollowups } from "@/features/dashboard/job-followups";
 import { IdleCard } from "@/features/reminders/idle-card";
 import { toDateInput } from "@/lib/dates";
 import { useOverlays } from "@/stores/overlays";
@@ -59,6 +60,7 @@ export function DashboardPage() {
       <FirstRunChecklist />
       <Hero now={now} />
       <IdleCard />
+      <JobFollowups />
       <div className="grid grid-cols-[repeat(auto-fit,minmax(22rem,1fr))] items-start gap-6">
         <TodayCard now={now} />
         <ThisWeekCard now={now} />

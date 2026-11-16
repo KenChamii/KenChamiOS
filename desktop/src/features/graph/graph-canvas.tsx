@@ -10,6 +10,8 @@ const KIND_VARS: Record<GraphKind, string> = {
   project: "--projects",
   daily: "--focus",
   tag: "--media",
+  job: "--accent",
+  company: "--muted-foreground",
 };
 
 function kindColor(kind: GraphKind): string {

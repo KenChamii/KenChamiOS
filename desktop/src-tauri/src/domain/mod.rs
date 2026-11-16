@@ -12,6 +12,7 @@ mod doc;
 pub mod export;
 pub mod habit;
 pub mod idle;
+pub mod job;
 pub mod media;
 pub mod media_transfer;
 pub mod order_key;

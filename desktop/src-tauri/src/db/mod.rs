@@ -10,6 +10,7 @@ pub mod due_reminders;
 pub mod graph;
 pub mod habits;
 mod handle;
+pub mod jobs;
 pub mod media;
 pub mod media_import;
 pub mod metadata_cache;

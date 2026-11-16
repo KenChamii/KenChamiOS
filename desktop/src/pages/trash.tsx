@@ -16,6 +16,7 @@ const KIND_LABELS: Record<TrashKind, string> = {
   save_point: "Save point",
   media: "Media",
   habit: "Habit",
+  job: "Application",
 };
 
 export function TrashPage() {

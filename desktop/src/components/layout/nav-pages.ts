@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   CalendarDays,
   Film,
   FolderKanban,
@@ -30,6 +31,7 @@ export const NAV_PAGES: NavPage[] = [
   { to: "/notes", label: "Notes", icon: NotebookPen, area: "focus", key: "n" },
   { to: "/graph", label: "Graph", icon: Waypoints, area: "media", key: "g" },
   { to: "/projects", label: "Projects", icon: FolderKanban, area: "projects", key: "p" },
+  { to: "/jobs", label: "Jobs", icon: Briefcase, area: "projects", key: "j" },
   { to: "/workflow", label: "Workflow", icon: GitBranch, area: "workflow", key: "w" },
   { to: "/media", label: "Media", icon: Film, area: "media", key: "m" },
   { to: "/habits", label: "Habits", icon: Repeat, area: "focus", key: "h" },

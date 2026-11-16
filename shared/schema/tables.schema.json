@@ -4,6 +4,46 @@
   "title": "KenChamiOS table rows",
   "description": "One row per table as stored by the desktop migrations. Sync columns: id, created_at, updated_at, device_id, deleted.",
   "$defs": {
+    "job_applications": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "desktop only until the Android jobs screen is built",
+      "x-android": false,
+      "properties": {
+        "id": { "type": "string" },
+        "created_at": { "type": "integer" },
+        "updated_at": { "type": "integer" },
+        "device_id": { "type": "string" },
+        "deleted": { "type": "integer", "enum": [0, 1] },
+        "company": { "type": "string" },
+        "role": { "type": "string" },
+        "url": { "type": "string" },
+        "location": { "type": "string" },
+        "salary": { "type": "string" },
+        "source": { "$ref": "enums.schema.json#/$defs/job_source" },
+        "stage": { "$ref": "enums.schema.json#/$defs/job_stage" },
+        "applied_on": { "type": ["string", "null"] },
+        "contact": { "type": "string" },
+        "resume_version": { "type": "string" },
+        "next_step": { "type": "string" },
+        "next_step_at": { "type": ["integer", "null"] },
+        "notes_md": { "type": "string" },
+        "stage_changed_at": { "type": "integer" }
+      },
+      "required": ["id", "created_at", "updated_at", "device_id", "deleted", "company", "role", "url", "location", "salary", "source", "stage", "contact", "resume_version", "next_step", "notes_md", "stage_changed_at"]
+    },
+    "job_stage_log": {
+      "type": "object",
+      "x-synced": false,
+      "x-not-synced-reason": "desktop only: history behind the time-per-stage numbers",
+      "x-android": false,
+      "properties": {
+        "job_id": { "type": "string" },
+        "stage": { "type": "string" },
+        "entered_at": { "type": "integer" }
+      },
+      "required": ["job_id", "stage", "entered_at"]
+    },
     "vault_notes": {
       "type": "object",
       "x-synced": false,

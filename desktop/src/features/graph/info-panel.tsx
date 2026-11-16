@@ -3,7 +3,14 @@ import { Card } from "@/components/ui/card";
 import type { GraphData, GraphNode } from "@/lib/api/vault";
 import { neighborsOf, nodeTitle } from "./model";
 
-const KIND_LABEL = { note: "Note", project: "Project", daily: "Day", tag: "Tag" } as const;
+const KIND_LABEL = {
+  note: "Note",
+  project: "Project",
+  daily: "Day",
+  tag: "Tag",
+  job: "Application",
+  company: "Company",
+} as const;
 
 type Props = {
   node: GraphNode;
@@ -28,7 +35,7 @@ export function InfoPanel({ node, graph, onSelect, onOpen, onLocal, isLocal }: P
         <span className="text-sm text-muted-foreground">{linked.length} connections</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {node.kind !== "tag" && (
+        {node.kind !== "tag" && node.kind !== "company" && (
           <Button size="sm" onClick={onOpen}>
             {node.kind === "note" ? "Open in Obsidian" : "Open"}
           </Button>

@@ -1,7 +1,7 @@
 use super::dates::{day_start_ms, day_string, days_of, iso_week, monday_of, parse_day};
 use super::file::{Front, Region};
 use crate::db::{Db, now_ms};
-use crate::db::{daily_notes, docs, planner, projects, tasks, vault};
+use crate::db::{daily_notes, docs, jobs, planner, projects, tasks, vault};
 use crate::domain::project::{INBOX_ID, ProjectFilter};
 use crate::domain::{DocKind, TaskStatus};
 use crate::error::AppResult;
@@ -18,6 +18,7 @@ const DASHBOARD_TASKS: usize = 20;
 pub enum Target {
     Daily { day: String },
     Project { id: String },
+    Job { id: String },
     Dashboard,
     Review,
 }
@@ -25,7 +26,10 @@ pub enum Target {
 impl Target {
     /// Daily notes and project docs can be written in the vault; the rest only flow out.
     pub fn two_way(&self) -> bool {
-        matches!(self, Self::Daily { .. } | Self::Project { .. })
+        matches!(
+            self,
+            Self::Daily { .. } | Self::Project { .. } | Self::Job { .. }
+        )
     }
 }
 
@@ -135,6 +139,76 @@ pub async fn project_specs(db: &Db) -> AppResult<Vec<Spec>> {
         });
     }
     Ok(specs)
+}
+
+/// One file per live application: its notes both ways, its fields app to vault.
+pub async fn job_specs(db: &Db) -> AppResult<Vec<Spec>> {
+    let mut taken = HashSet::new();
+    let mut specs = Vec::new();
+    for view in jobs::list(db, now_ms()).await? {
+        let job = view.job;
+        let mut name = file_name(&format!("{} - {}", job.company, job.role));
+        if !taken.insert(name.to_lowercase()) {
+            name = format!("{name} {}", job.id.chars().take(6).collect::<String>());
+        }
+        let mut details = vec![
+            format!("- Stage: {}", job.stage.as_str()),
+            format!("- Company: {}", job.company),
+            format!("- Role: {}", job.role),
+        ];
+        for (label, value) in [
+            ("Posting", job.url.as_str()),
+            ("Location", job.location.as_str()),
+            ("Salary", job.salary.as_str()),
+            ("Contact", job.contact.as_str()),
+            ("Resume", job.resume_version.as_str()),
+            ("Next step", job.next_step.as_str()),
+        ] {
+            if !value.is_empty() {
+                details.push(format!("- {label}: {value}"));
+            }
+        }
+        if let Some(day) = &job.applied_on {
+            details.push(format!("- Applied: {day}"));
+        }
+        specs.push(Spec {
+            path: format!("{APP_DIR}/Jobs/{name}.md"),
+            front: front(&format!("job:{}", job.id), "job"),
+            title: format!("{} - {}", job.company, job.role),
+            regions: vec![
+                Region {
+                    name: "notes",
+                    heading: "Notes",
+                    content: job.notes_md.trim().to_string(),
+                },
+                Region {
+                    name: "details",
+                    heading: "Details",
+                    content: details.join(
+                        "
+",
+                    ),
+                },
+            ],
+            target: Target::Job { id: job.id.clone() },
+            tick_tasks: Vec::new(),
+        });
+    }
+    Ok(specs)
+}
+
+// a file name that is safe on Windows and in Obsidian
+fn file_name(text: &str) -> String {
+    let cleaned: String = text
+        .chars()
+        .map(|c| {
+            let unsafe_char = [
+                '\\', '/', ':', '*', '?', '"', '<', '>', '|', '#', '^', '[', ']',
+            ];
+            if unsafe_char.contains(&c) { '-' } else { c }
+        })
+        .collect();
+    cleaned.trim().chars().take(120).collect()
 }
 
 /// Open projects with progress, and what is planned for today.
@@ -248,6 +322,7 @@ pub async fn all(db: &Db, now: i64, extra_days: &[String]) -> AppResult<Vec<Spec
         specs.push(daily(db, day).await?);
     }
     specs.extend(project_specs(db).await?);
+    specs.extend(job_specs(db).await?);
     specs.push(dashboard(db, &today_text).await?);
     let monday = monday_of(today);
     specs.push(review(db, monday).await?);

@@ -333,3 +333,71 @@ async fn a_missing_vault_is_refused() {
     .await;
     assert!(result.is_err());
 }
+
+fn job_input(company: &str, role: &str) -> crate::domain::job::JobInput {
+    crate::vault::sync::job_from_file(&format!("{company} - {role}"), "")
+}
+
+#[tokio::test]
+async fn an_application_gets_a_note_whose_text_goes_both_ways() {
+    let env = Env::new("jobs").await;
+    let job = crate::db::jobs::create(&env.db, job_input("Acme", "Engineer"))
+        .await
+        .expect("job");
+    env.sync().await;
+    let path = "KenChamiOS/Jobs/Acme - Engineer.md";
+    let text = env.read(path);
+    assert!(text.contains("- Stage: saved") && text.contains("kco_id: job:"));
+
+    env.write(
+        path,
+        &text.replace(
+            "<!-- kco:start notes -->\n\n<!-- kco:end notes -->",
+            "<!-- kco:start notes -->\ncall went well\n<!-- kco:end notes -->",
+        ),
+    );
+    env.sync().await;
+    let stored = crate::db::jobs::get(&env.db, &job.id).await.expect("job");
+    assert_eq!(stored.notes_md, "call went well");
+
+    crate::db::jobs::move_stage(
+        &env.db,
+        &job.id,
+        crate::domain::job::JobStage::Applied,
+        TODAY,
+    )
+    .await
+    .expect("move");
+    let report = env.sync().await;
+    assert!(env.read(path).contains("- Stage: applied"));
+    assert!(env.read(path).contains("call went well"));
+    assert!(report.changes.iter().all(|c| c.kind != Kind::Conflict));
+}
+
+#[tokio::test]
+async fn a_new_file_in_jobs_creates_an_application() {
+    let env = Env::new("newjob").await;
+    env.write("KenChamiOS/Jobs/Beta Corp - Designer.md", "met the team\n");
+
+    env.sync().await;
+
+    let all = crate::db::jobs::list(&env.db, env.now).await.expect("list");
+    assert_eq!(all.len(), 1);
+    assert_eq!(
+        (all[0].job.company.as_str(), all[0].job.role.as_str()),
+        ("Beta Corp", "Designer")
+    );
+    assert_eq!(all[0].job.notes_md, "met the team");
+    assert!(
+        env.read("KenChamiOS/Jobs/Beta Corp - Designer.md")
+            .contains("kco_id: job:")
+    );
+    assert_eq!(env.sync().await.changes.len(), 0, "nothing left to do");
+    assert_eq!(
+        crate::db::jobs::list(&env.db, env.now)
+            .await
+            .expect("list")
+            .len(),
+        1
+    );
+}

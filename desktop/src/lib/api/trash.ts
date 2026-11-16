@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 
-export type TrashKind = "project" | "task" | "prompt" | "save_point" | "media" | "habit";
+export type TrashKind = "project" | "task" | "prompt" | "save_point" | "media" | "habit" | "job";
 
 export type TrashItem = {
   kind: TrashKind;

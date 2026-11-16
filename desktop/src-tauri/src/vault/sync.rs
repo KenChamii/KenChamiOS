@@ -2,7 +2,8 @@ use super::dates::parse_day;
 use super::file::{self, Region};
 use super::specs::{self, APP_DIR, Spec, Target};
 use crate::db::vault::{self, FileState};
-use crate::db::{Db, daily_notes, docs, tasks};
+use crate::db::{Db, daily_notes, docs, jobs, tasks};
+use crate::domain::job::{JobInput, JobSource};
 use crate::domain::project::INBOX_ID;
 use crate::domain::task::{Priority, TaskCreate};
 use crate::domain::{DocKind, TaskStatus};
@@ -56,9 +57,26 @@ enum Decision {
     Import { conflict: bool },
 }
 
+// what only the app writes (a job's fields) must not make the vault look edited
+const APP_ONLY_REGIONS: [&str; 1] = ["details"];
+
+/// The app side as stored: the regions the vault can edit, then all of them.
+fn app_state(regions: &[Region]) -> String {
+    format!("{}:{}", hash_regions(regions), hash_all(regions))
+}
+
+fn hash_all(regions: &[Region]) -> String {
+    let joined: String = regions
+        .iter()
+        .map(|r| format!("{}\u{0}{}\u{0}", r.name, r.content))
+        .collect();
+    sha256_hex(joined.as_bytes())
+}
+
 fn hash_regions(regions: &[Region]) -> String {
     let joined: String = regions
         .iter()
+        .filter(|r| !APP_ONLY_REGIONS.contains(&r.name))
         .map(|r| format!("{}\u{0}{}\u{0}", r.name, r.content))
         .collect();
     sha256_hex(joined.as_bytes())
@@ -68,7 +86,8 @@ fn decide(spec: &Spec, existing: Option<&str>, state: Option<&FileState>) -> Dec
     let Some(text) = existing else {
         return Decision::Write { added: true };
     };
-    let app_hash = hash_regions(&spec.regions);
+    let synced_hash = hash_regions(&spec.regions);
+    let all_hash = hash_all(&spec.regions);
     let two_way = spec.target.two_way();
     let Some(state) = state else {
         // a file that was never synced and already says the same needs nothing
@@ -81,12 +100,17 @@ fn decide(spec: &Spec, existing: Option<&str>, state: Option<&FileState>) -> Dec
         };
     };
     let vault_changed = sha256_hex(text.as_bytes()) != state.hash;
-    let app_changed = app_hash != state.app_hash;
-    match (vault_changed, app_changed, two_way) {
-        (false, false, _) => Decision::Unchanged,
-        (false, true, _) | (true, _, false) => Decision::Write { added: false },
-        (true, false, true) => Decision::Import { conflict: false },
-        (true, true, true) => Decision::Import { conflict: true },
+    let (old_synced, old_all) = state
+        .app_hash
+        .split_once(':')
+        .unwrap_or((state.app_hash.as_str(), state.app_hash.as_str()));
+    let synced_changed = synced_hash != old_synced;
+    let all_changed = all_hash != old_all;
+    match (vault_changed, synced_changed, all_changed, two_way) {
+        (false, _, false, _) => Decision::Unchanged,
+        (false, _, true, _) | (true, _, _, false) => Decision::Write { added: false },
+        (true, false, _, true) => Decision::Import { conflict: false },
+        (true, true, _, true) => Decision::Import { conflict: true },
     }
 }
 
@@ -135,6 +159,11 @@ pub async fn run(db: &Db, data_dir: &Path, root: &str, now: i64, apply: bool) ->
     let found = scan(root)?;
     let extra_days: Vec<String> = found.daily_days.clone();
     let mut report = Report::default();
+    if apply {
+        for (stem, body) in &found.new_jobs {
+            jobs::create(db, job_from_file(stem, body)).await?;
+        }
+    }
 
     for spec in specs::all(db, now, &extra_days).await? {
         // a renamed or moved file is still found by its kco_id
@@ -159,6 +188,8 @@ pub async fn run(db: &Db, data_dir: &Path, root: &str, now: i64, apply: bool) ->
 struct Found {
     by_id: HashMap<String, String>,
     daily_days: Vec<String>,
+    /// notes written by hand in Jobs/ that no application owns yet: (file stem, text)
+    new_jobs: Vec<(String, String)>,
 }
 
 // every markdown file the app owns, by the id in its frontmatter
@@ -166,6 +197,7 @@ fn scan(root: &str) -> AppResult<Found> {
     let mut found = Found {
         by_id: HashMap::new(),
         daily_days: Vec::new(),
+        new_jobs: Vec::new(),
     };
     let base = PathBuf::from(root.trim());
     let mut folders = vec![base.join(APP_DIR)];
@@ -183,10 +215,20 @@ fn scan(root: &str) -> AppResult<Found> {
                     .map(|p| p.to_string_lossy().replace('\\', "/"))
                     .unwrap_or_default();
                 let text = fs::read_to_string(&path).unwrap_or_default();
-                if let (Some(front), _) = file::split(&text) {
-                    found.by_id.insert(front.kco_id, relative.clone());
-                }
                 let stem = path.file_stem().map(|s| s.to_string_lossy().into_owned());
+                match file::split(&text) {
+                    (Some(front), _) => {
+                        found.by_id.insert(front.kco_id, relative.clone());
+                    }
+                    (None, body) => {
+                        if let (true, Some(stem)) = (
+                            relative.starts_with(&format!("{APP_DIR}/Jobs/")),
+                            stem.clone(),
+                        ) {
+                            found.new_jobs.push((stem, body.to_string()));
+                        }
+                    }
+                }
                 let in_daily = relative.starts_with(&format!("{APP_DIR}/Daily/"));
                 if let (true, Some(stem)) = (in_daily, stem)
                     && parse_day(&stem).is_some()
@@ -258,6 +300,7 @@ async fn process(
                 }
                 import(db, spec, &text).await?;
                 rewrite_if_adopted(db, spec, &abs, &text, now).await?;
+                refresh_app_only(db, spec, &abs, now).await?;
                 record(db, path, spec, &abs, now).await?;
             }
         }
@@ -280,7 +323,7 @@ async fn record(db: &Db, path: &str, spec: &Spec, abs: &Path, now: i64) -> AppRe
             path: path.to_string(),
             kco_id: spec.front.kco_id.clone(),
             hash: sha256_hex(text.as_bytes()),
-            app_hash: hash_regions(&rebuilt.regions),
+            app_hash: app_state(&rebuilt.regions),
             mtime,
             synced_at: now,
         },
@@ -296,6 +339,11 @@ async fn rebuild(db: &Db, spec: &Spec) -> AppResult<Spec> {
             .into_iter()
             .find(|s| s.target == Target::Project { id: id.clone() })
             .ok_or(AppError::NotFound("project")),
+        Target::Job { id } => specs::job_specs(db)
+            .await?
+            .into_iter()
+            .find(|s| s.target == Target::Job { id: id.clone() })
+            .ok_or(AppError::NotFound("application")),
         _ => Ok(spec.clone()),
     }
 }
@@ -351,6 +399,14 @@ async fn import(db: &Db, spec: &Spec, text: &str) -> AppResult<()> {
                 }
             }
         }
+        Target::Job { id } => {
+            // a plain note has no markers yet; its whole text is the notes
+            let notes = marked("notes").unwrap_or(body.trim());
+            let current = spec.regions.first().map_or("", |r| r.content.as_str());
+            if notes.trim() != current {
+                jobs::set_notes(db, id, notes.trim()).await?;
+            }
+        }
         Target::Dashboard | Target::Review => {}
     }
     Ok(())
@@ -390,6 +446,24 @@ pub fn parse_tick(line: &str) -> Option<(String, bool)> {
     let from = line.find(marker)? + marker.len();
     let to = from + line[from..].find(" -->")?;
     Some((line[from..to].to_string(), checked))
+}
+
+// regions only the app writes (a job's fields) are brought up to date after an import
+async fn refresh_app_only(db: &Db, spec: &Spec, abs: &Path, now: i64) -> AppResult<()> {
+    if !spec
+        .regions
+        .iter()
+        .any(|r| APP_ONLY_REGIONS.contains(&r.name))
+    {
+        return Ok(());
+    }
+    let rebuilt = rebuild(db, spec).await?;
+    let text = fs::read_to_string(abs)?;
+    let content = rebuilt.content_for(Some(&text), now)?;
+    if content != text {
+        fs::write(abs, content)?;
+    }
+    Ok(())
 }
 
 // a note written by hand gets the frontmatter and markers, its text moving into the region
@@ -462,6 +536,25 @@ async fn inbox(db: &Db, root: &str, apply: bool, report: &mut Report) -> AppResu
         }
     }
     Ok(imported)
+}
+
+/// `Company - Role` from a file name; a name without the dash is the company alone.
+pub fn job_from_file(stem: &str, body: &str) -> JobInput {
+    let (company, role) = stem.split_once(" - ").unwrap_or((stem, "Role"));
+    JobInput {
+        company: company.trim().to_string(),
+        role: role.trim().to_string(),
+        url: String::new(),
+        location: String::new(),
+        salary: String::new(),
+        source: JobSource::Other,
+        applied_on: None,
+        contact: String::new(),
+        resume_version: String::new(),
+        next_step: String::new(),
+        next_step_at: None,
+        notes_md: body.trim().to_string(),
+    }
 }
 
 fn inbox_task(title: &str) -> TaskCreate {

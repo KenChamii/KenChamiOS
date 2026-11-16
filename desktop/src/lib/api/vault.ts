@@ -41,7 +41,7 @@ export function syncVaultNow() {
   return invoke<VaultReport>("vault_sync_now");
 }
 
-export type GraphKind = "note" | "project" | "daily" | "tag";
+export type GraphKind = "note" | "project" | "daily" | "tag" | "job" | "company";
 export type GraphNode = { id: string; kind: GraphKind; label: string; path: string | null };
 export type GraphEdge = { source: string; target: string; kind: string };
 export type GraphData = { nodes: GraphNode[]; edges: GraphEdge[] };

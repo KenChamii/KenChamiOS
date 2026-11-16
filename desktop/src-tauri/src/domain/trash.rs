@@ -11,6 +11,7 @@ pub enum TrashKind {
     SavePoint,
     Media,
     Habit,
+    Job,
 }
 
 /// A deleted row that can be brought back; rows deleted along with their parent are left out.
