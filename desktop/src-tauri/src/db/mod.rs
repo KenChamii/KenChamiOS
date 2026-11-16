@@ -7,6 +7,7 @@ pub mod daily_notes;
 pub mod dashboard;
 pub mod docs;
 pub mod due_reminders;
+pub mod graph;
 pub mod habits;
 mod handle;
 pub mod media;

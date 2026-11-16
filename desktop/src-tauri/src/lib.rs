@@ -48,6 +48,7 @@ pub fn run() {
             commands::vault::vault_set_excluded,
             commands::vault::vault_preview,
             commands::vault::vault_sync_now,
+            commands::vault::graph_data,
             commands::agent::agent_settings_get,
             commands::agent::agent_settings_set,
             commands::agent::agent_runs_list,

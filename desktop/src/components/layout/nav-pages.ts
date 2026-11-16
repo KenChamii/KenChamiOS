@@ -9,6 +9,7 @@ import {
   Repeat,
   Settings,
   Trash2,
+  Waypoints,
   type LucideIcon,
 } from "lucide-react";
 import type { Area } from "@/lib/areas";
@@ -27,6 +28,7 @@ export const NAV_PAGES: NavPage[] = [
   { to: "/inbox", label: "Inbox", icon: Inbox, key: "i" },
   { to: "/planner", label: "Planner", icon: CalendarDays, area: "focus", key: "l" },
   { to: "/notes", label: "Notes", icon: NotebookPen, area: "focus", key: "n" },
+  { to: "/graph", label: "Graph", icon: Waypoints, area: "media", key: "g" },
   { to: "/projects", label: "Projects", icon: FolderKanban, area: "projects", key: "p" },
   { to: "/workflow", label: "Workflow", icon: GitBranch, area: "workflow", key: "w" },
   { to: "/media", label: "Media", icon: Film, area: "media", key: "m" },

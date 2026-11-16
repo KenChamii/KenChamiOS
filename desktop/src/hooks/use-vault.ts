@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import {
+  getGraph,
   getVaultStatus,
   previewVault,
   setVaultEnabled,
@@ -56,4 +57,8 @@ export function useSyncVault() {
     mutationFn: syncVaultNow,
     onSuccess: () => queryClient.invalidateQueries(),
   });
+}
+
+export function useGraph() {
+  return useQuery({ queryKey: ["vault", "graph"], queryFn: getGraph, staleTime: 0 });
 }

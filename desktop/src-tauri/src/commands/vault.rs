@@ -1,7 +1,9 @@
+use crate::db::graph::{self, GraphData};
 use crate::db::now_ms;
 use crate::db::vault;
 use crate::error::AppResult;
 use crate::state::AppState;
+use crate::vault::index;
 use crate::vault::sync::{self, Report};
 use serde::Serialize;
 use tauri::State;
@@ -57,4 +59,12 @@ pub async fn vault_sync_now(state: State<'_, AppState>) -> AppResult<Report> {
 pub async fn sync_once(state: &AppState) -> AppResult<Report> {
     let path = vault::path(&state.db).await?;
     sync::run(&state.db, &state.data_dir, &path, now_ms(), true).await
+}
+
+/// Re-reads the vault (read only) and the app records, then returns the whole graph.
+#[tauri::command]
+pub async fn graph_data(state: State<'_, AppState>) -> AppResult<GraphData> {
+    let path = vault::path(&state.db).await?;
+    index::refresh(&state.db, &path, now_ms()).await?;
+    graph::data(&state.db).await
 }

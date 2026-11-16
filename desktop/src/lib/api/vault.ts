@@ -40,3 +40,13 @@ export function previewVault() {
 export function syncVaultNow() {
   return invoke<VaultReport>("vault_sync_now");
 }
+
+export type GraphKind = "note" | "project" | "daily" | "tag";
+export type GraphNode = { id: string; kind: GraphKind; label: string; path: string | null };
+export type GraphEdge = { source: string; target: string; kind: string };
+export type GraphData = { nodes: GraphNode[]; edges: GraphEdge[] };
+
+/** Re-reads the vault and the app records, then returns every node and link. */
+export function getGraph() {
+  return invoke<GraphData>("graph_data");
+}

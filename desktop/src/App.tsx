@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Layout } from "@/components/layout/layout";
 import { DashboardPage } from "@/pages/dashboard";
+import { GraphPage } from "@/pages/graph";
 import { HabitsPage } from "@/pages/habits";
 import { InboxPage } from "@/pages/inbox";
 import { MediaPage } from "@/pages/media";
@@ -26,6 +27,7 @@ const router = createBrowserRouter([
       { path: "/inbox", element: <InboxPage /> },
       { path: "/planner", element: <PlannerPage /> },
       { path: "/notes", element: <NotesPage /> },
+      { path: "/graph", element: <GraphPage /> },
       { path: "/review", element: <WeeklyReviewPage /> },
       { path: "/habits", element: <HabitsPage /> },
       { path: "/trash", element: <TrashPage /> },
