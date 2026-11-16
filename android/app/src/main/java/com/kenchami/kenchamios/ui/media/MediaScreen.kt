@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,6 +64,10 @@ fun MediaContent(
             else -> EmptyState(Area.Media.icon, "Your library is empty.", "Add a title", onAddTitle, tint = tint)
         }
         LazyColumn(Modifier.testTag("media")) {
+            if (state.filters.status == null) {
+                queueSection("Continue", state.queues.continueWith, onOpenEntry)
+                queueSection("Up next", state.queues.upNext, onOpenEntry)
+            }
             items(state.entries, key = { it.id }) { entry ->
                 ListItem(
                     headlineContent = { Text(entry.title) },
@@ -76,3 +82,18 @@ fun MediaContent(
 }
 
 fun progressText(entry: LibraryEntry): String = entry.progressTotal?.let { "${entry.progress}/$it" } ?: "${entry.progress}"
+
+private fun LazyListScope.queueSection(title: String, entries: List<LibraryEntry>, onOpenEntry: (String) -> Unit) {
+    if (entries.isEmpty()) return
+    item(key = "queue-$title") {
+        Text(title, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+    }
+    items(entries, key = { "queue-$title-${it.id}" }) { entry ->
+        ListItem(
+            headlineContent = { Text(entry.title) },
+            supportingContent = { Text(nextUnit(entry) ?: entry.status.label) },
+            leadingContent = { TintedIcon(entry.mediaType.icon, Area.Media.tint) },
+            modifier = Modifier.clickable { onOpenEntry(entry.id) },
+        )
+    }
+}
